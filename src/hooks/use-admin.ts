@@ -1,0 +1,579 @@
+'use client';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+// ---- Dashboard ----
+export interface DashboardAnalytics {
+  overview: {
+    total_technicians: number;
+    verified_technicians: number;
+    pending_technicians: number;
+    suspended_technicians: number;
+    total_customers: number;
+    total_bookings: number;
+    completed_bookings: number;
+    pending_bookings: number;
+    in_progress_bookings: number;
+    cancelled_bookings: number;
+    total_reviews: number;
+    average_rating: number;
+  };
+  revenue: { total: number; by_month: { month: string; amount: number }[] };
+  recent_bookings: {
+    id: string; service_name: string; customer_name: string; status: string; created_at: string;
+  }[];
+  top_technicians: {
+    id: string; full_name: string; completed_jobs: number; average_rating: number;
+  }[];
+  booking_trends: { date: string; count: number }[];
+}
+
+export const EMPTY_DASHBOARD: DashboardAnalytics = {
+  overview: {
+    total_technicians: 0,
+    verified_technicians: 0,
+    pending_technicians: 0,
+    suspended_technicians: 0,
+    total_customers: 0,
+    total_bookings: 0,
+    completed_bookings: 0,
+    pending_bookings: 0,
+    in_progress_bookings: 0,
+    cancelled_bookings: 0,
+    total_reviews: 0,
+    average_rating: 0,
+  },
+  revenue: { total: 0, by_month: [] },
+  recent_bookings: [],
+  top_technicians: [],
+  booking_trends: [],
+};
+
+async function fetchDashboard(): Promise<DashboardAnalytics> {
+  const res = await fetch('/api/admin/dashboard');
+  if (!res.ok) throw new Error('Failed to fetch dashboard');
+  const data = await res.json();
+  if (!data?.overview) return EMPTY_DASHBOARD;
+  return {
+    overview: { ...EMPTY_DASHBOARD.overview, ...data.overview },
+    revenue: {
+      total: data.revenue?.total ?? 0,
+      by_month: data.revenue?.by_month ?? [],
+    },
+    recent_bookings: data.recent_bookings ?? [],
+    top_technicians: data.top_technicians ?? [],
+    booking_trends: data.booking_trends ?? [],
+  };
+}
+
+export function useAdminDashboard() {
+  return useQuery({
+    queryKey: ['admin-dashboard'],
+    queryFn: fetchDashboard,
+    refetchInterval: 30_000,
+  });
+}
+
+// ---- Technicians ----
+export interface AdminTechnicianDetail {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  years_experience: number | null;
+  verification_status: string;
+  is_available: boolean;
+  max_distance_km: number | null;
+  completed_jobs: number;
+  average_rating: number;
+  total_ratings: number;
+  created_at: string;
+  bookings: Record<string, unknown>[];
+  reviews: Record<string, unknown>[];
+}
+
+export interface AdminTechniciansResponse {
+  technicians: Record<string, unknown>[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+async function fetchTechnicians(search?: string, page = 1): Promise<AdminTechniciansResponse> {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  params.set('page', String(page));
+  const res = await fetch(`/api/admin/technicians?${params}`);
+  if (!res.ok) throw new Error('Failed to fetch technicians');
+  return res.json();
+}
+
+async function fetchTechnician(id: string): Promise<AdminTechnicianDetail> {
+  const res = await fetch(`/api/admin/technicians/${id}`);
+  if (!res.ok) throw new Error('Technician not found');
+  return res.json();
+}
+
+async function updateTechnicianStatus(technicianId: string, action: string, reason?: string) {
+  const res = await fetch(`/api/admin/technicians/${technicianId}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, reason }),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update status'); }
+  return res.json();
+}
+
+export function useAdminTechniciansList(search?: string, page?: number) {
+  return useQuery({
+    queryKey: ['admin-technicians-list', search, page],
+    queryFn: () => fetchTechnicians(search, page),
+  });
+}
+
+export function useAdminTechnician(id: string) {
+  return useQuery({
+    queryKey: ['admin-technician', id],
+    queryFn: () => fetchTechnician(id),
+    enabled: !!id,
+  });
+}
+
+export function useAdminUpdateTechnicianStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ technicianId, action, reason }: { technicianId: string; action: string; reason?: string }) =>
+      updateTechnicianStatus(technicianId, action, reason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-technicians-list'] });
+      qc.invalidateQueries({ queryKey: ['admin-technician'] });
+      qc.invalidateQueries({ queryKey: ['admin-dashboard'] });
+    },
+  });
+}
+
+// ---- Customers ----
+export interface AdminCustomersResponse {
+  customers: any[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+async function fetchCustomers(search?: string, page = 1): Promise<AdminCustomersResponse> {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  params.set('page', String(page));
+  const res = await fetch(`/api/admin/customers?${params}`);
+  if (!res.ok) throw new Error('Failed to fetch customers');
+  return res.json();
+}
+
+export function useAdminCustomers(search?: string, page?: number) {
+  return useQuery({
+    queryKey: ['admin-customers', search, page],
+    queryFn: () => fetchCustomers(search, page),
+  });
+}
+
+async function fetchCustomer(id: string) {
+  const res = await fetch(`/api/admin/customers/${id}`);
+  if (!res.ok) throw new Error('Customer not found');
+  return res.json();
+}
+
+export function useAdminCustomer(id: string) {
+  return useQuery({
+    queryKey: ['admin-customer', id],
+    queryFn: () => fetchCustomer(id),
+    enabled: !!id,
+  });
+}
+
+// ---- Services (Admin) ----
+async function fetchAdminServices(categoryId?: string) {
+  const params = new URLSearchParams();
+  if (categoryId) params.set('category_id', categoryId);
+  const res = await fetch(`/api/admin/services?${params}`);
+  if (!res.ok) throw new Error('Failed to fetch services');
+  return res.json();
+}
+
+async function createAdminService(data: any) {
+  const res = await fetch('/api/admin/services', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to create service'); }
+  return res.json();
+}
+
+async function updateAdminService(id: string, data: any) {
+  const res = await fetch(`/api/admin/services/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update service'); }
+  return res.json();
+}
+
+async function deleteAdminService(id: string) {
+  const res = await fetch(`/api/admin/services/${id}`, { method: 'DELETE' });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to delete service'); }
+  return res.json();
+}
+
+export function useAdminServices(categoryId?: string) {
+  return useQuery({
+    queryKey: ['admin-services', categoryId],
+    queryFn: () => fetchAdminServices(categoryId),
+  });
+}
+
+export function useAdminCreateService() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: createAdminService,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-services'] }),
+  });
+}
+
+export function useAdminUpdateService() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateAdminService(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-services'] }),
+  });
+}
+
+export function useAdminDeleteService() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminService,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-services'] }),
+  });
+}
+
+// ---- Categories (Admin) ----
+async function fetchAdminCategories() {
+  const res = await fetch('/api/admin/categories');
+  if (!res.ok) throw new Error('Failed to fetch categories');
+  return res.json();
+}
+
+async function createAdminCategory(data: any) {
+  const res = await fetch('/api/admin/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to create category'); }
+  return res.json();
+}
+
+async function updateAdminCategory(id: string, data: any) {
+  const res = await fetch(`/api/admin/categories/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update category'); }
+  return res.json();
+}
+
+async function deleteAdminCategory(id: string) {
+  const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to delete category'); }
+  return res.json();
+}
+
+export function useAdminCategories() {
+  return useQuery({
+    queryKey: ['admin-categories'],
+    queryFn: fetchAdminCategories,
+  });
+}
+
+export function useAdminCreateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: createAdminCategory,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-categories'] }),
+  });
+}
+
+export function useAdminUpdateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateAdminCategory(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-categories'] }),
+  });
+}
+
+export function useAdminDeleteCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminCategory,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-categories'] }),
+  });
+}
+
+// ---- Bookings (Admin) ----
+export interface AdminBookingListItem {
+  id: string;
+  customer_id: string;
+  service_id: string;
+  technician_id: string | null;
+  status: string;
+  description: string | null;
+  location_address: string | null;
+  location_lat: number | null;
+  location_lng: number | null;
+  preferred_time: string | null;
+  price_quote: number | null;
+  created_at: string;
+  updated_at: string;
+  services: { name_ar: string; name_en: string; slug: string } | null;
+  customer: { id: string; full_name: string | null; email: string } | null;
+  technician: { id: string; full_name: string | null; email: string } | null;
+}
+
+export interface AdminBookingsResponse {
+  bookings: AdminBookingListItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+async function fetchAdminBookings(status?: string): Promise<AdminBookingListItem[]> {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  params.set('limit', '100');
+  const res = await fetch(`/api/admin/bookings?${params}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? 'Failed to fetch bookings');
+  }
+  const data: AdminBookingsResponse = await res.json();
+  return data.bookings ?? [];
+}
+
+async function fetchAdminBooking(id: string): Promise<AdminBookingListItem & {
+  booking_images?: { image_url: string; image_type: string }[];
+  services: Record<string, unknown> | null;
+}> {
+  const res = await fetch(`/api/admin/bookings/${id}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? 'Failed to fetch booking');
+  }
+  return res.json();
+}
+
+export function useAdminBookings(status?: string) {
+  return useQuery({
+    queryKey: ['admin-bookings', status],
+    queryFn: () => fetchAdminBookings(status),
+  });
+}
+
+export function useAdminBooking(id: string) {
+  return useQuery({
+    queryKey: ['admin-booking', id],
+    queryFn: () => fetchAdminBooking(id),
+    enabled: !!id,
+  });
+}
+
+async function updateBookingStatus(bookingId: string, status: string, reason?: string) {
+  const res = await fetch(`/api/admin/bookings/${bookingId}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status, reason }),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update booking status'); }
+  return res.json();
+}
+
+export function useAdminUpdateBookingStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, status, reason }: { bookingId: string; status: string; reason?: string }) =>
+      updateBookingStatus(bookingId, status, reason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-booking'] });
+      qc.invalidateQueries({ queryKey: ['admin-bookings'] });
+      qc.invalidateQueries({ queryKey: ['bookings'] });
+      qc.invalidateQueries({ queryKey: ['booking'] });
+      qc.invalidateQueries({ queryKey: ['admin-dashboard'] });
+    },
+  });
+}
+
+// ---- Reviews (Admin) ----
+export interface AdminReviewsResponse {
+  reviews: any[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+async function fetchAdminReviews(hidden?: string, page = 1): Promise<AdminReviewsResponse> {
+  const params = new URLSearchParams();
+  if (hidden) params.set('hidden', hidden);
+  params.set('page', String(page));
+  const res = await fetch(`/api/admin/reviews?${params}`);
+  if (!res.ok) throw new Error('Failed to fetch reviews');
+  return res.json();
+}
+
+async function moderateReview(reviewId: string, action: 'hide' | 'restore', note?: string) {
+  const res = await fetch(`/api/admin/reviews/${reviewId}/moderate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, note }),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to moderate review'); }
+  return res.json();
+}
+
+export function useAdminReviews(hidden?: string, page?: number) {
+  return useQuery({
+    queryKey: ['admin-reviews', hidden, page],
+    queryFn: () => fetchAdminReviews(hidden, page),
+  });
+}
+
+export function useAdminModerateReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ reviewId, action, note }: { reviewId: string; action: 'hide' | 'restore'; note?: string }) =>
+      moderateReview(reviewId, action, note),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-reviews'] }),
+  });
+}
+
+// ---- Audit Logs ----
+export interface AuditLogsResponse {
+  logs: any[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+async function fetchAuditLogs(entityType?: string, action?: string, page = 1): Promise<AuditLogsResponse> {
+  const params = new URLSearchParams();
+  if (entityType) params.set('entity_type', entityType);
+  if (action) params.set('action', action);
+  params.set('page', String(page));
+  const res = await fetch(`/api/admin/audit-logs?${params}`);
+  if (!res.ok) throw new Error('Failed to fetch audit logs');
+  return res.json();
+}
+
+export function useAdminAuditLogs(entityType?: string, action?: string, page?: number) {
+  return useQuery({
+    queryKey: ['admin-audit-logs', entityType, action, page],
+    queryFn: () => fetchAuditLogs(entityType, action, page),
+  });
+}
+
+// ---- Hero Slides (Admin) ----
+async function fetchAdminHeroSlides() {
+  const res = await fetch('/api/admin/hero-slides');
+  if (!res.ok) throw new Error('Failed to fetch hero slides');
+  return res.json();
+}
+
+async function createAdminHeroSlide(data: any) {
+  const res = await fetch('/api/admin/hero-slides', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to create hero slide'); }
+  return res.json();
+}
+
+async function updateAdminHeroSlide(id: string, data: any) {
+  const res = await fetch(`/api/admin/hero-slides/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update hero slide'); }
+  return res.json();
+}
+
+async function deleteAdminHeroSlide(id: string) {
+  const res = await fetch(`/api/admin/hero-slides/${id}`, { method: 'DELETE' });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to delete hero slide'); }
+  return res.json();
+}
+
+async function reorderAdminHeroSlides(orderedIds: string[]) {
+  const res = await fetch('/api/admin/hero-slides', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ordered_ids: orderedIds }),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to reorder hero slides'); }
+  return res.json();
+}
+
+export function useAdminHeroSlides() {
+  return useQuery({
+    queryKey: ['admin-hero-slides'],
+    queryFn: fetchAdminHeroSlides,
+  });
+}
+
+export function useAdminCreateHeroSlide() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: createAdminHeroSlide,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-hero-slides'] });
+      qc.invalidateQueries({ queryKey: ['hero-slides'] });
+    },
+  });
+}
+
+export function useAdminUpdateHeroSlide() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateAdminHeroSlide(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-hero-slides'] });
+      qc.invalidateQueries({ queryKey: ['hero-slides'] });
+    },
+  });
+}
+
+export function useAdminDeleteHeroSlide() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminHeroSlide,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-hero-slides'] });
+      qc.invalidateQueries({ queryKey: ['hero-slides'] });
+    },
+  });
+}
+
+export function useAdminReorderHeroSlides() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: reorderAdminHeroSlides,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-hero-slides'] });
+      qc.invalidateQueries({ queryKey: ['hero-slides'] });
+    },
+  });
+}

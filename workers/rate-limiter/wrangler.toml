@@ -1,0 +1,11 @@
+name = "sanad-rate-limiter"
+main = "index.ts"
+compatibility_date = "2024-11-01"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[vars]
+# Optional shared secret for origin verification
+# RATE_LIMIT_SECRET = ""

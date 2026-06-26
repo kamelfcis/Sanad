@@ -1,0 +1,51 @@
+[
+  {
+    "step": "Auth — unauthenticated /api/bookings",
+    "result": "PASS",
+    "api": {
+      "method": "GET",
+      "path": "/api/bookings",
+      "status": 401,
+      "snippet": "{\"error\":\"Unauthorized\"}"
+    }
+  },
+  {
+    "step": "Auth — customer email login",
+    "result": "PASS",
+    "url": "http://localhost:3000/services",
+    "consoleErrors": [],
+    "networkErrors": [],
+    "screenshot": "docs\\e2e-screenshots\\01-customer-login.png"
+  },
+  {
+    "step": "Auth — Google OAuth",
+    "result": "MANUAL",
+    "url": "http://localhost:3000/auth/login",
+    "notes": "Google button renders; OAuth redirect requires Supabase provider credentials — not automated."
+  },
+  {
+    "step": "Auth — email verification on signup",
+    "result": "MANUAL",
+    "url": "http://localhost:3000/auth/register",
+    "notes": "Signup flow redirects to login with \"verify email\" toast. Seeded accounts use email_confirm=true via admin API."
+  },
+  {
+    "step": "Customer — browse /services",
+    "result": "PASS",
+    "url": "http://localhost:3000/services",
+    "api": {
+      "method": "GET",
+      "path": "/api/technicians/browse?limit=3",
+      "status": 200,
+      "snippet": "{\"technicians\":[{\"id\":\"75fa181f-0c59-4f5f-90d5-9c8fc5e71756\",\"full_name\":\"Mohamed Ahmed Kamel\",\"avatar_url\":\"https://xswhctwqvdtejmncswis.supabase.co/storage/v1/object/public/uploads/75fa181f-0c59-4f5f-90d5-9c8fc5e71756/1782425052108-f4401c73-1c15-45ff-8551-8e47c4fad401.jpg\",\"phone\":\"01111734655\",\"specialty_label\":\"كهرباء\",\"specialty_slug\":\"electrical\",\"area\":\"الهرم\",\"governorate\":\"الجيزة\",\"verification_status\":\"verified\",\"is_available\":false,\"average_rating\":0,\"completed_jobs\":0,\"starting_price\":100,\"distance_km\":6.2,\"location_lat\":30.0131,\"location_lng\":31.2089,\"response_time_minutes\":16,\"badges\":[\"verified\"],\"primary_service_id\":\"64a17c1e-c5c3-4dd0-921e-dc73ca64e81b\"},{\"id\":\"621214f3-0917-4326-bc88-e75cd987a83e\",\"full_name\":\"E2E Test Technician\",\"avatar_url\":\"https://placehold.co/400x400/png?text=E2E+Profile\",\"phone\":\"01099998888\",\"specialty_label\":\"كهرباء\",\"specialty_slug\":\"electrical\",\"area\":\"مدينة نصر\",\"governorate\":\"القاهرة\",\"verification_status\":\"verified\",\"is_available\":true,\"average_rating\":0,\"completed_jobs\":0,\"starting_price\":150,\"distance_km\":6.7,\"location_lat\":30.0444,\"location_lng\":31.2357,\"response_time_minutes\":15,\"badges\":[\"verified\",\"available\"],\"primary_service_id\":\"64a17c1e-c5c3-4dd0-921e-dc73ca64e81b\"}],\"total\":2,\"page\":1,\"limit\":3}"
+    },
+    "screenshot": "docs\\e2e-screenshots\\02-services-browse.png"
+  },
+  {
+    "step": "Maps — /services/map OSM tiles",
+    "result": "PASS",
+    "url": "http://localhost:3000/services/map",
+    "notes": "Captured 28 tile requests e.g. https://c.tile.openstreetmap.org/11/1201/844.png",
+    "screenshot": "docs\\e2e-screenshots\\03-services-map.png"
+  }
+]
