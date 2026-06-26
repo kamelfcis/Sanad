@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Search, User } from 'lucide-react';
+import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { cn } from '@/lib/utils/cn';
 
 interface AssignTechnicianSheetProps {
   bookingId: string;
@@ -15,16 +17,18 @@ interface AssignTechnicianSheetProps {
 }
 
 export function AssignTechnicianSheet({ bookingId, open, onOpenChange }: AssignTechnicianSheetProps) {
+  const { t, dir } = useAdminT();
   const { data: technicians, isLoading } = useAdminTechnicians();
   const assignMutation = useAdminAssignTechnician();
   const [searchQuery, setSearchQuery] = useState('');
   const [assigningId, setAssigningId] = useState<string | null>(null);
+  const isRtl = dir === 'rtl';
 
-  const filteredTechnicians = technicians?.filter((t) => {
+  const filteredTechnicians = technicians?.filter((tech) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    const name = t.profile.full_name?.toLowerCase() ?? '';
-    const email = t.profile.email?.toLowerCase() ?? '';
+    const name = tech.profile.full_name?.toLowerCase() ?? '';
+    const email = tech.profile.email?.toLowerCase() ?? '';
     return name.includes(q) || email.includes(q);
   });
 
@@ -40,20 +44,23 @@ export function AssignTechnicianSheet({ bookingId, open, onOpenChange }: AssignT
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg">
+      <SheetContent side={isRtl ? 'left' : 'right'} className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Assign Technician</SheetTitle>
-          <SheetDescription>
-            Choose a technician to assign to this booking. The booking will be marked as accepted.
-          </SheetDescription>
+          <SheetTitle>{t('bookings.assignSheet.title')}</SheetTitle>
+          <SheetDescription>{t('bookings.assignSheet.description')}</SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              className={cn(
+                'absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground',
+                isRtl ? 'right-3' : 'left-3',
+              )}
+            />
             <Input
-              placeholder="Search by name or email..."
-              className="pl-9"
+              placeholder={t('bookings.assignSheet.searchPlaceholder')}
+              className={isRtl ? 'pr-9' : 'pl-9'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -77,9 +84,11 @@ export function AssignTechnicianSheet({ bookingId, open, onOpenChange }: AssignT
                 <User className="h-6 w-6 text-muted-foreground" />
               </div>
               <div>
-                <p className="font-medium">No technicians found</p>
+                <p className="font-medium">{t('bookings.assignSheet.noTechnicians')}</p>
                 <p className="text-sm text-muted-foreground">
-                  {searchQuery ? 'Try a different search term.' : 'No verified technicians available.'}
+                  {searchQuery
+                    ? t('bookings.assignSheet.tryDifferentSearch')
+                    : t('bookings.assignSheet.noVerified')}
                 </p>
               </div>
             </div>

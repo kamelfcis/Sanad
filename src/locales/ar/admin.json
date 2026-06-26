@@ -1,0 +1,456 @@
+{
+  "nav": {
+    "brand": "سند — الإدارة",
+    "dashboard": "لوحة التحكم",
+    "bookings": "الحجوزات",
+    "technicians": "الفنيون",
+    "customers": "العملاء",
+    "services": "الخدمات",
+    "categories": "التصنيفات",
+    "heroSlides": "شرائح الصفحة الرئيسية",
+    "reviews": "التقييمات",
+    "payments": "المدفوعات",
+    "auditLogs": "سجل التدقيق",
+    "settings": "الإعدادات",
+    "backToSite": "العودة للموقع"
+  },
+  "header": {
+    "languageToggle": "تبديل اللغة",
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "dashboard": {
+    "title": "لوحة تحكم الإدارة",
+    "subtitle": "نظرة عامة على المنصة والتحليلات.",
+    "loadError": "فشل تحميل بيانات لوحة التحكم.",
+    "stats": {
+      "totalTechnicians": "إجمالي الفنيين",
+      "verified": "{{count}} موثّق",
+      "totalCustomers": "إجمالي العملاء",
+      "totalBookings": "إجمالي الحجوزات",
+      "completed": "{{count}} مكتمل",
+      "pending": "قيد الانتظار",
+      "inProgress": "قيد التنفيذ",
+      "completedLabel": "مكتمل",
+      "avgRating": "متوسط التقييم",
+      "reviewsCount": "{{count}} تقييم",
+      "revenue": "الإيرادات"
+    },
+    "recentBookings": "أحدث الحجوزات",
+    "topTechnicians": "أفضل الفنيين",
+    "jobsRating": "{{jobs}} مهمة · {{rating}}★",
+    "noBookings": "لا توجد حجوزات بعد.",
+    "noTechnicians": "لا يوجد فنيون بعد.",
+    "noRevenue": "لا توجد بيانات إيرادات بعد."
+  },
+  "charts": {
+    "bookingsLast7Days": "الحجوزات (آخر 7 أيام)",
+    "revenueMonthly": "الإيرادات (شهرياً)",
+    "noData": "لا توجد بيانات بعد."
+  },
+  "bookings": {
+    "title": "الحجوزات",
+    "subtitle": "عرض وإدارة جميع طلبات الخدمة على المنصة.",
+    "loadError": "فشل تحميل الحجوزات.",
+    "filters": {
+      "all": "الكل",
+      "pending": "قيد الانتظار",
+      "matched": "تمت المطابقة",
+      "active": "نشط",
+      "completed": "مكتمل",
+      "cancelled": "ملغى"
+    },
+    "empty": {
+      "title": "لم يتم العثور على حجوزات",
+      "withStatus": "لا توجد حجوزات بحالة \"{{status}}\".",
+      "none": "لم يتم إنشاء أي حجوزات بعد."
+    },
+    "detail": {
+      "notFound": "الحجز غير موجود",
+      "notFoundDesc": "هذا الحجز غير موجود أو ليس لديك صلاحية الوصول إليه.",
+      "back": "العودة للحجوزات",
+      "serviceRequest": "طلب خدمة",
+      "adminActions": "إجراءات الإدارة",
+      "assignTechnician": "تعيين فني",
+      "markInProgress": "تحديد كقيد التنفيذ",
+      "markCompleted": "تحديد كمكتمل",
+      "cancelBooking": "إلغاء الحجز",
+      "cancellationReason": "سبب الإلغاء",
+      "cancellationPlaceholder": "سبب الإلغاء مطلوب...",
+      "confirmCancel": "تأكيد الإلغاء",
+      "currentlyAssigned": "معيّن حالياً إلى",
+      "bookingInfo": "معلومات الحجز",
+      "unknownService": "خدمة غير معروفة",
+      "customerId": "معرف العميل",
+      "description": "الوصف",
+      "noDescription": "لم يتم تقديم وصف.",
+      "address": "العنوان",
+      "preferredTime": "الوقت المفضل",
+      "created": "تاريخ الإنشاء"
+    },
+    "assignSheet": {
+      "title": "تعيين فني",
+      "description": "اختر فنياً لتعيينه لهذا الحجز. سيتم تحديد الحجز كمقبول.",
+      "searchPlaceholder": "البحث بالاسم أو البريد...",
+      "noTechnicians": "لم يتم العثور على فنيين",
+      "tryDifferentSearch": "جرّب مصطلح بحث مختلف.",
+      "noVerified": "لا يوجد فنيون موثّقون متاحون."
+    }
+  },
+  "customers": {
+    "title": "العملاء",
+    "subtitle": "عرض جميع العملاء المسجلين.",
+    "loadError": "فشل تحميل العملاء.",
+    "searchPlaceholder": "البحث عن عملاء...",
+    "empty": "لم يتم العثور على عملاء",
+    "unnamed": "بدون اسم",
+    "detail": {
+      "notFound": "العميل غير موجود",
+      "back": "العودة للعملاء",
+      "unnamed": "عميل بدون اسم",
+      "noPhone": "لا يوجد هاتف",
+      "bookings": "الحجوزات ({{count}})",
+      "reviews": "التقييمات ({{count}})",
+      "noBookings": "لا توجد حجوزات بعد.",
+      "booking": "حجز",
+      "unknown": "غير معروف"
+    }
+  },
+  "technicians": {
+    "title": "الفنيون",
+    "subtitle": "إدارة تسجيلات الفنيين وحالاتهم.",
+    "loadError": "فشل تحميل الفنيين.",
+    "searchPlaceholder": "البحث عن فنيين...",
+    "empty": {
+      "title": "لم يتم العثور على فنيين",
+      "subtitle": "لا يوجد فنيون يطابقون بحثك."
+    },
+    "detail": {
+      "notFound": "الفني غير موجود",
+      "back": "العودة للفنيين",
+      "unnamed": "فني بدون اسم",
+      "noPhone": "لا يوجد هاتف",
+      "statusActions": "إجراءات الحالة",
+      "approve": "موافقة",
+      "reject": "رفض",
+      "suspend": "تعليق",
+      "reactivate": "إعادة تفعيل",
+      "reasonPrompt": "سبب {{action}}:",
+      "profile": "الملف الشخصي",
+      "yearsExperience": "سنوات الخبرة",
+      "completedJobs": "المهام المكتملة",
+      "rating": "التقييم",
+      "available": "متاح",
+      "maxDistance": "أقصى مسافة",
+      "joined": "تاريخ الانضمام",
+      "bio": "نبذة",
+      "noBio": "لا توجد نبذة",
+      "recentBookings": "أحدث الحجوزات ({{count}})",
+      "reviews": "التقييمات ({{count}})",
+      "anonymous": "مجهول",
+      "booking": "حجز"
+    },
+    "status": {
+      "verified": "موثّق",
+      "pending": "قيد المراجعة",
+      "rejected": "مرفوض",
+      "suspended": "معلّق",
+      "unverified": "غير موثّق"
+    }
+  },
+  "categories": {
+    "title": "التصنيفات",
+    "subtitle": "إدارة تصنيفات الخدمات.",
+    "add": "إضافة تصنيف",
+    "edit": "تعديل التصنيف",
+    "new": "تصنيف جديد",
+    "empty": "لا توجد تصنيفات",
+    "deleteConfirm": "حذف هذا التصنيف؟",
+    "form": {
+      "nameAr": "الاسم (عربي)",
+      "nameEn": "الاسم (إنجليزي)",
+      "slug": "المعرّف",
+      "description": "الوصف",
+      "icon": "الأيقونة (رمز تعبيري أو اسم)",
+      "update": "تحديث",
+      "create": "إنشاء"
+    }
+  },
+  "services": {
+    "title": "الخدمات",
+    "subtitle": "إدارة عروض الخدمات.",
+    "add": "إضافة خدمة",
+    "edit": "تعديل الخدمة",
+    "new": "خدمة جديدة",
+    "empty": {
+      "title": "لا توجد خدمات",
+      "subtitle": "أنشئ أول خدمة للبدء."
+    },
+    "deleteConfirm": "حذف هذه الخدمة؟",
+    "form": {
+      "nameAr": "الاسم (عربي)",
+      "nameEn": "الاسم (إنجليزي)",
+      "slug": "المعرّف",
+      "description": "الوصف",
+      "category": "التصنيف",
+      "selectCategory": "اختر...",
+      "price": "السعر",
+      "priceType": "نوع السعر",
+      "fixed": "ثابت",
+      "hourly": "بالساعة",
+      "estimate": "تقديري",
+      "update": "تحديث",
+      "create": "إنشاء"
+    }
+  },
+  "reviews": {
+    "title": "إدارة التقييمات",
+    "subtitle": "مراجعة وتعديل تقييمات العملاء.",
+    "loadError": "فشل تحميل التقييمات.",
+    "filters": {
+      "all": "الكل",
+      "visible": "ظاهر",
+      "hidden": "مخفي"
+    },
+    "empty": "لم يتم العثور على تقييمات",
+    "hidden": "مخفي",
+    "forTechnician": "لـ: {{name}}",
+    "noteOptional": "ملاحظة (اختياري)",
+    "notePlaceholder": "السبب...",
+    "restore": "استعادة",
+    "hide": "إخفاء",
+    "moderate": "تعديل"
+  },
+  "payments": {
+    "title": "المدفوعات",
+    "subtitle": "مراجعة مدفوعات InstaPay وفودافون كاش اليدوية.",
+    "loadError": "فشل تحميل المدفوعات.",
+    "filters": {
+      "all": "الكل",
+      "pending": "قيد المراجعة",
+      "approved": "موافق عليه",
+      "rejected": "مرفوض"
+    },
+    "empty": "لم يتم العثور على مدفوعات",
+    "customer": "عميل",
+    "booking": "حجز",
+    "reason": "السبب: {{reason}}",
+    "viewScreenshot": "عرض لقطة الشاشة",
+    "rejectionReason": "سبب الرفض",
+    "reasonPlaceholder": "السبب...",
+    "confirmReject": "تأكيد الرفض",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "methods": {
+      "instapay": "InstaPay",
+      "vodafoneCash": "Vodafone Cash"
+    },
+    "status": {
+      "pending": "قيد المراجعة",
+      "approved": "موافق عليه",
+      "rejected": "مرفوض"
+    }
+  },
+  "paymentSettings": {
+    "title": "إعدادات الدفع اليدوي",
+    "instapayName": "اسم حساب InstaPay",
+    "instapayNumber": "رقم InstaPay",
+    "vodafoneNumber": "رقم Vodafone Cash",
+    "instructions": "تعليمات الدفع",
+    "save": "حفظ إعدادات الدفع",
+    "saving": "جاري الحفظ…",
+    "saved": "تم الحفظ!"
+  },
+  "heroSlides": {
+    "title": "شرائح الصفحة الرئيسية",
+    "subtitle": "إدارة صور عرض الصفحة الرئيسية والنصوص.",
+    "add": "إضافة شريحة",
+    "edit": "تعديل الشريحة",
+    "new": "شريحة جديدة",
+    "empty": "لا توجد شرائح",
+    "deleteConfirm": "حذف هذه الشريحة؟",
+    "form": {
+      "slideImage": "صورة الشريحة",
+      "pasteUrl": "أو الصق رابط الصورة",
+      "titleAr": "العنوان (عربي)",
+      "titlePlaceholder": "كهرباء",
+      "subtitleAr": "العنوان الفرعي (عربي)",
+      "subtitlePlaceholder": "خدمة احترافية",
+      "icon": "الأيقونة",
+      "categoryOptional": "تصنيف الخدمة (اختياري)",
+      "none": "لا شيء",
+      "active": "نشط",
+      "update": "تحديث",
+      "create": "إنشاء"
+    }
+  },
+  "auditLogs": {
+    "title": "سجل التدقيق",
+    "subtitle": "تتبع جميع إجراءات الإدارة على المنصة.",
+    "loadError": "فشل تحميل سجل التدقيق.",
+    "empty": "لا توجد سجلات",
+    "filters": {
+      "all": "الكل",
+      "booking": "حجز",
+      "technician": "فني",
+      "customer": "عميل",
+      "service": "خدمة",
+      "category": "تصنيف",
+      "review": "تقييم"
+    },
+    "performed": "{{admin}} نفّذ {{action}} على {{entityType}}",
+    "details": "التفاصيل"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "إعدادات المنصة.",
+    "general": "عام",
+    "platformName": "اسم المنصة",
+    "supportEmail": "بريد الدعم",
+    "save": "حفظ الإعدادات",
+    "saved": "تم الحفظ!",
+    "about": "حول",
+    "aboutText": "سند v1.0.0 — منصة خدمات منزلية مبنية بـ Next.js و Supabase و TailwindCSS."
+  },
+  "unauthorized": {
+    "title": "غير مصرح",
+    "description": "ليس لديك صلاحية للوصول إلى هذه المنطقة. يمكن للمسؤولين فقط عرض هذه الصفحة.",
+    "backHome": "العودة للرئيسية"
+  },
+  "common": {
+    "loading": "جاري التحميل…",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "back": "رجوع",
+    "view": "عرض",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "create": "إنشاء",
+    "update": "تحديث",
+    "actions": "إجراءات",
+    "yes": "نعم",
+    "no": "لا",
+    "unknown": "غير معروف",
+    "dash": "—",
+    "previous": "السابق",
+    "next": "التالي",
+    "pageOf": "صفحة {{page}} من {{totalPages}} ({{total}} إجمالي)",
+    "active": "نشط",
+    "confirm": "تأكيد"
+  },
+  "tables": {
+    "service": "الخدمة",
+    "customer": "العميل",
+    "technician": "الفني",
+    "status": "الحالة",
+    "date": "التاريخ",
+    "action": "إجراء",
+    "name": "الاسم",
+    "email": "البريد",
+    "phone": "الهاتف",
+    "bookings": "الحجوزات",
+    "joined": "تاريخ الانضمام",
+    "jobs": "المهام",
+    "rating": "التقييم",
+    "icon": "الأيقونة",
+    "nameAr": "الاسم (عربي)",
+    "nameEn": "الاسم (إنجليزي)",
+    "slug": "المعرّف",
+    "category": "التصنيف",
+    "price": "السعر",
+    "order": "الترتيب",
+    "preview": "معاينة",
+    "title": "العنوان",
+    "subtitle": "العنوان الفرعي"
+  },
+  "bookingStatus": {
+    "pending": "قيد الانتظار",
+    "matched": "تمت المطابقة",
+    "accepted": "مقبول",
+    "in_progress": "قيد التنفيذ",
+    "completed": "مكتمل",
+    "cancelled": "ملغى",
+    "disputed": "متنازع عليه"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "nameArRequired": "الاسم العربي مطلوب",
+    "nameEnRequired": "الاسم الإنجليزي مطلوب",
+    "slugRequired": "المعرّف مطلوب",
+    "categoryRequired": "التصنيف مطلوب",
+    "imageRequired": "الصورة مطلوبة",
+    "titleRequired": "العنوان مطلوب",
+    "reasonRequired": "السبب مطلوب",
+    "invalidEmail": "بريد إلكتروني غير صالح",
+    "minLength": "يجب أن يكون {{min}} أحرف على الأقل"
+  },
+  "errors": {
+    "api": {
+      "ADMIN_FETCH_DASHBOARD_FAILED": "فشل تحميل لوحة التحكم",
+      "ADMIN_FETCH_TECHNICIANS_FAILED": "فشل تحميل الفنيين",
+      "ADMIN_TECHNICIAN_NOT_FOUND": "الفني غير موجود",
+      "ADMIN_UPDATE_TECHNICIAN_STATUS_FAILED": "فشل تحديث حالة الفني",
+      "ADMIN_FETCH_CUSTOMERS_FAILED": "فشل تحميل العملاء",
+      "ADMIN_CUSTOMER_NOT_FOUND": "العميل غير موجود",
+      "ADMIN_FETCH_SERVICES_FAILED": "فشل تحميل الخدمات",
+      "ADMIN_CREATE_SERVICE_FAILED": "فشل إنشاء الخدمة",
+      "ADMIN_UPDATE_SERVICE_FAILED": "فشل تحديث الخدمة",
+      "ADMIN_DELETE_SERVICE_FAILED": "فشل حذف الخدمة",
+      "ADMIN_FETCH_CATEGORIES_FAILED": "فشل تحميل التصنيفات",
+      "ADMIN_CREATE_CATEGORY_FAILED": "فشل إنشاء التصنيف",
+      "ADMIN_UPDATE_CATEGORY_FAILED": "فشل تحديث التصنيف",
+      "ADMIN_DELETE_CATEGORY_FAILED": "فشل حذف التصنيف",
+      "ADMIN_FETCH_BOOKINGS_FAILED": "فشل تحميل الحجوزات",
+      "ADMIN_FETCH_BOOKING_FAILED": "فشل تحميل الحجز",
+      "ADMIN_UPDATE_BOOKING_STATUS_FAILED": "فشل تحديث حالة الحجز",
+      "ADMIN_FETCH_REVIEWS_FAILED": "فشل تحميل التقييمات",
+      "ADMIN_MODERATE_REVIEW_FAILED": "فشل تعديل التقييم",
+      "ADMIN_FETCH_AUDIT_LOGS_FAILED": "فشل تحميل سجل التدقيق",
+      "ADMIN_FETCH_HERO_SLIDES_FAILED": "فشل تحميل الشرائح",
+      "ADMIN_CREATE_HERO_SLIDE_FAILED": "فشل إنشاء الشريحة",
+      "ADMIN_UPDATE_HERO_SLIDE_FAILED": "فشل تحديث الشريحة",
+      "ADMIN_DELETE_HERO_SLIDE_FAILED": "فشل حذف الشريحة",
+      "ADMIN_REORDER_HERO_SLIDES_FAILED": "فشل إعادة ترتيب الشرائح",
+      "ADMIN_FETCH_PAYMENTS_FAILED": "فشل تحميل المدفوعات",
+      "ADMIN_APPROVE_PAYMENT_FAILED": "فشل الموافقة على الدفع",
+      "ADMIN_REJECT_PAYMENT_FAILED": "فشل رفض الدفع",
+      "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "فشل تحميل إعدادات الدفع",
+      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "فشل تحديث إعدادات الدفع"
+    },
+    "generic": "حدث خطأ غير متوقع"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "unread": "{{count}} غير مقروء",
+    "unreadAria": "الإشعارات{{suffix}}",
+    "unreadSuffix": "، {{count}} غير مقروء",
+    "markAllRead": "قراءة الكل",
+    "empty": "لا توجد إشعارات",
+    "emptyHint": "ستظهر التحديثات هنا",
+    "viewAll": "عرض كل الإشعارات"
+  },
+  "userNav": {
+    "menuAria": "قائمة المستخدم",
+    "defaultName": "مستخدم",
+    "dashboard": "لوحة التحكم",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "security": "الأمان",
+    "notifications": "الإشعارات",
+    "myJobs": "مهامي",
+    "logout": "تسجيل الخروج"
+  },
+  "logoutModal": {
+    "title": "تسجيل الخروج",
+    "description": "هل تريد تسجيل الخروج من هذا الجهاز؟",
+    "cancel": "إلغاء",
+    "confirm": "تسجيل الخروج",
+    "loading": "جاري الخروج…"
+  },
+  "toast": {
+    "saved": "تم الحفظ بنجاح",
+    "deleted": "تم الحذف بنجاح",
+    "updated": "تم التحديث بنجاح",
+    "error": "حدث خطأ"
+  }
+}

@@ -11,13 +11,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Star, Eye, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format } from 'date-fns';
+import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { translateAdminError } from '@/lib/i18n/admin/translate-error';
+import { cn } from '@/lib/utils/cn';
 
 export default function AdminReviewsPage() {
+  const { t, formatDateTime, dir } = useAdminT();
   const [filter, setFilter] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [note, setNote] = useState('');
   const [activeModeration, setActiveModeration] = useState<string | null>(null);
+  const iconMargin = dir === 'ltr' ? 'mr-1' : 'ml-1';
 
   const { data, isLoading, error } = useAdminReviews(filter, page);
   const moderate = useAdminModerateReview();
@@ -28,19 +32,21 @@ export default function AdminReviewsPage() {
     });
   };
 
+  const filters = [
+    { label: t('reviews.filters.all'), value: undefined },
+    { label: t('reviews.filters.visible'), value: 'false' },
+    { label: t('reviews.filters.hidden'), value: 'true' },
+  ];
+
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Review Moderation</h1>
-        <p className="mt-1 text-muted-foreground">Review and moderate customer reviews.</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('reviews.title')}</h1>
+        <p className="mt-1 text-muted-foreground">{t('reviews.subtitle')}</p>
       </div>
 
       <div className="mb-6 flex gap-2">
-        {[
-          { label: 'All', value: undefined },
-          { label: 'Visible', value: 'false' },
-          { label: 'Hidden', value: 'true' },
-        ].map((f) => (
+        {filters.map((f) => (
           <button
             key={String(f.value)}
             onClick={() => { setFilter(f.value); setPage(1); }}
@@ -56,11 +62,13 @@ export default function AdminReviewsPage() {
       {isLoading ? (
         <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}</div>
       ) : error ? (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">Failed to load reviews.</div>
+        <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
+          {translateAdminError(error.message, t)}
+        </div>
       ) : !data?.reviews.length ? (
         <div className="flex flex-col items-center gap-4 py-16 text-center">
           <Star className="h-12 w-12 text-muted-foreground/50" />
-          <h2 className="text-lg font-semibold">No reviews found</h2>
+          <h2 className="text-lg font-semibold">{t('reviews.empty')}</h2>
         </div>
       ) : (
         <>
@@ -71,32 +79,34 @@ export default function AdminReviewsPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{r.customer?.full_name ?? 'Anonymous'}</span>
+                        <span className="font-medium">{r.customer?.full_name ?? t('technicians.detail.anonymous')}</span>
                         <span className="text-yellow-500">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
-                        {r.is_hidden && <Badge variant="outline" className="bg-gray-100 text-gray-600">Hidden</Badge>}
+                        {r.is_hidden && <Badge variant="outline" className="bg-gray-100 text-gray-600">{t('reviews.hidden')}</Badge>}
                       </div>
-                      <p className="text-xs text-muted-foreground">For: {r.technician?.full_name ?? 'Unknown'}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('reviews.forTechnician', { name: r.technician?.full_name ?? t('common.unknown') })}
+                      </p>
                       {r.comment && <p className="mt-2 text-sm" dir="auto">{r.comment}</p>}
-                      <p className="mt-1 text-xs text-muted-foreground">{format(new Date(r.created_at), 'MMM d, yyyy \'at\' h:mm a')}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(r.created_at)}</p>
                     </div>
                     <div className="shrink-0">
                       {activeModeration === r.id ? (
                         <div className="space-y-2">
                           <div>
-                            <Label htmlFor="note" className="text-xs">Note (optional)</Label>
-                            <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reason..." className="h-8 w-40 text-xs" />
+                            <Label htmlFor="note" className="text-xs">{t('reviews.noteOptional')}</Label>
+                            <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('reviews.notePlaceholder')} className="h-8 w-40 text-xs" />
                           </div>
                           <div className="flex gap-1">
                             <Button size="sm" variant="outline" onClick={() => handleModerate(r.id, r.is_hidden ? 'restore' : 'hide')} disabled={moderate.isPending}>
-                              {r.is_hidden ? 'Restore' : 'Hide'}
+                              {r.is_hidden ? t('reviews.restore') : t('reviews.hide')}
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => { setActiveModeration(null); setNote(''); }}>Cancel</Button>
+                            <Button size="sm" variant="ghost" onClick={() => { setActiveModeration(null); setNote(''); }}>{t('common.cancel')}</Button>
                           </div>
                         </div>
                       ) : (
                         <Button size="sm" variant="outline" onClick={() => setActiveModeration(r.id)}>
-                          {r.is_hidden ? <Eye className="mr-1 h-4 w-4" /> : <EyeOff className="mr-1 h-4 w-4" />}
-                          Moderate
+                          {r.is_hidden ? <Eye className={cn('h-4 w-4', iconMargin)} /> : <EyeOff className={cn('h-4 w-4', iconMargin)} />}
+                          {t('reviews.moderate')}
                         </Button>
                       )}
                     </div>
@@ -107,10 +117,20 @@ export default function AdminReviewsPage() {
           </div>
 
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Page {data.page} of {Math.ceil(data.total / data.limit)} ({data.total} total)</p>
+            <p className="text-sm text-muted-foreground">
+              {t('common.pageOf', {
+                page: data.page,
+                totalPages: Math.ceil(data.total / data.limit),
+                total: data.total,
+              })}
+            </p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft className="h-4 w-4" /> Previous</Button>
-              <Button variant="outline" size="sm" disabled={page * data.limit >= data.total} onClick={() => setPage(page + 1)}>Next <ChevronRight className="h-4 w-4" /></Button>
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                <ChevronLeft className="h-4 w-4" /> {t('common.previous')}
+              </Button>
+              <Button variant="outline" size="sm" disabled={page * data.limit >= data.total} onClick={() => setPage(page + 1)}>
+                {t('common.next')} <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </>

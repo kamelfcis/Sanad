@@ -1,0 +1,456 @@
+{
+  "nav": {
+    "brand": "Sanad Admin",
+    "dashboard": "Dashboard",
+    "bookings": "Bookings",
+    "technicians": "Technicians",
+    "customers": "Customers",
+    "services": "Services",
+    "categories": "Categories",
+    "heroSlides": "Hero Slides",
+    "reviews": "Reviews",
+    "payments": "Payments",
+    "auditLogs": "Audit Logs",
+    "settings": "Settings",
+    "backToSite": "Back to site"
+  },
+  "header": {
+    "languageToggle": "Switch language",
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "subtitle": "Platform overview and analytics.",
+    "loadError": "Failed to load dashboard data.",
+    "stats": {
+      "totalTechnicians": "Total Technicians",
+      "verified": "{{count}} verified",
+      "totalCustomers": "Total Customers",
+      "totalBookings": "Total Bookings",
+      "completed": "{{count}} completed",
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "completedLabel": "Completed",
+      "avgRating": "Avg Rating",
+      "reviewsCount": "{{count}} reviews",
+      "revenue": "Revenue"
+    },
+    "recentBookings": "Recent Bookings",
+    "topTechnicians": "Top Technicians",
+    "jobsRating": "{{jobs}} jobs · {{rating}}★",
+    "noBookings": "No bookings yet.",
+    "noTechnicians": "No technicians yet.",
+    "noRevenue": "No revenue data yet."
+  },
+  "charts": {
+    "bookingsLast7Days": "Bookings (Last 7 Days)",
+    "revenueMonthly": "Revenue (Monthly)",
+    "noData": "No data yet."
+  },
+  "bookings": {
+    "title": "Bookings",
+    "subtitle": "View and manage all service requests on the platform.",
+    "loadError": "Failed to load bookings.",
+    "filters": {
+      "all": "All",
+      "pending": "Pending",
+      "matched": "Matched",
+      "active": "Active",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "empty": {
+      "title": "No bookings found",
+      "withStatus": "No bookings with status \"{{status}}\".",
+      "none": "No bookings have been created yet."
+    },
+    "detail": {
+      "notFound": "Booking not found",
+      "notFoundDesc": "This booking doesn't exist or you don't have access to it.",
+      "back": "Back to bookings",
+      "serviceRequest": "Service Request",
+      "adminActions": "Admin Actions",
+      "assignTechnician": "Assign Technician",
+      "markInProgress": "Mark In Progress",
+      "markCompleted": "Mark Completed",
+      "cancelBooking": "Cancel Booking",
+      "cancellationReason": "Cancellation reason",
+      "cancellationPlaceholder": "Required reason for cancellation...",
+      "confirmCancel": "Confirm Cancel",
+      "currentlyAssigned": "Currently assigned to",
+      "bookingInfo": "Booking Information",
+      "unknownService": "Unknown Service",
+      "customerId": "Customer ID",
+      "description": "Description",
+      "noDescription": "No description provided.",
+      "address": "Address",
+      "preferredTime": "Preferred Time",
+      "created": "Created"
+    },
+    "assignSheet": {
+      "title": "Assign Technician",
+      "description": "Choose a technician to assign to this booking. The booking will be marked as accepted.",
+      "searchPlaceholder": "Search by name or email...",
+      "noTechnicians": "No technicians found",
+      "tryDifferentSearch": "Try a different search term.",
+      "noVerified": "No verified technicians available."
+    }
+  },
+  "customers": {
+    "title": "Customers",
+    "subtitle": "View all registered customers.",
+    "loadError": "Failed to load customers.",
+    "searchPlaceholder": "Search customers...",
+    "empty": "No customers found",
+    "unnamed": "Unnamed",
+    "detail": {
+      "notFound": "Customer not found",
+      "back": "Back to customers",
+      "unnamed": "Unnamed Customer",
+      "noPhone": "No phone",
+      "bookings": "Bookings ({{count}})",
+      "reviews": "Reviews ({{count}})",
+      "noBookings": "No bookings yet.",
+      "booking": "Booking",
+      "unknown": "Unknown"
+    }
+  },
+  "technicians": {
+    "title": "Technicians",
+    "subtitle": "Manage technician registrations and statuses.",
+    "loadError": "Failed to load technicians.",
+    "searchPlaceholder": "Search technicians...",
+    "empty": {
+      "title": "No technicians found",
+      "subtitle": "No technicians match your search."
+    },
+    "detail": {
+      "notFound": "Technician not found",
+      "back": "Back to technicians",
+      "unnamed": "Unnamed Technician",
+      "noPhone": "No phone",
+      "statusActions": "Status Actions",
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "reasonPrompt": "Reason for {{action}}:",
+      "profile": "Profile",
+      "yearsExperience": "Years Experience",
+      "completedJobs": "Completed Jobs",
+      "rating": "Rating",
+      "available": "Available",
+      "maxDistance": "Max Distance",
+      "joined": "Joined",
+      "bio": "Bio",
+      "noBio": "No bio",
+      "recentBookings": "Recent Bookings ({{count}})",
+      "reviews": "Reviews ({{count}})",
+      "anonymous": "Anonymous",
+      "booking": "Booking"
+    },
+    "status": {
+      "verified": "Verified",
+      "pending": "Pending",
+      "rejected": "Rejected",
+      "suspended": "Suspended",
+      "unverified": "Unverified"
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Manage service categories.",
+    "add": "Add Category",
+    "edit": "Edit Category",
+    "new": "New Category",
+    "empty": "No categories",
+    "deleteConfirm": "Delete this category?",
+    "form": {
+      "nameAr": "Name (Arabic)",
+      "nameEn": "Name (English)",
+      "slug": "Slug",
+      "description": "Description",
+      "icon": "Icon (emoji or icon name)",
+      "update": "Update",
+      "create": "Create"
+    }
+  },
+  "services": {
+    "title": "Services",
+    "subtitle": "Manage service offerings.",
+    "add": "Add Service",
+    "edit": "Edit Service",
+    "new": "New Service",
+    "empty": {
+      "title": "No services",
+      "subtitle": "Create your first service to get started."
+    },
+    "deleteConfirm": "Delete this service?",
+    "form": {
+      "nameAr": "Name (Arabic)",
+      "nameEn": "Name (English)",
+      "slug": "Slug",
+      "description": "Description",
+      "category": "Category",
+      "selectCategory": "Select...",
+      "price": "Price",
+      "priceType": "Price Type",
+      "fixed": "Fixed",
+      "hourly": "Hourly",
+      "estimate": "Estimate",
+      "update": "Update",
+      "create": "Create"
+    }
+  },
+  "reviews": {
+    "title": "Review Moderation",
+    "subtitle": "Review and moderate customer reviews.",
+    "loadError": "Failed to load reviews.",
+    "filters": {
+      "all": "All",
+      "visible": "Visible",
+      "hidden": "Hidden"
+    },
+    "empty": "No reviews found",
+    "hidden": "Hidden",
+    "forTechnician": "For: {{name}}",
+    "noteOptional": "Note (optional)",
+    "notePlaceholder": "Reason...",
+    "restore": "Restore",
+    "hide": "Hide",
+    "moderate": "Moderate"
+  },
+  "payments": {
+    "title": "Payments",
+    "subtitle": "Review manual InstaPay and Vodafone Cash payments.",
+    "loadError": "Failed to load payments.",
+    "filters": {
+      "all": "All",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "empty": "No payments found",
+    "customer": "Customer",
+    "booking": "Booking",
+    "reason": "Reason: {{reason}}",
+    "viewScreenshot": "View screenshot",
+    "rejectionReason": "Rejection reason",
+    "reasonPlaceholder": "Reason...",
+    "confirmReject": "Confirm Reject",
+    "approve": "Approve",
+    "reject": "Reject",
+    "methods": {
+      "instapay": "InstaPay",
+      "vodafoneCash": "Vodafone Cash"
+    },
+    "status": {
+      "pending": "Pending Review",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    }
+  },
+  "paymentSettings": {
+    "title": "Manual Payment Settings",
+    "instapayName": "InstaPay Account Name",
+    "instapayNumber": "InstaPay Number",
+    "vodafoneNumber": "Vodafone Cash Number",
+    "instructions": "Payment Instructions",
+    "save": "Save Payment Settings",
+    "saving": "Saving…",
+    "saved": "Saved!"
+  },
+  "heroSlides": {
+    "title": "Hero Slides",
+    "subtitle": "Manage landing page carousel images and overlay text.",
+    "add": "Add Slide",
+    "edit": "Edit Slide",
+    "new": "New Slide",
+    "empty": "No hero slides",
+    "deleteConfirm": "Delete this slide?",
+    "form": {
+      "slideImage": "Slide Image",
+      "pasteUrl": "Or paste image URL",
+      "titleAr": "Title (Arabic)",
+      "titlePlaceholder": "كهرباء",
+      "subtitleAr": "Subtitle (Arabic)",
+      "subtitlePlaceholder": "خدمة احترافية",
+      "icon": "Icon",
+      "categoryOptional": "Service Category (optional)",
+      "none": "None",
+      "active": "Active",
+      "update": "Update",
+      "create": "Create"
+    }
+  },
+  "auditLogs": {
+    "title": "Audit Logs",
+    "subtitle": "Track all admin actions on the platform.",
+    "loadError": "Failed to load audit logs.",
+    "empty": "No audit logs",
+    "filters": {
+      "all": "All",
+      "booking": "Booking",
+      "technician": "Technician",
+      "customer": "Customer",
+      "service": "Service",
+      "category": "Category",
+      "review": "Review"
+    },
+    "performed": "{{admin}} performed {{action}} on {{entityType}}",
+    "details": "Details"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Platform configuration.",
+    "general": "General",
+    "platformName": "Platform Name",
+    "supportEmail": "Support Email",
+    "save": "Save Settings",
+    "saved": "Saved!",
+    "about": "About",
+    "aboutText": "Sanad v1.0.0 — A home services marketplace platform built with Next.js, Supabase, and TailwindCSS."
+  },
+  "unauthorized": {
+    "title": "Unauthorized",
+    "description": "You do not have permission to access this area. Only administrators can view this page.",
+    "backHome": "Back to Home"
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "create": "Create",
+    "update": "Update",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "unknown": "Unknown",
+    "dash": "—",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {{page}} of {{totalPages}} ({{total}} total)",
+    "active": "Active",
+    "confirm": "Confirm"
+  },
+  "tables": {
+    "service": "Service",
+    "customer": "Customer",
+    "technician": "Technician",
+    "status": "Status",
+    "date": "Date",
+    "action": "Action",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "bookings": "Bookings",
+    "joined": "Joined",
+    "jobs": "Jobs",
+    "rating": "Rating",
+    "icon": "Icon",
+    "nameAr": "Name (AR)",
+    "nameEn": "Name (EN)",
+    "slug": "Slug",
+    "category": "Category",
+    "price": "Price",
+    "order": "Order",
+    "preview": "Preview",
+    "title": "Title",
+    "subtitle": "Subtitle"
+  },
+  "bookingStatus": {
+    "pending": "Pending",
+    "matched": "Matched",
+    "accepted": "Accepted",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "disputed": "Disputed"
+  },
+  "validation": {
+    "required": "This field is required",
+    "nameArRequired": "Arabic name is required",
+    "nameEnRequired": "English name is required",
+    "slugRequired": "Slug is required",
+    "categoryRequired": "Category is required",
+    "imageRequired": "Image is required",
+    "titleRequired": "Title is required",
+    "reasonRequired": "Reason is required",
+    "invalidEmail": "Invalid email address",
+    "minLength": "Must be at least {{min}} characters"
+  },
+  "errors": {
+    "api": {
+      "ADMIN_FETCH_DASHBOARD_FAILED": "Failed to load dashboard",
+      "ADMIN_FETCH_TECHNICIANS_FAILED": "Failed to load technicians",
+      "ADMIN_TECHNICIAN_NOT_FOUND": "Technician not found",
+      "ADMIN_UPDATE_TECHNICIAN_STATUS_FAILED": "Failed to update technician status",
+      "ADMIN_FETCH_CUSTOMERS_FAILED": "Failed to load customers",
+      "ADMIN_CUSTOMER_NOT_FOUND": "Customer not found",
+      "ADMIN_FETCH_SERVICES_FAILED": "Failed to load services",
+      "ADMIN_CREATE_SERVICE_FAILED": "Failed to create service",
+      "ADMIN_UPDATE_SERVICE_FAILED": "Failed to update service",
+      "ADMIN_DELETE_SERVICE_FAILED": "Failed to delete service",
+      "ADMIN_FETCH_CATEGORIES_FAILED": "Failed to load categories",
+      "ADMIN_CREATE_CATEGORY_FAILED": "Failed to create category",
+      "ADMIN_UPDATE_CATEGORY_FAILED": "Failed to update category",
+      "ADMIN_DELETE_CATEGORY_FAILED": "Failed to delete category",
+      "ADMIN_FETCH_BOOKINGS_FAILED": "Failed to load bookings",
+      "ADMIN_FETCH_BOOKING_FAILED": "Failed to fetch booking",
+      "ADMIN_UPDATE_BOOKING_STATUS_FAILED": "Failed to update booking status",
+      "ADMIN_FETCH_REVIEWS_FAILED": "Failed to load reviews",
+      "ADMIN_MODERATE_REVIEW_FAILED": "Failed to moderate review",
+      "ADMIN_FETCH_AUDIT_LOGS_FAILED": "Failed to load audit logs",
+      "ADMIN_FETCH_HERO_SLIDES_FAILED": "Failed to load hero slides",
+      "ADMIN_CREATE_HERO_SLIDE_FAILED": "Failed to create hero slide",
+      "ADMIN_UPDATE_HERO_SLIDE_FAILED": "Failed to update hero slide",
+      "ADMIN_DELETE_HERO_SLIDE_FAILED": "Failed to delete hero slide",
+      "ADMIN_REORDER_HERO_SLIDES_FAILED": "Failed to reorder hero slides",
+      "ADMIN_FETCH_PAYMENTS_FAILED": "Failed to load payments",
+      "ADMIN_APPROVE_PAYMENT_FAILED": "Failed to approve payment",
+      "ADMIN_REJECT_PAYMENT_FAILED": "Failed to reject payment",
+      "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "Failed to load payment settings",
+      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "Failed to update payment settings"
+    },
+    "generic": "An unexpected error occurred"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "{{count}} unread",
+    "unreadAria": "Notifications{{suffix}}",
+    "unreadSuffix": ", {{count}} unread",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications",
+    "emptyHint": "Updates will appear here",
+    "viewAll": "View all notifications"
+  },
+  "userNav": {
+    "menuAria": "User menu",
+    "defaultName": "User",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "security": "Security",
+    "notifications": "Notifications",
+    "myJobs": "My Jobs",
+    "logout": "Log out"
+  },
+  "logoutModal": {
+    "title": "Log out",
+    "description": "Do you want to log out from this device?",
+    "cancel": "Cancel",
+    "confirm": "Log out",
+    "loading": "Logging out…"
+  },
+  "toast": {
+    "saved": "Saved successfully",
+    "deleted": "Deleted successfully",
+    "updated": "Updated successfully",
+    "error": "Something went wrong"
+  }
+}

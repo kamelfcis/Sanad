@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import {
   getAvatarUrl,
@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LogoutModal } from '@/components/auth/logout-modal';
+import { useAdminI18nOptional } from '@/lib/i18n/admin/use-admin-t';
 import {
   LogOut,
   User,
@@ -40,6 +41,9 @@ interface UserNavProps {
 export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavProps) {
   const { user, profile } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
+  const adminI18n = useAdminI18nOptional();
+  const isAdminContext = pathname.startsWith('/admin') && !!adminI18n;
   const [logoutOpen, setLogoutOpen] = useState(false);
 
   const displayName = getDisplayName(user, profile);
@@ -67,6 +71,34 @@ export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavPr
   const settingsLink =
     profile?.role === 'admin' ? '/admin/settings' : '/settings/security';
 
+  const labels = isAdminContext
+    ? {
+        menuAria: adminI18n.t('userNav.menuAria'),
+        defaultName: adminI18n.t('userNav.defaultName'),
+        dashboard: adminI18n.t('userNav.dashboard'),
+        profile: adminI18n.t('userNav.profile'),
+        settings: adminI18n.t('userNav.settings'),
+        security: adminI18n.t('userNav.security'),
+        notifications: adminI18n.t('userNav.notifications'),
+        myJobs: adminI18n.t('userNav.myJobs'),
+        logout: adminI18n.t('userNav.logout'),
+      }
+    : {
+        menuAria: 'قائمة المستخدم',
+        defaultName: 'مستخدم',
+        dashboard: 'لوحة التحكم',
+        profile: 'الملف الشخصي',
+        settings: 'الإعدادات',
+        security: 'الأمان',
+        notifications: 'الإشعارات',
+        myJobs: 'مهامي',
+        logout: 'تسجيل الخروج',
+      };
+
+  const menuAlign = isAdminContext && adminI18n.dir === 'ltr' ? 'end' : 'end';
+  const textAlign = isAdminContext && adminI18n.dir === 'ltr' ? 'text-left' : 'text-right';
+  const iconMargin = isAdminContext && adminI18n.dir === 'ltr' ? 'mr-2' : 'ml-2';
+
   return (
     <>
       <div className="flex shrink-0 items-center gap-1.5">
@@ -75,7 +107,7 @@ export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavPr
             <Button
               variant="ghost"
               className={cn('relative rounded-full p-0', avatarSize)}
-              aria-label="قائمة المستخدم"
+              aria-label={labels.menuAria}
             >
               <Avatar className={avatarSize}>
                 <AvatarImage src={avatarUrl} alt={displayName ?? ''} />
@@ -85,10 +117,10 @@ export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavPr
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuContent className="w-56" align={menuAlign} forceMount>
             <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1 text-right">
-                <p className="text-sm font-medium leading-none">{displayName ?? 'مستخدم'}</p>
+              <div className={cn('flex flex-col space-y-1', textAlign)}>
+                <p className="text-sm font-medium leading-none">{displayName ?? labels.defaultName}</p>
                 {displayEmail && (
                   <p className="text-xs leading-none text-muted-foreground">{displayEmail}</p>
                 )}
@@ -97,29 +129,29 @@ export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavPr
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => router.push(dashboardLink)}>
-                <LayoutDashboard className="ml-2 h-4 w-4" />
-                لوحة التحكم
+                <LayoutDashboard className={cn('h-4 w-4', iconMargin)} />
+                {labels.dashboard}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push(profileLink)}>
-                <User className="ml-2 h-4 w-4" />
-                الملف الشخصي
+                <User className={cn('h-4 w-4', iconMargin)} />
+                {labels.profile}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push(settingsLink)}>
-                <Settings className="ml-2 h-4 w-4" />
-                الإعدادات
+                <Settings className={cn('h-4 w-4', iconMargin)} />
+                {labels.settings}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push('/settings/security')}>
-                <Shield className="ml-2 h-4 w-4" />
-                الأمان
+                <Shield className={cn('h-4 w-4', iconMargin)} />
+                {labels.security}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push('/notifications')}>
-                <Bell className="ml-2 h-4 w-4" />
-                الإشعارات
+                <Bell className={cn('h-4 w-4', iconMargin)} />
+                {labels.notifications}
               </DropdownMenuItem>
               {profile?.role === 'technician' && (
                 <DropdownMenuItem onClick={() => router.push('/technician/jobs')}>
-                  <Briefcase className="ml-2 h-4 w-4" />
-                  مهامي
+                  <Briefcase className={cn('h-4 w-4', iconMargin)} />
+                  {labels.myJobs}
                 </DropdownMenuItem>
               )}
             </DropdownMenuGroup>
@@ -128,8 +160,8 @@ export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavPr
               onClick={() => setLogoutOpen(true)}
               className="text-destructive focus:text-destructive focus:bg-destructive/10"
             >
-              <LogOut className="ml-2 h-4 w-4" />
-              تسجيل الخروج
+              <LogOut className={cn('h-4 w-4', iconMargin)} />
+              {labels.logout}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -141,7 +173,7 @@ export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavPr
             className="hidden shrink-0 px-2 font-semibold text-text-secondary hover:bg-muted hover:text-destructive lg:inline-flex"
             onClick={() => setLogoutOpen(true)}
           >
-            تسجيل الخروج
+            {labels.logout}
           </Button>
         )}
       </div>

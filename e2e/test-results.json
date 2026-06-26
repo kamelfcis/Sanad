@@ -4,7 +4,7 @@
       "c:\\Program Files\\cursor\\resources\\app\\resources\\helpers\\node.exe",
       "D:\\Graduation Project 2025\\Sanad\\node_modules\\@playwright\\test\\cli.js",
       "test",
-      "e2e/hero-slides.spec.ts"
+      "e2e/admin-i18n.spec.ts"
     ],
     "configFile": "D:\\Graduation Project 2025\\Sanad\\playwright.config.ts",
     "rootDir": "D:/Graduation Project 2025/Sanad/e2e",
@@ -66,20 +66,20 @@
   },
   "suites": [
     {
-      "title": "hero-slides.spec.ts",
-      "file": "hero-slides.spec.ts",
+      "title": "admin-i18n.spec.ts",
+      "file": "admin-i18n.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Hero slides",
-          "file": "hero-slides.spec.ts",
-          "line": 4,
+          "title": "Admin dashboard i18n",
+          "file": "admin-i18n.spec.ts",
+          "line": 7,
           "column": 6,
           "specs": [
             {
-              "title": "Home page shows hero carousel with slide content",
+              "title": "default Arabic: RTL sidebar and html lang/dir",
               "ok": true,
               "tags": [],
               "tests": [
@@ -94,12 +94,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1881,
+                      "duration": 12260,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-26T13:22:18.466Z",
+                      "startTime": "2026-06-26T20:26:10.817Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -107,13 +107,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "f5e1d025cf614edabd52-e7ef5cdaf61c34e4d8a2",
-              "file": "hero-slides.spec.ts",
-              "line": 7,
+              "id": "505b63760b638811c7bd-cedf7b9b23f0d08b6bf6",
+              "file": "admin-i18n.spec.ts",
+              "line": 15,
               "column": 7
             },
             {
-              "title": "Admin can view hero slides management",
+              "title": "toggle English: LTR labels without reload",
               "ok": true,
               "tags": [],
               "tests": [
@@ -128,12 +128,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 9631,
+                      "duration": 6669,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-26T13:22:20.481Z",
+                      "startTime": "2026-06-26T20:26:23.259Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -141,9 +141,111 @@
                   "status": "expected"
                 }
               ],
-              "id": "f5e1d025cf614edabd52-5f34a95fc6e4ad91a412",
-              "file": "hero-slides.spec.ts",
-              "line": 21,
+              "id": "505b63760b638811c7bd-f3573c5eeb9d41911005",
+              "file": "admin-i18n.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "locale preference persists after refresh",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9283,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-26T20:26:29.950Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "505b63760b638811c7bd-10689b7ec54d4d7aeb04",
+              "file": "admin-i18n.spec.ts",
+              "line": 48,
+              "column": 7
+            },
+            {
+              "title": "mobile viewport: sidebar and toggle work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9482,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-26T20:26:39.252Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "505b63760b638811c7bd-9507a1437e0b4efb00af",
+              "file": "admin-i18n.spec.ts",
+              "line": 63,
+              "column": 7
+            },
+            {
+              "title": "leaving admin restores public ar/rtl",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7935,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-26T20:26:48.757Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "505b63760b638811c7bd-0735b2e4c381632075d6",
+              "file": "admin-i18n.spec.ts",
+              "line": 86,
               "column": 7
             }
           ]
@@ -153,9 +255,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-26T13:22:13.981Z",
-    "duration": 16244.856999999998,
-    "expected": 2,
+    "startTime": "2026-06-26T20:25:56.627Z",
+    "duration": 60348.070999999996,
+    "expected": 5,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

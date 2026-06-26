@@ -46,6 +46,11 @@ export async function waitForPageReady(page: Page, timeoutMs = 20_000) {
   await page.waitForTimeout(200);
 }
 
+export async function waitForAdminReady(page: Page, timeoutMs = 90_000) {
+  await waitForPageReady(page, timeoutMs);
+  await page.getByTestId('admin-language-toggle').waitFor({ state: 'visible', timeout: timeoutMs });
+}
+
 async function waitForStableContent(page: Page) {
   const path = new URL(page.url()).pathname;
 
@@ -68,14 +73,14 @@ async function waitForStableContent(page: Page) {
 
   if (path === '/admin') {
     await page
-      .getByRole('heading', { name: 'Admin Dashboard' })
+      .getByRole('heading', { name: /Admin Dashboard|لوحة تحكم الإدارة/ })
       .waitFor({ state: 'visible', timeout: 90_000 });
     return;
   }
 
   if (path === '/admin/hero-slides') {
     await page
-      .getByRole('heading', { name: 'Hero Slides' })
+      .getByRole('heading', { name: /Hero Slides|شرائح الصفحة الرئيسية/ })
       .waitFor({ state: 'visible', timeout: 60_000 });
     return;
   }

@@ -43,6 +43,7 @@ next-env.d.ts
 
 # e2e
 /e2e/playwright-output/
+/e2e/.auth/
 
 
 # secrets

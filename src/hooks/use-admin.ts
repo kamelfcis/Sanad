@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ADMIN_ERROR_CODES as E } from '@/lib/i18n/admin/types';
 
 // ---- Dashboard ----
 export interface DashboardAnalytics {
@@ -53,7 +54,7 @@ export const EMPTY_DASHBOARD: DashboardAnalytics = {
 
 async function fetchDashboard(): Promise<DashboardAnalytics> {
   const res = await fetch('/api/admin/dashboard');
-  if (!res.ok) throw new Error('Failed to fetch dashboard');
+  if (!res.ok) throw new Error(E.FETCH_DASHBOARD_FAILED);
   const data = await res.json();
   if (!data?.overview) return EMPTY_DASHBOARD;
   return {
@@ -108,13 +109,13 @@ async function fetchTechnicians(search?: string, page = 1): Promise<AdminTechnic
   if (search) params.set('search', search);
   params.set('page', String(page));
   const res = await fetch(`/api/admin/technicians?${params}`);
-  if (!res.ok) throw new Error('Failed to fetch technicians');
+  if (!res.ok) throw new Error(E.FETCH_TECHNICIANS_FAILED);
   return res.json();
 }
 
 async function fetchTechnician(id: string): Promise<AdminTechnicianDetail> {
   const res = await fetch(`/api/admin/technicians/${id}`);
-  if (!res.ok) throw new Error('Technician not found');
+  if (!res.ok) throw new Error(E.TECHNICIAN_NOT_FOUND);
   return res.json();
 }
 
@@ -124,7 +125,7 @@ async function updateTechnicianStatus(technicianId: string, action: string, reas
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action, reason }),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update status'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.UPDATE_TECHNICIAN_STATUS_FAILED); }
   return res.json();
 }
 
@@ -169,7 +170,7 @@ async function fetchCustomers(search?: string, page = 1): Promise<AdminCustomers
   if (search) params.set('search', search);
   params.set('page', String(page));
   const res = await fetch(`/api/admin/customers?${params}`);
-  if (!res.ok) throw new Error('Failed to fetch customers');
+  if (!res.ok) throw new Error(E.FETCH_CUSTOMERS_FAILED);
   return res.json();
 }
 
@@ -182,7 +183,7 @@ export function useAdminCustomers(search?: string, page?: number) {
 
 async function fetchCustomer(id: string) {
   const res = await fetch(`/api/admin/customers/${id}`);
-  if (!res.ok) throw new Error('Customer not found');
+  if (!res.ok) throw new Error(E.CUSTOMER_NOT_FOUND);
   return res.json();
 }
 
@@ -199,7 +200,7 @@ async function fetchAdminServices(categoryId?: string) {
   const params = new URLSearchParams();
   if (categoryId) params.set('category_id', categoryId);
   const res = await fetch(`/api/admin/services?${params}`);
-  if (!res.ok) throw new Error('Failed to fetch services');
+  if (!res.ok) throw new Error(E.FETCH_SERVICES_FAILED);
   return res.json();
 }
 
@@ -209,7 +210,7 @@ async function createAdminService(data: any) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to create service'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.CREATE_SERVICE_FAILED); }
   return res.json();
 }
 
@@ -219,13 +220,13 @@ async function updateAdminService(id: string, data: any) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update service'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.UPDATE_SERVICE_FAILED); }
   return res.json();
 }
 
 async function deleteAdminService(id: string) {
   const res = await fetch(`/api/admin/services/${id}`, { method: 'DELETE' });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to delete service'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.DELETE_SERVICE_FAILED); }
   return res.json();
 }
 
@@ -263,7 +264,7 @@ export function useAdminDeleteService() {
 // ---- Categories (Admin) ----
 async function fetchAdminCategories() {
   const res = await fetch('/api/admin/categories');
-  if (!res.ok) throw new Error('Failed to fetch categories');
+  if (!res.ok) throw new Error(E.FETCH_CATEGORIES_FAILED);
   return res.json();
 }
 
@@ -273,7 +274,7 @@ async function createAdminCategory(data: any) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to create category'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.CREATE_CATEGORY_FAILED); }
   return res.json();
 }
 
@@ -283,13 +284,13 @@ async function updateAdminCategory(id: string, data: any) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update category'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.UPDATE_CATEGORY_FAILED); }
   return res.json();
 }
 
 async function deleteAdminCategory(id: string) {
   const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to delete category'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.DELETE_CATEGORY_FAILED); }
   return res.json();
 }
 
@@ -358,7 +359,7 @@ async function fetchAdminBookings(status?: string): Promise<AdminBookingListItem
   const res = await fetch(`/api/admin/bookings?${params}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error ?? 'Failed to fetch bookings');
+    throw new Error(err.error ?? E.FETCH_BOOKINGS_FAILED);
   }
   const data: AdminBookingsResponse = await res.json();
   return data.bookings ?? [];
@@ -371,7 +372,7 @@ async function fetchAdminBooking(id: string): Promise<AdminBookingListItem & {
   const res = await fetch(`/api/admin/bookings/${id}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error ?? 'Failed to fetch booking');
+    throw new Error(err.error ?? E.FETCH_BOOKING_FAILED);
   }
   return res.json();
 }
@@ -397,7 +398,7 @@ async function updateBookingStatus(bookingId: string, status: string, reason?: s
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ status, reason }),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update booking status'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.UPDATE_BOOKING_STATUS_FAILED); }
   return res.json();
 }
 
@@ -429,7 +430,7 @@ async function fetchAdminReviews(hidden?: string, page = 1): Promise<AdminReview
   if (hidden) params.set('hidden', hidden);
   params.set('page', String(page));
   const res = await fetch(`/api/admin/reviews?${params}`);
-  if (!res.ok) throw new Error('Failed to fetch reviews');
+  if (!res.ok) throw new Error(E.FETCH_REVIEWS_FAILED);
   return res.json();
 }
 
@@ -439,7 +440,7 @@ async function moderateReview(reviewId: string, action: 'hide' | 'restore', note
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action, note }),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to moderate review'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.MODERATE_REVIEW_FAILED); }
   return res.json();
 }
 
@@ -473,7 +474,7 @@ async function fetchAuditLogs(entityType?: string, action?: string, page = 1): P
   if (action) params.set('action', action);
   params.set('page', String(page));
   const res = await fetch(`/api/admin/audit-logs?${params}`);
-  if (!res.ok) throw new Error('Failed to fetch audit logs');
+  if (!res.ok) throw new Error(E.FETCH_AUDIT_LOGS_FAILED);
   return res.json();
 }
 
@@ -487,7 +488,7 @@ export function useAdminAuditLogs(entityType?: string, action?: string, page?: n
 // ---- Hero Slides (Admin) ----
 async function fetchAdminHeroSlides() {
   const res = await fetch('/api/admin/hero-slides');
-  if (!res.ok) throw new Error('Failed to fetch hero slides');
+  if (!res.ok) throw new Error(E.FETCH_HERO_SLIDES_FAILED);
   return res.json();
 }
 
@@ -497,7 +498,7 @@ async function createAdminHeroSlide(data: any) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to create hero slide'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.CREATE_HERO_SLIDE_FAILED); }
   return res.json();
 }
 
@@ -507,13 +508,13 @@ async function updateAdminHeroSlide(id: string, data: any) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to update hero slide'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.UPDATE_HERO_SLIDE_FAILED); }
   return res.json();
 }
 
 async function deleteAdminHeroSlide(id: string) {
   const res = await fetch(`/api/admin/hero-slides/${id}`, { method: 'DELETE' });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to delete hero slide'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.DELETE_HERO_SLIDE_FAILED); }
   return res.json();
 }
 
@@ -523,7 +524,7 @@ async function reorderAdminHeroSlides(orderedIds: string[]) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ordered_ids: orderedIds }),
   });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Failed to reorder hero slides'); }
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.REORDER_HERO_SLIDES_FAILED); }
   return res.json();
 }
 

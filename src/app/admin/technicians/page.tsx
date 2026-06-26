@@ -10,7 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, Users, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format } from 'date-fns';
+import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { translateAdminError } from '@/lib/i18n/admin/translate-error';
+import { cn } from '@/lib/utils/cn';
 
 const statusColors: Record<string, string> = {
   verified: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400',
@@ -21,25 +23,34 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminTechniciansPage() {
+  const { t, formatDate, dir } = useAdminT();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useAdminTechniciansList(search, page);
+  const isRtl = dir === 'rtl';
+  const textAlign = dir === 'ltr' ? 'text-left' : '';
+
+  const statusLabel = (status: string) => {
+    const key = `technicians.status.${status}`;
+    const translated = t(key);
+    return translated === key ? status : translated;
+  };
 
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Technicians</h1>
-        <p className="mt-1 text-muted-foreground">Manage technician registrations and statuses.</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('technicians.title')}</h1>
+        <p className="mt-1 text-muted-foreground">{t('technicians.subtitle')}</p>
       </div>
 
       <div className="mb-6 flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative max-w-sm flex-1">
+          <Search className={cn('absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground', isRtl ? 'right-3' : 'left-3')} />
           <Input
-            placeholder="Search technicians..."
+            placeholder={t('technicians.searchPlaceholder')}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="pl-9"
+            className={isRtl ? 'pr-9' : 'pl-9'}
           />
         </div>
       </div>
@@ -50,49 +61,49 @@ export default function AdminTechniciansPage() {
         </div>
       ) : error ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
-          Failed to load technicians.
+          {translateAdminError(error.message, t)}
         </div>
       ) : !data?.technicians.length ? (
         <div className="flex flex-col items-center gap-4 py-16 text-center">
           <Users className="h-12 w-12 text-muted-foreground/50" />
-          <h2 className="text-lg font-semibold">No technicians found</h2>
-          <p className="text-sm text-muted-foreground">No technicians match your search.</p>
+          <h2 className="text-lg font-semibold">{t('technicians.empty.title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('technicians.empty.subtitle')}</p>
         </div>
       ) : (
         <>
           <div className="overflow-hidden rounded-xl border">
-            <table className="w-full text-sm">
+            <table className={cn('w-full text-sm', textAlign)}>
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="px-4 py-3 text-left font-medium">Name</th>
-                  <th className="px-4 py-3 text-left font-medium">Email</th>
-                  <th className="px-4 py-3 text-left font-medium">Status</th>
-                  <th className="px-4 py-3 text-left font-medium">Jobs</th>
-                  <th className="hidden px-4 py-3 text-left font-medium md:table-cell">Rating</th>
-                  <th className="hidden px-4 py-3 text-left font-medium md:table-cell">Joined</th>
-                  <th className="px-4 py-3 text-right font-medium">Action</th>
+                  <th className="px-4 py-3 font-medium">{t('tables.name')}</th>
+                  <th className="px-4 py-3 font-medium">{t('tables.email')}</th>
+                  <th className="px-4 py-3 font-medium">{t('tables.status')}</th>
+                  <th className="px-4 py-3 font-medium">{t('tables.jobs')}</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">{t('tables.rating')}</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">{t('tables.joined')}</th>
+                  <th className="px-4 py-3 text-end font-medium">{t('tables.action')}</th>
                 </tr>
               </thead>
               <tbody>
-                {data.technicians.map((t: any) => (
-                  <tr key={t.id} className="border-b last:border-0 hover:bg-muted/30">
-                    <td className="px-4 py-3 font-medium">{t.full_name ?? 'Unnamed'}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{t.email ?? '—'}</td>
+                {data.technicians.map((tech: any) => (
+                  <tr key={tech.id} className="border-b last:border-0 hover:bg-muted/30">
+                    <td className="px-4 py-3 font-medium">{tech.full_name ?? t('customers.unnamed')}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{tech.email ?? t('common.dash')}</td>
                     <td className="px-4 py-3">
-                      <Badge variant="outline" className={statusColors[t.verification_status] ?? ''}>
-                        {t.verification_status}
+                      <Badge variant="outline" className={statusColors[tech.verification_status] ?? ''}>
+                        {statusLabel(tech.verification_status)}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3">{t.completed_jobs ?? 0}</td>
+                    <td className="px-4 py-3">{tech.completed_jobs ?? 0}</td>
                     <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
-                      {t.average_rating ? `${Number(t.average_rating).toFixed(1)}★` : '—'}
+                      {tech.average_rating ? `${Number(tech.average_rating).toFixed(1)}★` : t('common.dash')}
                     </td>
                     <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
-                      {t.created_at ? format(new Date(t.created_at), 'MMM d, yyyy') : '—'}
+                      {tech.created_at ? formatDate(tech.created_at) : t('common.dash')}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-end">
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/technicians/${t.id}`}>View</Link>
+                        <Link href={`/admin/technicians/${tech.id}`}>{t('common.view')}</Link>
                       </Button>
                     </td>
                   </tr>
@@ -103,14 +114,18 @@ export default function AdminTechniciansPage() {
 
           <div className="mt-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Page {data.page} of {Math.ceil(data.total / data.limit)} ({data.total} total)
+              {t('common.pageOf', {
+                page: data.page,
+                totalPages: Math.ceil(data.total / data.limit),
+                total: data.total,
+              })}
             </p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                <ChevronLeft className="h-4 w-4" /> Previous
+                <ChevronLeft className="h-4 w-4" /> {t('common.previous')}
               </Button>
               <Button variant="outline" size="sm" disabled={page * data.limit >= data.total} onClick={() => setPage(page + 1)}>
-                Next <ChevronRight className="h-4 w-4" />
+                {t('common.next')} <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>

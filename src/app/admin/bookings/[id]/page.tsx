@@ -15,15 +15,11 @@ import { Label } from '@/components/ui/label';
 import {
   ArrowLeft, MapPin, Calendar, Clock, Wrench, User, UserPlus, Ban, CheckCircle, AlertCircle,
 } from 'lucide-react';
-import { format } from 'date-fns';
-
-const statusActions = [
-  { label: 'Mark In Progress', status: 'in_progress', color: 'bg-blue-600 hover:bg-blue-700' },
-  { label: 'Mark Completed', status: 'completed', color: 'bg-green-600 hover:bg-green-700' },
-  { label: 'Cancel Booking', status: 'cancelled', color: 'bg-destructive hover:bg-destructive/90' },
-];
+import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { cn } from '@/lib/utils/cn';
 
 export default function AdminBookingDetailPage() {
+  const { t, formatDateTime, dir } = useAdminT();
   const params = useParams();
   const id = params.id as string;
   const { data: booking, isLoading, error } = useAdminBooking(id);
@@ -31,6 +27,14 @@ export default function AdminBookingDetailPage() {
   const [cancelReason, setCancelReason] = useState('');
   const [showCancelInput, setShowCancelInput] = useState(false);
   const updateStatus = useAdminUpdateBookingStatus();
+  const backIconClass = dir === 'ltr' ? 'mr-1' : 'ml-1';
+  const actionIconClass = dir === 'ltr' ? 'mr-1' : 'ml-1';
+
+  const statusActions = [
+    { label: t('bookings.detail.markInProgress'), status: 'in_progress', color: 'bg-blue-600 hover:bg-blue-700' },
+    { label: t('bookings.detail.markCompleted'), status: 'completed', color: 'bg-green-600 hover:bg-green-700' },
+    { label: t('bookings.detail.cancelBooking'), status: 'cancelled', color: 'bg-destructive hover:bg-destructive/90' },
+  ];
 
   if (isLoading) {
     return (
@@ -47,9 +51,9 @@ export default function AdminBookingDetailPage() {
   if (error || !booking) {
     return (
       <div className="p-16 text-center">
-        <h1 className="mb-2 text-2xl font-bold">Booking not found</h1>
-        <p className="mb-6 text-muted-foreground">This booking doesn&apos;t exist or you don&apos;t have access to it.</p>
-        <Button asChild><Link href="/admin/bookings">Back to bookings</Link></Button>
+        <h1 className="mb-2 text-2xl font-bold">{t('bookings.detail.notFound')}</h1>
+        <p className="mb-6 text-muted-foreground">{t('bookings.detail.notFoundDesc')}</p>
+        <Button asChild><Link href="/admin/bookings">{t('bookings.detail.back')}</Link></Button>
       </div>
     );
   }
@@ -70,7 +74,9 @@ export default function AdminBookingDetailPage() {
   return (
     <div className="p-6">
       <Button variant="ghost" size="sm" asChild className="mb-4">
-        <Link href="/admin/bookings"><ArrowLeft className="mr-1 h-4 w-4" /> Back to bookings</Link>
+        <Link href="/admin/bookings">
+          <ArrowLeft className={cn('h-4 w-4', backIconClass)} /> {t('bookings.detail.back')}
+        </Link>
       </Button>
 
       <div className="mx-auto max-w-2xl space-y-6">
@@ -78,9 +84,9 @@ export default function AdminBookingDetailPage() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold tracking-tight" dir="auto">
-                {booking.services?.name_ar ?? 'Service Request'}
+                {booking.services?.name_ar ?? t('bookings.detail.serviceRequest')}
               </h1>
-              <BookingStatus status={booking.status} />
+              <BookingStatus status={booking.status} context="admin" />
             </div>
             <p className="mt-1 text-sm text-muted-foreground">{booking.services?.name_en}</p>
           </div>
@@ -88,7 +94,7 @@ export default function AdminBookingDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Admin Actions</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('bookings.detail.adminActions')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button
@@ -96,7 +102,7 @@ export default function AdminBookingDetailPage() {
               onClick={() => setShowAssignSheet(true)}
               disabled={terminalStatuses.includes(booking.status)}
             >
-              <UserPlus className="mr-1 h-4 w-4" /> Assign Technician
+              <UserPlus className={cn('h-4 w-4', actionIconClass)} /> {t('bookings.detail.assignTechnician')}
             </Button>
 
             <div className="flex flex-wrap gap-2">
@@ -111,9 +117,9 @@ export default function AdminBookingDetailPage() {
                     disabled={disabled || updateStatus.isPending}
                     onClick={() => handleStatusUpdate(action.status)}
                   >
-                    {action.status === 'cancelled' ? <Ban className="mr-1 h-4 w-4" /> :
-                     action.status === 'completed' ? <CheckCircle className="mr-1 h-4 w-4" /> :
-                     <AlertCircle className="mr-1 h-4 w-4" />}
+                    {action.status === 'cancelled' ? <Ban className={cn('h-4 w-4', actionIconClass)} /> :
+                     action.status === 'completed' ? <CheckCircle className={cn('h-4 w-4', actionIconClass)} /> :
+                     <AlertCircle className={cn('h-4 w-4', actionIconClass)} />}
                     {action.label}
                   </Button>
                 );
@@ -122,19 +128,19 @@ export default function AdminBookingDetailPage() {
 
             {showCancelInput && (
               <div className="space-y-2 rounded-lg border p-3">
-                <Label htmlFor="reason">Cancellation reason</Label>
+                <Label htmlFor="reason">{t('bookings.detail.cancellationReason')}</Label>
                 <Input
                   id="reason"
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="Required reason for cancellation..."
+                  placeholder={t('bookings.detail.cancellationPlaceholder')}
                 />
                 <div className="flex gap-2">
                   <Button size="sm" variant="destructive" onClick={() => handleStatusUpdate('cancelled')} disabled={!cancelReason.trim() || updateStatus.isPending}>
-                    Confirm Cancel
+                    {t('bookings.detail.confirmCancel')}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => { setShowCancelInput(false); setCancelReason(''); }}>
-                    Back
+                    {t('common.back')}
                   </Button>
                 </div>
               </div>
@@ -144,7 +150,7 @@ export default function AdminBookingDetailPage() {
               <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Currently assigned to</p>
+                  <p className="text-xs text-muted-foreground">{t('bookings.detail.currentlyAssigned')}</p>
                   <p className="text-sm font-medium">{booking.technician_id}</p>
                 </div>
               </div>
@@ -154,7 +160,7 @@ export default function AdminBookingDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Booking Information</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('bookings.detail.bookingInfo')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center gap-3">
@@ -162,26 +168,26 @@ export default function AdminBookingDetailPage() {
                 <Wrench className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="font-medium" dir="auto">{booking.services?.name_ar ?? 'Unknown Service'}</p>
+                <p className="font-medium" dir="auto">{booking.services?.name_ar ?? t('bookings.detail.unknownService')}</p>
                 <p className="text-sm text-muted-foreground">{booking.services?.name_en}</p>
               </div>
             </div>
             <Separator />
             <div>
-              <p className="text-xs text-muted-foreground">Customer ID</p>
+              <p className="text-xs text-muted-foreground">{t('bookings.detail.customerId')}</p>
               <p className="mt-1 flex items-center gap-1 text-sm"><User className="h-3 w-3 text-muted-foreground" />{booking.customer_id}</p>
             </div>
             <Separator />
             <div>
-              <p className="text-xs text-muted-foreground">Description</p>
-              <p className="mt-1 text-sm" dir="auto">{booking.description ?? 'No description provided.'}</p>
+              <p className="text-xs text-muted-foreground">{t('bookings.detail.description')}</p>
+              <p className="mt-1 text-sm" dir="auto">{booking.description ?? t('bookings.detail.noDescription')}</p>
             </div>
             <Separator />
             {booking.location_address && (
               <>
                 <div className="flex items-start gap-3">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div><p className="text-xs text-muted-foreground">Address</p><p className="text-sm">{booking.location_address}</p></div>
+                  <div><p className="text-xs text-muted-foreground">{t('bookings.detail.address')}</p><p className="text-sm">{booking.location_address}</p></div>
                 </div>
                 <Separator />
               </>
@@ -191,8 +197,8 @@ export default function AdminBookingDetailPage() {
                 <div className="flex items-start gap-3">
                   <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Preferred Time</p>
-                    <p className="text-sm">{format(new Date(booking.preferred_time), 'MMMM d, yyyy \'at\' h:mm a')}</p>
+                    <p className="text-xs text-muted-foreground">{t('bookings.detail.preferredTime')}</p>
+                    <p className="text-sm">{formatDateTime(booking.preferred_time)}</p>
                   </div>
                 </div>
                 <Separator />
@@ -201,8 +207,8 @@ export default function AdminBookingDetailPage() {
             <div className="flex items-start gap-3">
               <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Created</p>
-                <p className="text-sm">{format(new Date(booking.created_at), 'MMMM d, yyyy \'at\' h:mm a')}</p>
+                <p className="text-xs text-muted-foreground">{t('bookings.detail.created')}</p>
+                <p className="text-sm">{formatDateTime(booking.created_at)}</p>
               </div>
             </div>
           </CardContent>

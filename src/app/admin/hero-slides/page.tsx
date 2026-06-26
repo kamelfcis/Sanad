@@ -30,10 +30,13 @@ import {
   Check,
 } from 'lucide-react';
 import { categoryIconMap } from '@/lib/icons/category-icons';
+import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { cn } from '@/lib/utils/cn';
 
 const ICON_OPTIONS = Object.keys(categoryIconMap);
 
 export default function AdminHeroSlidesPage() {
+  const { t, dir } = useAdminT();
   const { data: slides, isLoading } = useAdminHeroSlides();
   const { data: categories } = useCategories();
   const createSlide = useAdminCreateHeroSlide();
@@ -42,12 +45,16 @@ export default function AdminHeroSlidesPage() {
   const reorderSlides = useAdminReorderHeroSlides();
   const upload = useUpload();
 
+  const textAlign = dir === 'ltr' ? 'text-left' : '';
+  const iconMargin = dir === 'ltr' ? 'mr-1' : 'ml-1';
+  const actionsAlign = dir === 'ltr' ? 'text-right' : 'text-end';
+
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({
     image_url: '',
     title_ar: '',
-    subtitle_ar: 'خدمة احترافية',
+    subtitle_ar: t('heroSlides.form.subtitlePlaceholder'),
     icon_key: 'zap',
     service_category_slug: '',
     is_active: true,
@@ -55,6 +62,7 @@ export default function AdminHeroSlidesPage() {
 
   useEffect(() => {
     if (upload.uploadedUrls.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync uploaded URL into form
       setForm((prev) => ({ ...prev, image_url: upload.uploadedUrls[upload.uploadedUrls.length - 1] }));
     }
   }, [upload.uploadedUrls]);
@@ -63,7 +71,7 @@ export default function AdminHeroSlidesPage() {
     setForm({
       image_url: '',
       title_ar: '',
-      subtitle_ar: 'خدمة احترافية',
+      subtitle_ar: t('heroSlides.form.subtitlePlaceholder'),
       icon_key: 'zap',
       service_category_slug: '',
       is_active: true,
@@ -91,7 +99,7 @@ export default function AdminHeroSlidesPage() {
     setForm({
       image_url: slide.image_url,
       title_ar: slide.title_ar,
-      subtitle_ar: slide.subtitle_ar ?? 'خدمة احترافية',
+      subtitle_ar: slide.subtitle_ar ?? t('heroSlides.form.subtitlePlaceholder'),
       icon_key: slide.icon_key ?? 'zap',
       service_category_slug: slide.service_category_slug ?? '',
       is_active: slide.is_active,
@@ -118,24 +126,28 @@ export default function AdminHeroSlidesPage() {
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Hero Slides</h1>
-          <p className="mt-1 text-muted-foreground">Manage landing page carousel images and overlay text.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('heroSlides.title')}</h1>
+          <p className="mt-1 text-muted-foreground">{t('heroSlides.subtitle')}</p>
         </div>
         <Button onClick={() => { resetForm(); setShowForm(true); }} disabled={showForm}>
-          <Plus className="mr-1 h-4 w-4" /> Add Slide
+          <Plus className={cn('h-4 w-4', iconMargin)} /> {t('heroSlides.add')}
         </Button>
       </div>
 
       {showForm && (
         <Card className="mb-6">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">{editingId ? 'Edit Slide' : 'New Slide'}</CardTitle>
-            <Button variant="ghost" size="icon" onClick={resetForm}><X className="h-4 w-4" /></Button>
+            <CardTitle className="text-sm">
+              {editingId ? t('heroSlides.edit') : t('heroSlides.new')}
+            </CardTitle>
+            <Button variant="ghost" size="icon" onClick={resetForm} aria-label={t('common.cancel')}>
+              <X className="h-4 w-4" />
+            </Button>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label>Slide Image</Label>
+                <Label>{t('heroSlides.form.slideImage')}</Label>
                 <ImageUploader
                   urls={form.image_url ? [form.image_url] : upload.uploadedUrls}
                   onUpload={upload.uploadFile}
@@ -149,7 +161,7 @@ export default function AdminHeroSlidesPage() {
                 />
                 {!form.image_url && (
                   <Input
-                    placeholder="Or paste image URL"
+                    placeholder={t('heroSlides.form.pasteUrl')}
                     value={form.image_url}
                     onChange={(e) => setForm({ ...form, image_url: e.target.value })}
                   />
@@ -158,24 +170,24 @@ export default function AdminHeroSlidesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title_ar">Title (Arabic)</Label>
+                  <Label htmlFor="title_ar">{t('heroSlides.form.titleAr')}</Label>
                   <Input
                     id="title_ar"
                     dir="auto"
                     value={form.title_ar}
                     onChange={(e) => setForm({ ...form, title_ar: e.target.value })}
-                    placeholder="كهرباء"
+                    placeholder={t('heroSlides.form.titlePlaceholder')}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="subtitle_ar">Subtitle (Arabic)</Label>
+                  <Label htmlFor="subtitle_ar">{t('heroSlides.form.subtitleAr')}</Label>
                   <Input
                     id="subtitle_ar"
                     dir="auto"
                     value={form.subtitle_ar}
                     onChange={(e) => setForm({ ...form, subtitle_ar: e.target.value })}
-                    placeholder="خدمة احترافية"
+                    placeholder={t('heroSlides.form.subtitlePlaceholder')}
                     required
                   />
                 </div>
@@ -183,7 +195,7 @@ export default function AdminHeroSlidesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="icon_key">Icon</Label>
+                  <Label htmlFor="icon_key">{t('heroSlides.form.icon')}</Label>
                   <select
                     id="icon_key"
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -196,14 +208,14 @@ export default function AdminHeroSlidesPage() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="category_slug">Service Category (optional)</Label>
+                  <Label htmlFor="category_slug">{t('heroSlides.form.categoryOptional')}</Label>
                   <select
                     id="category_slug"
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     value={form.service_category_slug}
                     onChange={(e) => setForm({ ...form, service_category_slug: e.target.value })}
                   >
-                    <option value="">None</option>
+                    <option value="">{t('heroSlides.form.none')}</option>
                     {categories?.map((category) => (
                       <option key={category.id} value={category.slug}>{category.name_ar}</option>
                     ))}
@@ -217,7 +229,7 @@ export default function AdminHeroSlidesPage() {
                   checked={form.is_active}
                   onCheckedChange={(checked) => setForm({ ...form, is_active: checked })}
                 />
-                <Label htmlFor="is_active">Active</Label>
+                <Label htmlFor="is_active">{t('heroSlides.form.active')}</Label>
               </div>
 
               <Button
@@ -229,7 +241,7 @@ export default function AdminHeroSlidesPage() {
                   upload.uploading
                 }
               >
-                {editingId ? 'Update' : 'Create'} Slide
+                {editingId ? t('heroSlides.form.update') : t('heroSlides.form.create')}
               </Button>
             </form>
           </CardContent>
@@ -245,20 +257,20 @@ export default function AdminHeroSlidesPage() {
       ) : !slides?.length ? (
         <div className="flex flex-col items-center gap-4 py-16 text-center">
           <Images className="h-12 w-12 text-muted-foreground/50" />
-          <h2 className="text-lg font-semibold">No hero slides</h2>
+          <h2 className="text-lg font-semibold">{t('heroSlides.empty')}</h2>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border">
-          <table className="w-full text-sm">
+          <table className={cn('w-full text-sm', textAlign)}>
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">Order</th>
-                <th className="px-4 py-3 text-left font-medium">Preview</th>
-                <th className="px-4 py-3 text-left font-medium">Title</th>
-                <th className="px-4 py-3 text-left font-medium">Subtitle</th>
-                <th className="px-4 py-3 text-left font-medium">Icon</th>
-                <th className="px-4 py-3 text-left font-medium">Active</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+                <th className="px-4 py-3 font-medium">{t('tables.order')}</th>
+                <th className="px-4 py-3 font-medium">{t('tables.preview')}</th>
+                <th className="px-4 py-3 font-medium">{t('tables.title')}</th>
+                <th className="px-4 py-3 font-medium">{t('tables.subtitle')}</th>
+                <th className="px-4 py-3 font-medium">{t('tables.icon')}</th>
+                <th className="px-4 py-3 font-medium">{t('common.active')}</th>
+                <th className={cn('px-4 py-3 font-medium', actionsAlign)}>{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -293,9 +305,9 @@ export default function AdminHeroSlidesPage() {
                   </td>
                   <td className="px-4 py-3 font-medium" dir="auto">{slide.title_ar}</td>
                   <td className="px-4 py-3 text-muted-foreground" dir="auto">{slide.subtitle_ar}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{slide.icon_key ?? '—'}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{slide.icon_key ?? t('common.dash')}</td>
                   <td className="px-4 py-3">
-                    <button type="button" onClick={() => toggleActive(slide)}>
+                    <button type="button" onClick={() => toggleActive(slide)} aria-label={t('heroSlides.form.active')}>
                       {slide.is_active ? (
                         <Check className="h-4 w-4 text-green-600" />
                       ) : (
@@ -303,16 +315,17 @@ export default function AdminHeroSlidesPage() {
                       )}
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button variant="ghost" size="icon" onClick={() => startEdit(slide)}>
+                  <td className={cn('px-4 py-3', actionsAlign)}>
+                    <Button variant="ghost" size="icon" onClick={() => startEdit(slide)} aria-label={t('common.edit')}>
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => {
-                        if (confirm('Delete this slide?')) deleteSlide.mutate(slide.id);
+                        if (confirm(t('heroSlides.deleteConfirm'))) deleteSlide.mutate(slide.id);
                       }}
+                      aria-label={t('common.delete')}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
