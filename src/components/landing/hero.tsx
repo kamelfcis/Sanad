@@ -19,6 +19,7 @@ import { SlideUp, SlideUpView } from '@/components/animations';
 import { colors } from '@/lib/design-system';
 import { useHeroSlides } from '@/hooks/use-hero-slides';
 import { getCategoryIcon } from '@/lib/icons/category-icons';
+import { cn } from '@/lib/utils/cn';
 
 const features = [
   { icon: Users, label: 'فنيون معتمدون', color: colors.primary },
@@ -35,7 +36,8 @@ const partners = [
 ];
 
 export function HeroSection() {
-  const { slides: heroImages } = useHeroSlides();
+  const { slides: heroImages, isLoading } = useHeroSlides();
+  const showCarousel = !isLoading && heroImages.length > 0;
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -62,14 +64,17 @@ export function HeroSection() {
     setIsAutoPlaying(false);
   };
 
-  if (heroImages.length === 0) return null;
-
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-background to-surface pt-16 md:pt-[72px] lg:pt-20">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] dark:opacity-30" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 pb-16 pt-8 md:px-12 lg:px-20 lg:pb-20 lg:pt-16">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div
+          className={cn(
+            'grid items-center gap-12',
+            showCarousel && 'lg:grid-cols-2 lg:gap-16',
+          )}
+        >
           <div>
             <SlideUp className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5">
               <Shield className="h-4 w-4 text-primary" />
@@ -151,6 +156,7 @@ export function HeroSection() {
             <HeroTrustBadges />
           </div>
 
+          {showCarousel && (
           <SlideUpView delay={0.2} className="relative" data-testid="hero-carousel">
             <div className="relative h-[400px] md:h-[500px] lg:h-[550px]">
               <AnimatePresence mode="wait">
@@ -253,6 +259,7 @@ export function HeroSection() {
               </div>
             </div>
           </SlideUpView>
+          )}
         </div>
       </div>
 

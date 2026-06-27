@@ -1,8 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import type { HeroSlide } from '@/lib/hero-slides/types';
-import { DEFAULT_HERO_SLIDES } from '@/lib/hero-slides/defaults';
+import type { HeroSlide, HeroSlideDisplay } from '@/lib/hero-slides/types';
 import { mapHeroSlideToDisplay } from '@/lib/hero-slides/queries';
 
 async function fetchHeroSlides(): Promise<HeroSlide[]> {
@@ -18,14 +17,11 @@ export function useHeroSlides() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const slides =
-    query.data && query.data.length > 0
-      ? query.data.map(mapHeroSlideToDisplay)
-      : DEFAULT_HERO_SLIDES;
+  const slides: HeroSlideDisplay[] =
+    query.data?.map((slide, index) => mapHeroSlideToDisplay(slide, index)) ?? [];
 
   return {
     ...query,
     slides,
-    isUsingDefaults: !query.data?.length,
   };
 }
