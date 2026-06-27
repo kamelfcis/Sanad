@@ -44,6 +44,7 @@ import { AdminPagination } from '@/components/admin/admin-pagination';
 import { Plus, Wrench, Pencil, Trash2, X, Check } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { useAdminListPagination } from '@/hooks/use-admin-list-pagination';
+import { asAdminListItems } from '@/lib/admin/list-items';
 import { cn } from '@/lib/utils/cn';
 
 function ServiceActiveIcon({ isActive }: { isActive: boolean }) {
@@ -213,7 +214,7 @@ export default function AdminServicesPage() {
   const { t, dir, locale, formatCurrency } = useAdminT();
   const { page, limit, setPage, setLimit } = useAdminListPagination();
   const { data, isLoading } = useAdminServices(page, limit);
-  const services = data?.services;
+  const services = asAdminListItems(data, 'services');
   const { data: categories } = useCategories();
   const createService = useAdminCreateService();
   const updateService = useAdminUpdateService();

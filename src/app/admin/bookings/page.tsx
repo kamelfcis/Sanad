@@ -31,6 +31,7 @@ import { AdminPagination } from '@/components/admin/admin-pagination';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 import { useAdminListPagination } from '@/hooks/use-admin-list-pagination';
+import { asAdminListItems } from '@/lib/admin/list-items';
 
 type BookingRow = NonNullable<
   ReturnType<typeof useAdminBookings>['data']
@@ -183,7 +184,7 @@ export default function AdminBookingsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const { page, limit, setPage, setLimit, resetPage } = useAdminListPagination();
   const { data, isLoading, error } = useAdminBookings(statusFilter || undefined, page, limit);
-  const bookings = data?.bookings;
+  const bookings = asAdminListItems(data, 'bookings');
 
   const statusFilters = [
     { label: t('bookings.filters.all'), value: '' },

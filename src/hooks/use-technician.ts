@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { asAdminListItems } from '@/lib/admin/list-items';
 
 interface TechProfile {
   id: string;
@@ -249,10 +250,43 @@ interface AdminTechnician {
   };
 }
 
+type AdminTechniciansApiRow = Omit<AdminTechnician, 'profile'> & {
+  full_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  avatar_url?: string | null;
+  profile?: AdminTechnician['profile'];
+};
+
 async function fetchAdminTechnicians(): Promise<AdminTechnician[]> {
-  const res = await fetch('/api/admin/technicians');
+  const params = new URLSearchParams({ limit: '100', status: 'verified' });
+  const res = await fetch(`/api/admin/technicians?${params}`);
   if (!res.ok) throw new Error('Failed to fetch technicians');
-  return res.json();
+
+  const data = await res.json();
+  const rows = asAdminListItems<AdminTechniciansApiRow, 'technicians'>(data, 'technicians');
+
+  return rows.map((row) => ({
+    id: row.id,
+    bio: row.bio,
+    years_experience: row.years_experience,
+    verification_status: row.verification_status,
+    is_available: row.is_available,
+    max_distance_km: row.max_distance_km,
+    completed_jobs: row.completed_jobs,
+    average_rating: row.average_rating,
+    total_ratings: row.total_ratings,
+    skills_count: row.skills_count,
+    profile:
+      row.profile ??
+      ({
+        id: row.id,
+        full_name: row.full_name ?? null,
+        email: row.email ?? null,
+        phone: row.phone ?? null,
+        avatar_url: row.avatar_url ?? null,
+      } satisfies AdminTechnician['profile']),
+  }));
 }
 
 async function adminAssignTechnician(bookingId: string, technicianId: string) {

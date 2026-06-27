@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Search, User } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { asAdminListItems } from '@/lib/admin/list-items';
 import { cn } from '@/lib/utils/cn';
 
 interface AssignTechnicianSheetProps {
@@ -18,13 +19,14 @@ interface AssignTechnicianSheetProps {
 
 export function AssignTechnicianSheet({ bookingId, open, onOpenChange }: AssignTechnicianSheetProps) {
   const { t, dir } = useAdminT();
-  const { data: technicians, isLoading } = useAdminTechnicians();
+  const { data, isLoading } = useAdminTechnicians();
+  const technicians = asAdminListItems(data, 'technicians');
   const assignMutation = useAdminAssignTechnician();
   const [searchQuery, setSearchQuery] = useState('');
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const isRtl = dir === 'rtl';
 
-  const filteredTechnicians = technicians?.filter((tech) => {
+  const filteredTechnicians = technicians.filter((tech) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     const name = tech.profile.full_name?.toLowerCase() ?? '';
@@ -78,7 +80,7 @@ export function AssignTechnicianSheet({ bookingId, open, onOpenChange }: AssignT
                 </div>
               ))}
             </div>
-          ) : filteredTechnicians?.length === 0 ? (
+          ) : filteredTechnicians.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-12 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                 <User className="h-6 w-6 text-muted-foreground" />
@@ -94,7 +96,7 @@ export function AssignTechnicianSheet({ bookingId, open, onOpenChange }: AssignT
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredTechnicians?.map((tech) => (
+              {filteredTechnicians.map((tech) => (
                 <TechnicianMatchCard
                   key={tech.id}
                   technician={tech}
