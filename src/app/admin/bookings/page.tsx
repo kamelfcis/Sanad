@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAdminBookings } from '@/hooks/use-admin';
 import { BookingStatus } from '@/components/shared/booking-status';
-import { ClipboardList } from 'lucide-react';
+import { Calendar, ClipboardList, Clock, Eye } from 'lucide-react';
 import {
   AdminPremiumTable,
   AdminPremiumTableBody,
@@ -16,7 +16,13 @@ import {
   AdminEmptyState,
   AdminEntityCard,
   AdminEntityCardActions,
-  AdminEntityCardField,
+  AdminEntityCardActionsGroup,
+  AdminEntityCardHeader,
+  AdminEntityCardInfoBox,
+  AdminEntityCardInfoRow,
+  AdminEntityCardMeta,
+  AdminEntityCardMetaPill,
+  AdminEntityCardPrimaryAction,
   AdminFilterPills,
   AdminTableActionLink,
 } from '@/components/admin/admin-list-chrome';
@@ -25,6 +31,50 @@ import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 
 type BookingRow = NonNullable<ReturnType<typeof useAdminBookings>['data']>[number];
+
+function bookingStatusVariant(
+  status: string,
+): 'success' | 'warning' | 'danger' | 'muted' | 'orange' {
+  switch (status) {
+    case 'completed':
+      return 'success';
+    case 'pending':
+      return 'warning';
+    case 'cancelled':
+    case 'disputed':
+      return 'danger';
+    case 'in_progress':
+    case 'matched':
+    case 'accepted':
+      return 'orange';
+    default:
+      return 'muted';
+  }
+}
+
+function bookingStatusLabel(status: string, t: ReturnType<typeof useAdminT>['t']): string {
+  const key = `bookingStatus.${status}`;
+  const translated = t(key);
+  return translated === key ? status : translated;
+}
+
+function BookingStatusPill({
+  status,
+  t,
+}: {
+  status: string;
+  t: ReturnType<typeof useAdminT>['t'];
+}) {
+  return (
+    <AdminEntityCardMetaPill variant={bookingStatusVariant(status)}>
+      {bookingStatusLabel(status, t)}
+    </AdminEntityCardMetaPill>
+  );
+}
+
+function bookingCustomerName(booking: BookingRow, t: ReturnType<typeof useAdminT>['t']): string {
+  return booking.customer?.full_name ?? t('customers.unnamed');
+}
 
 function BookingServiceDisplay({
   booking,
@@ -70,41 +120,62 @@ function BookingCard({
   booking,
   t,
   formatDateTime,
+  formatCurrency,
 }: {
   booking: BookingRow;
   t: ReturnType<typeof useAdminT>['t'];
   formatDateTime: ReturnType<typeof useAdminT>['formatDateTime'];
+  formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
 }) {
+  const customerName = bookingCustomerName(booking, t);
+  const scheduledAt = booking.preferred_time ?? booking.created_at;
+
   return (
     <AdminEntityCard>
-      <AdminEntityCardField label={t('tables.service')}>
-        <BookingServiceDisplay booking={booking} t={t} />
-      </AdminEntityCardField>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <AdminEntityCardField label={t('tables.customer')}>
-          <BookingCustomerDisplay booking={booking} />
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.technician')}>
-          <BookingTechnicianDisplay booking={booking} t={t} />
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.status')}>
-          <BookingStatus status={booking.status} context="admin" />
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.date')}>
-          <span className="text-[#64748B]">{formatDateTime(booking.created_at)}</span>
-        </AdminEntityCardField>
-      </div>
+      <AdminEntityCardHeader
+        title={customerName}
+        subtitle={t('bookings.card.subtitle')}
+        badge={<BookingStatusPill status={booking.status} t={t} />}
+      />
+
+      <AdminEntityCardInfoBox className="mt-4">
+        <AdminEntityCardInfoRow label={t('tables.service')} fullWidth>
+          <BookingServiceDisplay booking={booking} t={t} />
+        </AdminEntityCardInfoRow>
+        <AdminEntityCardInfoRow label={t('tables.amount')}>
+          <span className="font-semibold tabular-nums">
+            {booking.price_quote != null && Number(booking.price_quote) > 0
+              ? formatCurrency(Number(booking.price_quote))
+              : t('common.dash')}
+          </span>
+        </AdminEntityCardInfoRow>
+      </AdminEntityCardInfoBox>
+
+      <AdminEntityCardMeta className="mt-3">
+        <AdminEntityCardMetaPill variant="muted">
+          <Calendar className="h-3 w-3 shrink-0" aria-hidden />
+          {formatDateTime(scheduledAt)}
+        </AdminEntityCardMetaPill>
+        {booking.preferred_time ? (
+          <AdminEntityCardMetaPill variant="orange">
+            <Clock className="h-3 w-3 shrink-0" aria-hidden />
+            {t('bookings.card.preferredTime')}
+          </AdminEntityCardMetaPill>
+        ) : null}
+      </AdminEntityCardMeta>
+
       <AdminEntityCardActions>
-        <AdminTableActionLink href={`/admin/bookings/${booking.id}`}>
+        <AdminEntityCardActionsGroup />
+        <AdminEntityCardPrimaryAction href={`/admin/bookings/${booking.id}`} icon={Eye}>
           {t('common.view')}
-        </AdminTableActionLink>
+        </AdminEntityCardPrimaryAction>
       </AdminEntityCardActions>
     </AdminEntityCard>
   );
 }
 
 export default function AdminBookingsPage() {
-  const { t, formatDateTime } = useAdminT();
+  const { t, formatDateTime, formatCurrency } = useAdminT();
   const [statusFilter, setStatusFilter] = useState('');
   const { data: bookings, isLoading, error } = useAdminBookings(statusFilter || undefined);
 
@@ -182,7 +253,13 @@ export default function AdminBookingsPage() {
       }
       cards={
         bookings?.map((b) => (
-          <BookingCard key={b.id} booking={b} t={t} formatDateTime={formatDateTime} />
+          <BookingCard
+            key={b.id}
+            booking={b}
+            t={t}
+            formatDateTime={formatDateTime}
+            formatCurrency={formatCurrency}
+          />
         )) ?? null
       }
     />

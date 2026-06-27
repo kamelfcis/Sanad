@@ -12,16 +12,33 @@
     "payments": "Payments",
     "auditLogs": "Audit Logs",
     "settings": "Settings",
-    "backToSite": "Back to site"
+    "backToSite": "Back to site",
+    "sections": {
+      "overview": "Overview",
+      "operations": "Operations",
+      "catalog": "Catalog",
+      "system": "System"
+    }
   },
   "header": {
     "languageToggle": "Switch language",
     "english": "English",
-    "arabic": "العربية"
+    "arabic": "العربية",
+    "adminPanel": "Admin panel",
+    "searchPlaceholder": "Search admin…",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "dashboard": {
     "title": "Admin Dashboard",
     "subtitle": "Platform overview and analytics.",
+    "eyebrow": "Overview",
+    "heroMetrics": "Key performance",
+    "heroMetricsDesc": "Revenue, bookings, and platform health at a glance.",
+    "kpiDesc": "Users, catalog, and payment pipeline.",
+    "trendStable": "Stable",
     "loadError": "Failed to load dashboard data.",
     "stats": {
       "totalTechnicians": "Total Technicians",
@@ -53,7 +70,12 @@
     "viewAllActivity": "View all audit logs",
     "shortcuts": {
       "title": "Quick shortcuts",
+      "desc": "Jump to any admin section.",
       "pendingCount": "{{count}} pending"
+    },
+    "charts": {
+      "bookingsDesc": "Daily booking volume over the last week.",
+      "revenueDesc": "Approved payment totals by month."
     }
   },
   "charts": {
@@ -77,6 +99,10 @@
       "title": "No bookings found",
       "withStatus": "No bookings with status \"{{status}}\".",
       "none": "No bookings have been created yet."
+    },
+    "card": {
+      "subtitle": "Service request",
+      "preferredTime": "Preferred time"
     },
     "detail": {
       "notFound": "Booking not found",
@@ -117,6 +143,9 @@
     "searchPlaceholder": "Search customers...",
     "empty": "No customers found",
     "unnamed": "Unnamed",
+    "card": {
+      "subtitle": "Registered customer"
+    },
     "detail": {
       "notFound": "Customer not found",
       "back": "Back to customers",
@@ -137,6 +166,9 @@
     "empty": {
       "title": "No technicians found",
       "subtitle": "No technicians match your search."
+    },
+    "card": {
+      "subtitle": "Service technician"
     },
     "detail": {
       "notFound": "Technician not found",
@@ -200,6 +232,9 @@
       "subtitle": "Create your first service to get started."
     },
     "deleteConfirm": "Delete this service?",
+    "card": {
+      "subtitle": "Service offering"
+    },
     "form": {
       "nameAr": "Name (Arabic)",
       "nameEn": "Name (English)",
@@ -282,6 +317,8 @@
     "new": "New Slide",
     "empty": "No hero slides",
     "deleteConfirm": "Delete this slide?",
+    "moveUp": "Move slide up",
+    "moveDown": "Move slide down",
     "form": {
       "slideImage": "Slide Image",
       "pasteUrl": "Or paste image URL",
@@ -430,6 +467,7 @@
     "goToPage": "Go to page {{page}}",
     "pageOf": "Page {{page}} of {{totalPages}} ({{total}} total)",
     "active": "Active",
+    "inactive": "Inactive",
     "confirm": "Confirm"
   },
   "tables": {

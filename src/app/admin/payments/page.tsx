@@ -11,7 +11,6 @@ import type { AdminPayment, PaymentStatus } from '@/types/payments';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   AdminPremiumTable,
   AdminPremiumTableBody,
@@ -23,29 +22,22 @@ import {
 import {
   AdminEmptyState,
   AdminEntityCard,
+  AdminEntityCardActions,
+  AdminEntityCardActionsGroup,
+  AdminEntityCardHeader,
+  AdminEntityCardInfoBox,
+  AdminEntityCardInfoRow,
+  AdminEntityCardMeta,
+  AdminEntityCardMetaPill,
+  AdminEntityCardPrimaryAction,
+  AdminEntityCardTagPill,
   AdminFilterPills,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
-import { Banknote, ExternalLink } from 'lucide-react';
+import { Banknote, ExternalLink, Calendar } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
-
-function PaymentMethodLabel({
-  method,
-  t,
-}: {
-  method: string;
-  t: ReturnType<typeof useAdminT>['t'];
-}) {
-  return (
-    <Badge variant="outline">
-      {method === 'instapay'
-        ? t('payments.methods.instapay')
-        : t('payments.methods.vodafoneCash')}
-    </Badge>
-  );
-}
 
 function PaymentActions({
   payment,
@@ -142,45 +134,64 @@ function PaymentCard({
   formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
 }) {
   return (
-    <AdminEntityCard className="text-start">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-            <span className="font-medium text-[#0F172A]">
-              {payment.customer?.full_name ?? t('payments.customer')}
-            </span>
-            <PaymentMethodLabel method={payment.payment_method} t={t} />
-            <PaymentStatusBadge status={payment.status} context="admin" />
-          </div>
-          <p className="text-sm text-[#64748B]">
-            {payment.booking?.services?.name_ar ?? t('payments.booking')} ·{' '}
-            {formatCurrency(Number(payment.amount))}
-          </p>
-          <p className="text-xs text-[#94A3B8]">{formatDateTime(payment.created_at)}</p>
-          {payment.rejection_reason ? (
-            <p className="text-xs text-destructive">
-              {t('payments.reason', { reason: payment.rejection_reason })}
-            </p>
-          ) : null}
-          <a
-            href={payment.screenshot_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-[#FF6B00] underline"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            {t('payments.viewScreenshot')}
-          </a>
-        </div>
-        <PaymentActions
-          payment={payment}
-          onApprove={onApprove}
-          onReject={onReject}
-          isApproving={isApproving}
-          isRejecting={isRejecting}
-          t={t}
-        />
-      </div>
+    <AdminEntityCard>
+      <AdminEntityCardHeader
+        title={payment.customer?.full_name ?? t('payments.customer')}
+        subtitle={formatCurrency(Number(payment.amount))}
+        badge={<PaymentStatusBadge status={payment.status} context="admin" />}
+      />
+
+      <AdminEntityCardMeta className="mt-3">
+        <AdminEntityCardTagPill>
+          {payment.payment_method === 'instapay'
+            ? t('payments.methods.instapay')
+            : t('payments.methods.vodafoneCash')}
+        </AdminEntityCardTagPill>
+      </AdminEntityCardMeta>
+
+      <AdminEntityCardInfoBox className="mt-4">
+        <AdminEntityCardInfoRow label={t('tables.service')} fullWidth>
+          <span className="text-[#64748B]">
+            {payment.booking?.services?.name_ar ?? t('payments.booking')}
+          </span>
+        </AdminEntityCardInfoRow>
+        {payment.rejection_reason ? (
+          <AdminEntityCardInfoRow label={t('payments.rejectionReason')} fullWidth>
+            <span className="text-destructive">{payment.rejection_reason}</span>
+          </AdminEntityCardInfoRow>
+        ) : null}
+      </AdminEntityCardInfoBox>
+
+      <AdminEntityCardMeta className="mt-3">
+        <AdminEntityCardMetaPill variant="muted">
+          <Calendar className="h-3 w-3 shrink-0" aria-hidden />
+          {formatDateTime(payment.created_at)}
+        </AdminEntityCardMetaPill>
+        <AdminEntityCardPrimaryAction
+          href={payment.screenshot_url}
+          icon={ExternalLink}
+          ariaLabel={t('payments.viewScreenshot')}
+          external
+          className="px-3 py-1 text-xs"
+        >
+          {t('payments.viewScreenshot')}
+        </AdminEntityCardPrimaryAction>
+      </AdminEntityCardMeta>
+
+      {payment.status === 'pending' ? (
+        <AdminEntityCardActions>
+          <AdminEntityCardActionsGroup>
+            <PaymentActions
+              payment={payment}
+              onApprove={onApprove}
+              onReject={onReject}
+              isApproving={isApproving}
+              isRejecting={isRejecting}
+              t={t}
+            />
+          </AdminEntityCardActionsGroup>
+        </AdminEntityCardActions>
+      ) : null}
     </AdminEntityCard>
   );
 }

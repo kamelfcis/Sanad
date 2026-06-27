@@ -27,7 +27,15 @@ import {
   AdminEmptyState,
   AdminEntityCard,
   AdminEntityCardActions,
-  AdminEntityCardField,
+  AdminEntityCardActionsGroup,
+  AdminEntityCardHeader,
+  AdminEntityCardIconButton,
+  AdminEntityCardInfoBox,
+  AdminEntityCardInfoRow,
+  AdminEntityCardMeta,
+  AdminEntityCardMetaPill,
+  AdminEntityCardPrimaryAction,
+  AdminEntityCardTagPill,
   adminActionButtonClass,
   adminActionButtonDestructiveClass,
 } from '@/components/admin/admin-list-chrome';
@@ -98,9 +106,49 @@ function ServiceRowActions({
   );
 }
 
+function serviceCategoryName(
+  category: { name_ar?: string; name_en?: string } | null | undefined,
+  locale: ReturnType<typeof useAdminT>['locale'],
+): string | null {
+  if (!category) return null;
+  return locale === 'ar' ? (category.name_ar ?? category.name_en ?? null) : (category.name_en ?? category.name_ar ?? null);
+}
+
+function ServiceCardActions({
+  service,
+  onEdit,
+  onDelete,
+  t,
+}: {
+  service: any;
+  onEdit: (service: any) => void;
+  onDelete: (id: string) => void;
+  t: ReturnType<typeof useAdminT>['t'];
+}) {
+  return (
+    <>
+      <AdminEntityCardIconButton
+        icon={Pencil}
+        label={t('common.edit')}
+        variant="edit"
+        onClick={() => onEdit(service)}
+      />
+      <AdminEntityCardIconButton
+        icon={Trash2}
+        label={t('common.delete')}
+        variant="destructive"
+        onClick={() => {
+          if (confirm(t('services.deleteConfirm'))) onDelete(service.id);
+        }}
+      />
+    </>
+  );
+}
+
 function ServiceCard({
   service,
   t,
+  locale,
   priceTypeLabel,
   formatCurrency,
   onEdit,
@@ -108,45 +156,59 @@ function ServiceCard({
 }: {
   service: any;
   t: ReturnType<typeof useAdminT>['t'];
+  locale: ReturnType<typeof useAdminT>['locale'];
   priceTypeLabel: (type: string) => string;
   formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
   onEdit: (service: any) => void;
   onDelete: (id: string) => void;
 }) {
+  const categoryLabel = serviceCategoryName(service.service_categories, locale);
+
   return (
     <AdminEntityCard>
-      <AdminEntityCardField label={t('tables.nameAr')}>
-        <span className="font-medium text-[#0F172A]" dir="auto">
-          {service.name_ar}
-        </span>
-      </AdminEntityCardField>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <AdminEntityCardField label={t('tables.nameEn')}>
-          <span className="text-[#64748B]">{service.name_en}</span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.category')}>
-          <span className="text-[#64748B]">
-            {service.service_categories?.name_en ?? t('common.dash')}
+      <AdminEntityCardHeader
+        title={<span dir="auto">{service.name_ar}</span>}
+        subtitle={service.name_en ?? t('services.card.subtitle')}
+        badge={
+          <AdminEntityCardMetaPill variant={service.is_active ? 'success' : 'danger'}>
+            {service.is_active ? t('common.active') : t('common.inactive')}
+          </AdminEntityCardMetaPill>
+        }
+      />
+
+      {categoryLabel ? (
+        <AdminEntityCardMeta className="mt-3">
+          <AdminEntityCardTagPill>{categoryLabel}</AdminEntityCardTagPill>
+        </AdminEntityCardMeta>
+      ) : null}
+
+      <AdminEntityCardInfoBox className="mt-4" columns={1}>
+        <AdminEntityCardInfoRow label={t('tables.price')}>
+          <span className="font-semibold">
+            <ServicePriceDisplay
+              service={service}
+              priceTypeLabel={priceTypeLabel}
+              t={t}
+              formatCurrency={formatCurrency}
+            />
           </span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.price')}>
-          <span className="text-[#0F172A]">
-            <ServicePriceDisplay service={service} priceTypeLabel={priceTypeLabel} t={t} formatCurrency={formatCurrency} />
-          </span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('common.active')}>
-          <ServiceActiveIcon isActive={service.is_active} />
-        </AdminEntityCardField>
-      </div>
+        </AdminEntityCardInfoRow>
+      </AdminEntityCardInfoBox>
+
       <AdminEntityCardActions>
-        <ServiceRowActions service={service} onEdit={onEdit} onDelete={onDelete} t={t} />
+        <AdminEntityCardActionsGroup>
+          <ServiceCardActions service={service} onEdit={onEdit} onDelete={onDelete} t={t} />
+        </AdminEntityCardActionsGroup>
+        <AdminEntityCardPrimaryAction icon={Pencil} onClick={() => onEdit(service)}>
+          {t('common.edit')}
+        </AdminEntityCardPrimaryAction>
       </AdminEntityCardActions>
     </AdminEntityCard>
   );
 }
 
 export default function AdminServicesPage() {
-  const { t, dir, formatCurrency } = useAdminT();
+  const { t, dir, locale, formatCurrency } = useAdminT();
   const { data: services, isLoading } = useAdminServices();
   const { data: categories } = useCategories();
   const createService = useAdminCreateService();
@@ -379,6 +441,7 @@ export default function AdminServicesPage() {
             key={s.id}
             service={s}
             t={t}
+            locale={locale}
             priceTypeLabel={priceTypeLabel}
             formatCurrency={formatCurrency}
             onEdit={startEdit}

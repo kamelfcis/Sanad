@@ -26,7 +26,12 @@ import {
   AdminEmptyState,
   AdminEntityCard,
   AdminEntityCardActions,
-  AdminEntityCardField,
+  AdminEntityCardActionsGroup,
+  AdminEntityCardAvatar,
+  AdminEntityCardHeader,
+  AdminEntityCardIconButton,
+  AdminEntityCardInfoBox,
+  AdminEntityCardInfoRow,
   adminActionButtonClass,
   adminActionButtonDestructiveClass,
 } from '@/components/admin/admin-list-chrome';
@@ -78,6 +83,53 @@ function CategoryRowActions({
   );
 }
 
+function CategoryActiveBadge({ isActive, t }: { isActive: boolean; t: ReturnType<typeof useAdminT>['t'] }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium',
+        isActive
+          ? 'border-emerald-200/80 bg-emerald-50 text-emerald-700'
+          : 'border-red-200/80 bg-red-50 text-red-700',
+      )}
+    >
+      {isActive ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+      {isActive ? t('common.active') : t('common.inactive')}
+    </span>
+  );
+}
+
+function CategoryCardActions({
+  category,
+  onEdit,
+  onDelete,
+  t,
+}: {
+  category: any;
+  onEdit: (category: any) => void;
+  onDelete: (id: string) => void;
+  t: ReturnType<typeof useAdminT>['t'];
+}) {
+  return (
+    <>
+      <AdminEntityCardIconButton
+        icon={Pencil}
+        label={t('common.edit')}
+        variant="edit"
+        onClick={() => onEdit(category)}
+      />
+      <AdminEntityCardIconButton
+        icon={Trash2}
+        label={t('common.delete')}
+        variant="destructive"
+        onClick={() => {
+          if (confirm(t('categories.deleteConfirm'))) onDelete(category.id);
+        }}
+      />
+    </>
+  );
+}
+
 function CategoryCard({
   category,
   t,
@@ -91,29 +143,35 @@ function CategoryCard({
 }) {
   return (
     <AdminEntityCard>
-      <div className="flex items-center justify-center gap-2 sm:justify-start">
-        <span className="text-2xl">{category.icon ?? '📁'}</span>
-        <AdminEntityCardField label={t('tables.nameAr')} className="flex-1 text-start">
-          <span className="font-medium text-[#0F172A]" dir="auto">
-            {category.name_ar}
-          </span>
-        </AdminEntityCardField>
-      </div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <AdminEntityCardField label={t('tables.nameEn')}>
-          <span className="text-[#64748B]">{category.name_en}</span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.slug')}>
-          <span className="text-[#64748B]" dir="ltr">
+      <AdminEntityCardHeader
+        title={
+          <span dir="auto">{category.name_ar}</span>
+        }
+        subtitle={category.name_en}
+        avatar={
+          <AdminEntityCardAvatar
+            fallback={<span className="text-xl leading-none">{category.icon ?? '📁'}</span>}
+            className="text-xl"
+          />
+        }
+        badge={<CategoryActiveBadge isActive={category.is_active} t={t} />}
+      />
+
+      <AdminEntityCardInfoBox className="mt-4">
+        <AdminEntityCardInfoRow label={t('tables.slug')}>
+          <span className="font-mono text-sm text-[#64748B]" dir="ltr">
             {category.slug}
           </span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('common.active')}>
-          <CategoryActiveIcon isActive={category.is_active} />
-        </AdminEntityCardField>
-      </div>
+        </AdminEntityCardInfoRow>
+        <AdminEntityCardInfoRow label={t('tables.nameEn')}>
+          <span className="text-[#64748B]">{category.name_en}</span>
+        </AdminEntityCardInfoRow>
+      </AdminEntityCardInfoBox>
+
       <AdminEntityCardActions>
-        <CategoryRowActions category={category} onEdit={onEdit} onDelete={onDelete} t={t} />
+        <AdminEntityCardActionsGroup>
+          <CategoryCardActions category={category} onEdit={onEdit} onDelete={onDelete} t={t} />
+        </AdminEntityCardActionsGroup>
       </AdminEntityCardActions>
     </AdminEntityCard>
   );

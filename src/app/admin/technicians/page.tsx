@@ -15,13 +15,20 @@ import {
   AdminEmptyState,
   AdminEntityCard,
   AdminEntityCardActions,
-  AdminEntityCardField,
+  AdminEntityCardActionsGroup,
+  AdminEntityCardAvatar,
+  AdminEntityCardHeader,
+  AdminEntityCardInfoBox,
+  AdminEntityCardInfoRow,
+  AdminEntityCardMeta,
+  AdminEntityCardMetaPill,
+  AdminEntityCardPrimaryAction,
   AdminSearchInput,
   AdminTableActionLink,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
-import { Users } from 'lucide-react';
+import { Calendar, Eye, Users } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 import { cn } from '@/lib/utils/cn';
@@ -51,6 +58,16 @@ function TechnicianStatusBadge({
   );
 }
 
+function technicianInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 function TechnicianCard({
   tech,
   t,
@@ -62,47 +79,63 @@ function TechnicianCard({
   formatDate: ReturnType<typeof useAdminT>['formatDate'];
   statusLabel: (status: string) => string;
 }) {
+  const name = tech.full_name ?? t('customers.unnamed');
+
   return (
     <AdminEntityCard>
-      <AdminEntityCardField label={t('tables.name')}>
-        <span className="font-medium text-[#0F172A]">
-          {tech.full_name ?? t('customers.unnamed')}
-        </span>
-      </AdminEntityCardField>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <AdminEntityCardField label={t('tables.email')}>
-          <span className="text-[#64748B]" dir="ltr">
-            {tech.email ?? t('common.dash')}
-          </span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.status')}>
+      <AdminEntityCardHeader
+        title={name}
+        subtitle={t('technicians.card.subtitle')}
+        avatar={
+          <AdminEntityCardAvatar
+            src={tech.avatar_url}
+            alt={name}
+            fallback={technicianInitials(name)}
+          />
+        }
+        badge={
           <TechnicianStatusBadge
             status={tech.verification_status}
             label={statusLabel(tech.verification_status)}
           />
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.jobs')}>
-          <span className="font-medium tabular-nums text-[#0F172A]">
-            {tech.completed_jobs ?? 0}
+        }
+      />
+
+      <AdminEntityCardInfoBox className="mt-4">
+        <AdminEntityCardInfoRow label={t('tables.email')}>
+          <span className="text-[#64748B]" dir="ltr">
+            {tech.email ?? t('common.dash')}
           </span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.rating')}>
+        </AdminEntityCardInfoRow>
+        <AdminEntityCardInfoRow label={t('tables.phone')}>
+          <span className="text-[#64748B]" dir="ltr">
+            {tech.phone ?? t('common.dash')}
+          </span>
+        </AdminEntityCardInfoRow>
+        <AdminEntityCardInfoRow label={t('tables.jobs')}>
+          <span className="font-semibold tabular-nums">{tech.completed_jobs ?? 0}</span>
+        </AdminEntityCardInfoRow>
+        <AdminEntityCardInfoRow label={t('tables.rating')}>
           <span className="text-[#64748B]">
             {tech.average_rating
               ? `${Number(tech.average_rating).toFixed(1)}★`
               : t('common.dash')}
           </span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.joined')}>
-          <span className="text-[#64748B]">
-            {tech.created_at ? formatDate(tech.created_at) : t('common.dash')}
-          </span>
-        </AdminEntityCardField>
-      </div>
+        </AdminEntityCardInfoRow>
+      </AdminEntityCardInfoBox>
+
+      <AdminEntityCardMeta className="mt-3">
+        <AdminEntityCardMetaPill variant="muted">
+          <Calendar className="h-3 w-3 shrink-0" aria-hidden />
+          {tech.created_at ? formatDate(tech.created_at) : t('common.dash')}
+        </AdminEntityCardMetaPill>
+      </AdminEntityCardMeta>
+
       <AdminEntityCardActions>
-        <AdminTableActionLink href={`/admin/technicians/${tech.id}`}>
+        <AdminEntityCardActionsGroup />
+        <AdminEntityCardPrimaryAction href={`/admin/technicians/${tech.id}`} icon={Eye}>
           {t('common.view')}
-        </AdminTableActionLink>
+        </AdminEntityCardPrimaryAction>
       </AdminEntityCardActions>
     </AdminEntityCard>
   );

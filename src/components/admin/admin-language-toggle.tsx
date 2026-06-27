@@ -9,7 +9,7 @@ export function AdminLanguageToggle() {
 
   return (
     <div
-      className="flex items-center gap-1 rounded-lg border border-[#E2E8F0] bg-white p-0.5 text-xs font-medium"
+      className="inline-flex items-center rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-0.5 text-[11px] font-semibold"
       role="group"
       aria-label={t('header.languageToggle')}
       data-testid="admin-language-toggle"
@@ -18,26 +18,25 @@ export function AdminLanguageToggle() {
         type="button"
         onClick={() => setLocale('en')}
         className={cn(
-          'rounded-md px-2.5 py-1 transition-colors',
+          'rounded-md px-2.5 py-1 transition-all',
           locale === 'en'
-            ? 'bg-[#FF6B00] text-white'
-            : 'text-[#64748B] hover:text-[#0F172A]',
+            ? 'bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/80'
+            : 'text-zinc-500 hover:text-zinc-800',
         )}
       >
-        🌐 {t('header.english')}
+        EN
       </button>
-      <span className="text-[#CBD5E1]">|</span>
       <button
         type="button"
         onClick={() => setLocale('ar' as AdminLocale)}
         className={cn(
-          'rounded-md px-2.5 py-1 transition-colors',
+          'rounded-md px-2.5 py-1 transition-all',
           locale === 'ar'
-            ? 'bg-[#FF6B00] text-white'
-            : 'text-[#64748B] hover:text-[#0F172A]',
+            ? 'bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/80'
+            : 'text-zinc-500 hover:text-zinc-800',
         )}
       >
-        {t('header.arabic')}
+        ع
       </button>
     </div>
   );

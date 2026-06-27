@@ -14,15 +14,19 @@ import {
 import {
   AdminEmptyState,
   AdminEntityCard,
+  AdminEntityCardHeader,
+  AdminEntityCardInfoBox,
+  AdminEntityCardMeta,
+  AdminEntityCardMetaPill,
+  AdminEntityCardTagPill,
   AdminFilterPills,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
 import { AdminAuditLogDetails, type MetadataValue } from '@/components/admin/admin-audit-log-details';
-import { History } from 'lucide-react';
+import { History, Calendar } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
-import { cn } from '@/lib/utils/cn';
 
 const entityFilters = ['', 'booking', 'technician', 'customer', 'service', 'category', 'review'] as const;
 
@@ -53,35 +57,6 @@ function useAuditLogLabels(t: ReturnType<typeof useAdminT>['t']) {
   return { actionLabel, entityLabel };
 }
 
-function AuditLogSummary({
-  log,
-  t,
-  entityLabel,
-}: {
-  log: AuditLogEntry;
-  t: ReturnType<typeof useAdminT>['t'];
-  entityLabel: (type: string) => string;
-}) {
-  return (
-    <p className="text-sm leading-relaxed text-[#0F172A]">
-      <span className="font-semibold text-[#FF6B00]">
-        {log.admin?.full_name ?? log.admin_id.slice(0, 8)}
-      </span>{' '}
-      <span className="text-[#64748B]">{t('auditLogs.performedOn')}</span>{' '}
-      <span className="inline-flex rounded-md bg-[#F1F5F9] px-1.5 py-0.5 text-xs font-medium capitalize text-[#64748B]">
-        {entityLabel(log.entity_type)}
-      </span>{' '}
-      <code
-        className="rounded-md bg-[#F1F5F9] px-1.5 py-0.5 text-xs font-mono text-[#64748B]"
-        dir="ltr"
-        title={log.entity_id}
-      >
-        {log.entity_id.slice(0, 8)}…
-      </code>
-    </p>
-  );
-}
-
 function AuditLogCard({
   log,
   t,
@@ -96,37 +71,49 @@ function AuditLogCard({
   entityLabel: (type: string) => string;
 }) {
   return (
-    <AdminEntityCard className="text-start">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-        <Badge
-          variant="outline"
-          className="w-fit shrink-0 border-0 bg-[#FF6B00]/10 px-2.5 py-1 text-xs font-semibold capitalize text-[#FF6B00] ring-1 ring-[#FF6B00]/20"
-        >
-          {actionLabel(log.action)}
-        </Badge>
+    <AdminEntityCard>
+      <AdminEntityCardHeader
+        title={actionLabel(log.action)}
+        subtitle={
+          <>
+            <span className="font-semibold text-[#FF6B00]">
+              {log.admin?.full_name ?? log.admin_id.slice(0, 8)}
+            </span>{' '}
+            <span>{t('auditLogs.performedOn')}</span>{' '}
+            <span className="capitalize">{entityLabel(log.entity_type)}</span>
+          </>
+        }
+        badge={
+          <AdminEntityCardMetaPill variant="orange" className="capitalize">
+            {entityLabel(log.entity_type)}
+          </AdminEntityCardMetaPill>
+        }
+      />
 
-        <div className="min-w-0 flex-1">
-          <AuditLogSummary log={log} t={t} entityLabel={entityLabel} />
+      <AdminEntityCardMeta className="mt-3">
+        <AdminEntityCardTagPill>
+          <code className="font-mono text-[11px]" dir="ltr">
+            {log.entity_id.slice(0, 8)}…
+          </code>
+        </AdminEntityCardTagPill>
+      </AdminEntityCardMeta>
 
-          {log.metadata && Object.keys(log.metadata).length > 0 ? (
-            <AdminAuditLogDetails
-              metadata={log.metadata as Record<string, MetadataValue>}
-              entityType={log.entity_type}
-              action={log.action}
-            />
-          ) : null}
-        </div>
+      {log.metadata && Object.keys(log.metadata).length > 0 ? (
+        <AdminEntityCardInfoBox className="mt-4" columns={1}>
+          <AdminAuditLogDetails
+            metadata={log.metadata as Record<string, MetadataValue>}
+            entityType={log.entity_type}
+            action={log.action}
+          />
+        </AdminEntityCardInfoBox>
+      ) : null}
 
-        <time
-          className={cn(
-            'shrink-0 text-xs tabular-nums text-[#94A3B8]',
-            'sm:max-w-[9rem] sm:text-end',
-          )}
-          dateTime={log.created_at}
-        >
-          {formatDateTime(log.created_at)}
-        </time>
-      </div>
+      <AdminEntityCardMeta className="mt-3">
+        <AdminEntityCardMetaPill variant="muted">
+          <Calendar className="h-3 w-3 shrink-0" aria-hidden />
+          <time dateTime={log.created_at}>{formatDateTime(log.created_at)}</time>
+        </AdminEntityCardMetaPill>
+      </AdminEntityCardMeta>
     </AdminEntityCard>
   );
 }

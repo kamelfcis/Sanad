@@ -12,16 +12,33 @@
     "payments": "المدفوعات",
     "auditLogs": "سجل التدقيق",
     "settings": "الإعدادات",
-    "backToSite": "العودة للموقع"
+    "backToSite": "العودة للموقع",
+    "sections": {
+      "overview": "نظرة عامة",
+      "operations": "العمليات",
+      "catalog": "الفهرس",
+      "system": "النظام"
+    }
   },
   "header": {
     "languageToggle": "تبديل اللغة",
     "english": "English",
-    "arabic": "العربية"
+    "arabic": "العربية",
+    "adminPanel": "لوحة الإدارة",
+    "searchPlaceholder": "البحث في الإدارة…",
+    "collapseSidebar": "طي الشريط الجانبي",
+    "expandSidebar": "توسيع الشريط الجانبي",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة"
   },
   "dashboard": {
     "title": "لوحة تحكم الإدارة",
     "subtitle": "نظرة عامة على المنصة والتحليلات.",
+    "eyebrow": "نظرة عامة",
+    "heroMetrics": "مؤشرات الأداء الرئيسية",
+    "heroMetricsDesc": "الإيرادات والحجوزات وصحة المنصة في لمحة.",
+    "kpiDesc": "المستخدمون والفهرس وخط المدفوعات.",
+    "trendStable": "مستقر",
     "loadError": "فشل تحميل بيانات لوحة التحكم.",
     "stats": {
       "totalTechnicians": "إجمالي الفنيين",
@@ -53,7 +70,12 @@
     "viewAllActivity": "عرض كل سجل التدقيق",
     "shortcuts": {
       "title": "اختصارات سريعة",
+      "desc": "انتقل إلى أي قسم في الإدارة.",
       "pendingCount": "{{count}} معلّق"
+    },
+    "charts": {
+      "bookingsDesc": "حجم الحجوزات اليومي خلال الأسبوع الماضي.",
+      "revenueDesc": "إجمالي المدفوعات المعتمدة شهرياً."
     }
   },
   "charts": {
@@ -77,6 +99,10 @@
       "title": "لم يتم العثور على حجوزات",
       "withStatus": "لا توجد حجوزات بحالة \"{{status}}\".",
       "none": "لم يتم إنشاء أي حجوزات بعد."
+    },
+    "card": {
+      "subtitle": "طلب خدمة",
+      "preferredTime": "الوقت المفضل"
     },
     "detail": {
       "notFound": "الحجز غير موجود",
@@ -117,6 +143,9 @@
     "searchPlaceholder": "البحث عن عملاء...",
     "empty": "لم يتم العثور على عملاء",
     "unnamed": "بدون اسم",
+    "card": {
+      "subtitle": "عميل مسجّل"
+    },
     "detail": {
       "notFound": "العميل غير موجود",
       "back": "العودة للعملاء",
@@ -137,6 +166,9 @@
     "empty": {
       "title": "لم يتم العثور على فنيين",
       "subtitle": "لا يوجد فنيون يطابقون بحثك."
+    },
+    "card": {
+      "subtitle": "فني خدمة"
     },
     "detail": {
       "notFound": "الفني غير موجود",
@@ -200,6 +232,9 @@
       "subtitle": "أنشئ أول خدمة للبدء."
     },
     "deleteConfirm": "حذف هذه الخدمة؟",
+    "card": {
+      "subtitle": "عرض خدمة"
+    },
     "form": {
       "nameAr": "الاسم (عربي)",
       "nameEn": "الاسم (إنجليزي)",
@@ -282,6 +317,8 @@
     "new": "شريحة جديدة",
     "empty": "لا توجد شرائح",
     "deleteConfirm": "حذف هذه الشريحة؟",
+    "moveUp": "نقل الشريحة لأعلى",
+    "moveDown": "نقل الشريحة لأسفل",
     "form": {
       "slideImage": "صورة الشريحة",
       "pasteUrl": "أو الصق رابط الصورة",
@@ -430,6 +467,7 @@
     "goToPage": "الانتقال إلى الصفحة {{page}}",
     "pageOf": "صفحة {{page}} من {{totalPages}} ({{total}} إجمالي)",
     "active": "نشط",
+    "inactive": "غير نشط",
     "confirm": "تأكيد"
   },
   "tables": {

@@ -30,7 +30,13 @@ import {
   AdminEmptyState,
   AdminEntityCard,
   AdminEntityCardActions,
-  AdminEntityCardField,
+  AdminEntityCardActionsGroup,
+  AdminEntityCardHeader,
+  AdminEntityCardIconButton,
+  AdminEntityCardInfoBox,
+  AdminEntityCardInfoRow,
+  AdminEntityCardMeta,
+  AdminEntityCardMetaPill,
   adminActionButtonClass,
   adminActionButtonDestructiveClass,
 } from '@/components/admin/admin-list-chrome';
@@ -131,6 +137,22 @@ function HeroSlideReorderButtons({
   );
 }
 
+function HeroSlideActiveBadge({ isActive, t }: { isActive: boolean; t: ReturnType<typeof useAdminT>['t'] }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium',
+        isActive
+          ? 'border-emerald-200/80 bg-emerald-50 text-emerald-700'
+          : 'border-red-200/80 bg-red-50 text-red-700',
+      )}
+    >
+      {isActive ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+      {isActive ? t('common.active') : t('common.inactive')}
+    </span>
+  );
+}
+
 function HeroSlideCard({
   slide,
   index,
@@ -154,41 +176,73 @@ function HeroSlideCard({
 }) {
   return (
     <AdminEntityCard>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={slide.image_url}
         alt={slide.title_ar}
-        className="mx-auto mb-3 h-28 w-full max-w-xs rounded-lg object-cover sm:mx-0"
+        className="mb-4 h-32 w-full rounded-xl border border-gray-100 object-cover"
       />
-      <AdminEntityCardField label={t('tables.title')}>
-        <span className="font-medium text-[#0F172A]" dir="auto">
-          {slide.title_ar}
-        </span>
-      </AdminEntityCardField>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <AdminEntityCardField label={t('tables.subtitle')}>
-          <span className="text-[#64748B]" dir="auto">
-            {slide.subtitle_ar}
-          </span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.icon')}>
-          <span className="text-[#64748B]">{slide.icon_key ?? t('common.dash')}</span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('common.active')}>
-          <button type="button" onClick={() => onToggleActive(slide)}>
-            <HeroSlideActiveIcon isActive={slide.is_active} />
+
+      <AdminEntityCardHeader
+        title={
+          <span dir="auto">{slide.title_ar}</span>
+        }
+        subtitle={
+          <span dir="auto">{slide.subtitle_ar}</span>
+        }
+        badge={
+          <button type="button" onClick={() => onToggleActive(slide)} className="shrink-0">
+            <HeroSlideActiveBadge isActive={slide.is_active} t={t} />
           </button>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.order')}>
-          <HeroSlideReorderButtons
-            index={index}
-            total={total}
-            onMove={(dir) => onMove(index, dir)}
-            isPending={isReorderPending}
-          />
-        </AdminEntityCardField>
-      </div>
+        }
+      />
+
+      <AdminEntityCardInfoBox className="mt-4">
+        <AdminEntityCardInfoRow label={t('tables.icon')}>
+          <span className="text-[#64748B]">{slide.icon_key ?? t('common.dash')}</span>
+        </AdminEntityCardInfoRow>
+        <AdminEntityCardInfoRow label={t('tables.order')}>
+          <span className="font-semibold tabular-nums">{index + 1}</span>
+        </AdminEntityCardInfoRow>
+      </AdminEntityCardInfoBox>
+
+      <AdminEntityCardMeta className="mt-3">
+        <AdminEntityCardMetaPill variant="orange">
+          #{index + 1} / {total}
+        </AdminEntityCardMetaPill>
+      </AdminEntityCardMeta>
+
       <AdminEntityCardActions>
-        <HeroSlideRowActions slide={slide} onEdit={onEdit} onDelete={onDelete} t={t} />
+        <AdminEntityCardActionsGroup>
+          <AdminEntityCardIconButton
+            icon={ChevronUp}
+            label={t('heroSlides.moveUp')}
+            variant="neutral"
+            disabled={index === 0 || isReorderPending}
+            onClick={() => onMove(index, -1)}
+          />
+          <AdminEntityCardIconButton
+            icon={ChevronDown}
+            label={t('heroSlides.moveDown')}
+            variant="neutral"
+            disabled={index === total - 1 || isReorderPending}
+            onClick={() => onMove(index, 1)}
+          />
+          <AdminEntityCardIconButton
+            icon={Pencil}
+            label={t('common.edit')}
+            variant="edit"
+            onClick={() => onEdit(slide)}
+          />
+          <AdminEntityCardIconButton
+            icon={Trash2}
+            label={t('common.delete')}
+            variant="destructive"
+            onClick={() => {
+              if (confirm(t('heroSlides.deleteConfirm'))) onDelete(slide.id);
+            }}
+          />
+        </AdminEntityCardActionsGroup>
       </AdminEntityCardActions>
     </AdminEntityCard>
   );

@@ -16,13 +16,20 @@ import {
   AdminEmptyState,
   AdminEntityCard,
   AdminEntityCardActions,
-  AdminEntityCardField,
+  AdminEntityCardActionsGroup,
+  AdminEntityCardAvatar,
+  AdminEntityCardHeader,
+  AdminEntityCardInfoBox,
+  AdminEntityCardInfoRow,
+  AdminEntityCardMeta,
+  AdminEntityCardMetaPill,
+  AdminEntityCardPrimaryAction,
   AdminSearchInput,
   AdminTableActionLink,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
-import { Users } from 'lucide-react';
+import { Calendar, Eye, Users } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 
@@ -40,6 +47,16 @@ function CustomerNameDisplay({
   );
 }
 
+function customerInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 function CustomerCard({
   customer,
   t,
@@ -49,35 +66,46 @@ function CustomerCard({
   t: ReturnType<typeof useAdminT>['t'];
   formatDate: ReturnType<typeof useAdminT>['formatDate'];
 }) {
+  const name = customer.full_name ?? t('customers.unnamed');
+
   return (
     <AdminEntityCard>
-      <AdminEntityCardField label={t('tables.name')}>
-        <CustomerNameDisplay customer={customer} t={t} />
-      </AdminEntityCardField>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <AdminEntityCardField label={t('tables.email')}>
+      <AdminEntityCardHeader
+        title={name}
+        subtitle={t('customers.card.subtitle')}
+        avatar={<AdminEntityCardAvatar fallback={customerInitials(name)} />}
+        badge={
+          <AdminEntityCardMetaPill variant="orange">
+            {t('customers.detail.bookings', { count: customer.booking_count ?? 0 })}
+          </AdminEntityCardMetaPill>
+        }
+      />
+
+      <AdminEntityCardInfoBox className="mt-4" columns={1}>
+        <AdminEntityCardInfoRow label={t('tables.email')}>
           <span className="text-[#64748B]" dir="ltr">
             {customer.email ?? t('common.dash')}
           </span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.phone')}>
+        </AdminEntityCardInfoRow>
+        <AdminEntityCardInfoRow label={t('tables.phone')}>
           <span className="text-[#64748B]" dir="ltr">
             {customer.phone ?? t('common.dash')}
           </span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.bookings')}>
-          <span className="font-medium tabular-nums text-[#0F172A]">{customer.booking_count}</span>
-        </AdminEntityCardField>
-        <AdminEntityCardField label={t('tables.joined')}>
-          <span className="text-[#64748B]">
-            {customer.created_at ? formatDate(customer.created_at) : t('common.dash')}
-          </span>
-        </AdminEntityCardField>
-      </div>
+        </AdminEntityCardInfoRow>
+      </AdminEntityCardInfoBox>
+
+      <AdminEntityCardMeta className="mt-3">
+        <AdminEntityCardMetaPill variant="muted">
+          <Calendar className="h-3 w-3 shrink-0" aria-hidden />
+          {customer.created_at ? formatDate(customer.created_at) : t('common.dash')}
+        </AdminEntityCardMetaPill>
+      </AdminEntityCardMeta>
+
       <AdminEntityCardActions>
-        <AdminTableActionLink href={`/admin/customers/${customer.id}`}>
+        <AdminEntityCardActionsGroup />
+        <AdminEntityCardPrimaryAction href={`/admin/customers/${customer.id}`} icon={Eye}>
           {t('common.view')}
-        </AdminTableActionLink>
+        </AdminEntityCardPrimaryAction>
       </AdminEntityCardActions>
     </AdminEntityCard>
   );
