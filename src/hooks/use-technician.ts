@@ -49,7 +49,7 @@ interface Booking {
   preferred_time: string | null;
   created_at: string;
   services: { name_ar: string; name_en: string; slug: string; price: number | null; price_type: string } | null;
-  profiles: { full_name: string | null; avatar_url: string | null } | null;
+  profiles: { full_name: string | null; avatar_url: string | null; phone: string | null } | null;
 }
 
 async function fetchProfile(): Promise<TechProfile | null> {

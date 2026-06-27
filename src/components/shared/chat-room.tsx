@@ -87,7 +87,7 @@ export function ChatRoom({ conversationId, userId, userName }: ChatRoomProps) {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-gradient-to-b from-background to-[#FF6B00]/[0.02]">
       <div
         ref={scrollRef}
         onScroll={handleScroll}

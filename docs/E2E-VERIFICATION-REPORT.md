@@ -119,3 +119,66 @@
     **Fixes this session:** availability switch sync (`useEffect` on profile load), E2E helper strict-mode for Jobs heading, direct admin detail URL in approval test, `scripts/run-cleanup-non-admin.ts` + `scripts/set-e2e-tech-pending.ts`.
 
     **Screenshots:** `docs/e2e-screenshots/tech-01`–`tech-05`
+
+    ---
+
+    ## Professional Workflow (2026-06-27)
+
+    ### DB reset
+
+    ```bash
+    npm run e2e:reset          # cleanup:e2e + seed:e2e (admin + 2 test users only)
+    npm run cleanup:e2e        # wipe non-admin users + transactional data
+    npm run seed:e2e           # recreate customer, technician, auth states
+    ```
+
+    ### Test accounts (after `e2e:reset`)
+
+    | Role | Identifier | Password |
+    |------|------------|----------|
+    | Admin | `admin@sanad.app` | `SanadAdmin2025!` |
+    | Customer | `test-customer@sanad.app` | `TestCustomer2025!` |
+    | Technician | phone `01111734655` → `tech+01111734655@sanad.app` | `TestTech2025!` |
+
+    Technician is seeded **verified** by default. Admin-approval spec calls `scripts/set-e2e-tech-pending.ts` in `beforeAll`.
+
+    ### npm scripts
+
+    | Command | Spec |
+    |---------|------|
+    | `npm run test:e2e:admin` | `e2e/technician-admin-workflow.spec.ts` |
+    | `npm run test:e2e:chat` | `e2e/workflow-chat-realtime.spec.ts` |
+    | `npm run test:e2e:professional` | admin + chat specs (serial) |
+
+    ### Full professional validation
+
+    ```powershell
+    npm run e2e:reset
+    npx next dev -p 3002
+    $env:PLAYWRIGHT_BASE_URL="http://localhost:3002"
+    npm run test:e2e:professional
+    ```
+
+    Use port **3002** when port 3000 hosts another app.
+
+    ### Chat realtime workflow
+
+    **Spec:** `e2e/workflow-chat-realtime.spec.ts`
+
+    | # | Test | Proves |
+    |---|------|--------|
+    | 1 | Customer direct-books E2E technician | Booking with `technician_id` |
+    | 2 | Technician accepts assignment | `bookings.status=accepted`; `chat_conversations` row |
+    | 3 | Chat lists show correct names | Customer name on `/technician/chat`; technician on `/customer/chat` |
+    | 4 | **Bidirectional realtime** | Dual Playwright contexts; messages appear without reload |
+    | 5 | Chat notification | `notifyChatMessage` → `/api/notifications` on recipient |
+
+    **Screenshots:** `docs/e2e-screenshots/chat-01`–`chat-07`
+
+    ### Pending production fixes (this deploy)
+
+    - Chat API joins customer/technician profiles with `phone`
+    - `/technician/chat/[bookingId]` and `/customer/chat/[bookingId]` detail routes (404 fix)
+    - Call Customer button on job detail (`toTelHref`)
+    - `data-testid` on chat input/send/message for Playwright
+    - Orange `#FF6B00` accent on chat UI

@@ -16,8 +16,11 @@ interface ChatConversation {
     id: string;
     status: string;
     service_id: string;
+    customer_id?: string;
+    technician_id?: string;
     services: { name_ar: string; name_en: string; slug: string } | null;
-    profiles: { full_name: string | null; avatar_url: string | null } | null;
+    customer: { full_name: string | null; avatar_url: string | null; phone: string | null } | null;
+    technician: { full_name: string | null; avatar_url: string | null; phone: string | null } | null;
   } | null;
   last_message: {
     id: string;

@@ -15,6 +15,7 @@ import { ArrowLeft, MapPin, Calendar, Clock, Wrench, Phone, MessageCircle } from
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import { LocationMap } from '@/components/maps/location-map';
+import { toTelHref } from '@/lib/utils/phone';
 
 export default function TechnicianJobDetailPage() {
   const params = useParams();
@@ -51,7 +52,14 @@ export default function TechnicianJobDetailPage() {
   }
 
   const booking = assignment.booking;
-  const customerName = booking.profiles?.full_name ?? 'Customer';
+  const customerPhone = booking.profiles?.phone?.trim() ?? '';
+  const customerName =
+    booking.profiles?.full_name?.trim() || customerPhone || 'Customer';
+  const canCallCustomer =
+    !!customerPhone &&
+    (booking.status === 'accepted' ||
+      booking.status === 'in_progress' ||
+      booking.status === 'completed');
   const initials = customerName
     .split(' ')
     .map((n) => n[0])
@@ -129,14 +137,26 @@ export default function TechnicianJobDetailPage() {
               </Avatar>
               <div className="flex-1">
                 <p className="font-medium">{customerName}</p>
-                {booking.profiles?.phone && (
+                {customerPhone && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Phone className="h-3 w-3" />
-                    {booking.profiles.phone}
+                    {customerPhone}
                   </div>
                 )}
               </div>
             </div>
+            {canCallCustomer && (
+              <Button
+                asChild
+                size="lg"
+                className="mt-4 w-full gap-2 rounded-xl bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]"
+              >
+                <a href={toTelHref(customerPhone)}>
+                  <Phone className="h-5 w-5" />
+                  Call Customer
+                </a>
+              </Button>
+            )}
           </CardContent>
         </Card>
 

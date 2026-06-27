@@ -19,11 +19,13 @@ export function ChatMessage({ message, fileUrl, fileType, createdAt, isOwn, send
   return (
     <div className={cn('flex', isOwn ? 'justify-end' : 'justify-start')}>
       <div
+        data-testid="chat-message"
+        data-message-text={message ?? undefined}
         className={cn(
-          'max-w-[75%] space-y-1 rounded-2xl px-4 py-2',
+          'max-w-[75%] space-y-1 rounded-2xl px-4 py-2 shadow-sm',
           isOwn
-            ? 'bg-primary text-primary-foreground rounded-br-sm'
-            : 'bg-muted text-foreground rounded-bl-sm',
+            ? 'rounded-br-sm bg-gradient-to-br from-[#FF6B00] to-[#FF8A34] text-white'
+            : 'rounded-bl-sm bg-muted text-foreground',
         )}
       >
         {!isOwn && senderName && (
@@ -59,7 +61,7 @@ export function ChatMessage({ message, fileUrl, fileType, createdAt, isOwn, send
         <p
           className={cn(
             'text-[10px]',
-            isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground',
+            isOwn ? 'text-white/60' : 'text-muted-foreground',
           )}
         >
           {format(new Date(createdAt), 'h:mm a')}

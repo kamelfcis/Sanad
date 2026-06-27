@@ -128,7 +128,7 @@ async function main() {
       id_document_url: PLACEHOLDER_ID,
       verification_docs: [PLACEHOLDER_ID],
       verification_status: TECH_SEED_PENDING ? 'pending' : 'verified',
-      is_available: false,
+      is_available: true,
       location_lat: 30.0444,
       location_lng: 31.2357,
     },

@@ -10,12 +10,12 @@
   {
     "step": "Admin — approve technician (UI)",
     "result": "PASS",
-    "url": "http://localhost:3002/admin/technicians/bd4466bb-0852-4286-82b9-0efeb3bece0b",
+    "url": "http://localhost:3002/admin/technicians/ff7e4df5-e2ee-4893-b726-7dfab30aaa79",
     "api": {
       "method": "PATCH",
-      "path": "/api/admin/technicians/bd4466bb-0852-4286-82b9-0efeb3bece0b/status",
+      "path": "/api/admin/technicians/ff7e4df5-e2ee-4893-b726-7dfab30aaa79/status",
       "status": 200,
-      "snippet": "{\"id\":\"bd4466bb-0852-4286-82b9-0efeb3bece0b\",\"bio\":\"فني كهرباء محترف للاختبار الآلي E2E — خبرة في التمديدات والصيانة.\",\"years_experience\":5,\"verification_status\":\"verified\",\"verification_docs\":[\"https"
+      "snippet": "{\"id\":\"ff7e4df5-e2ee-4893-b726-7dfab30aaa79\",\"bio\":\"فني كهرباء محترف للاختبار الآلي E2E — خبرة في التمديدات والصيانة.\",\"years_experience\":5,\"verification_status\":\"verified\",\"verification_docs\":[\"https"
     },
     "screenshot": "docs\\e2e-screenshots\\tech-02-admin-approved.png"
   },
@@ -27,7 +27,7 @@
       "method": "GET",
       "path": "/api/notifications",
       "status": 200,
-      "snippet": "{\"notifications\":[{\"id\":\"3ea06044-e4bd-41e9-a940-902948770492\",\"user_id\":\"bd4466bb-0852-4286-82b9-0efeb3bece0b\",\"type\":\"technician_approved\",\"title\":\"تمت الموافقة على حسابك\",\"message\":\"مبروك! تمت الموافقة على طلبك كفني في سند. يمكنك البدء باستقبال الطلبات.\",\"entity_type\":\"technician\",\"entity_id\":\"bd4466bb-0852-4286-82b9-0efeb3bece0b\",\"is_read\":false,\"metadata\":{\"action\":\"approve\",\"reason\":null},\"c"
+      "snippet": "{\"notifications\":[{\"id\":\"c6d7d934-6eec-49a1-999f-0e1da91b6022\",\"user_id\":\"ff7e4df5-e2ee-4893-b726-7dfab30aaa79\",\"type\":\"technician_approved\",\"title\":\"تمت الموافقة على حسابك\",\"message\":\"مبروك! تمت الموافقة على طلبك كفني في سند. يمكنك البدء باستقبال الطلبات.\",\"entity_type\":\"technician\",\"entity_id\":\"ff7e4df5-e2ee-4893-b726-7dfab30aaa79\",\"is_read\":false,\"metadata\":{\"action\":\"approve\",\"reason\":null},\"c"
     },
     "notes": "technician_approved notification received",
     "screenshot": "docs\\e2e-screenshots\\tech-03-approval-notification.png"
@@ -40,7 +40,7 @@
       "method": "PUT",
       "path": "/api/technician/profile",
       "status": 200,
-      "snippet": "{\"id\":\"bd4466bb-0852-4286-82b9-0efeb3bece0b\",\"bio\":\"فني كهرباء محترف للاختبار الآلي E2E — خبرة في التمديدات والصيانة.\",\"years_experience\":5,\"verification_status\":\"verified\",\"verification_docs\":[\"https"
+      "snippet": "{\"id\":\"ff7e4df5-e2ee-4893-b726-7dfab30aaa79\",\"bio\":\"فني كهرباء محترف للاختبار الآلي E2E — خبرة في التمديدات والصيانة.\",\"years_experience\":5,\"verification_status\":\"verified\",\"verification_docs\":[\"https"
     },
     "notes": "was=false, now=true",
     "screenshot": "docs\\e2e-screenshots\\tech-04-availability-toggle.png"
@@ -53,8 +53,76 @@
       "method": "GET",
       "path": "/api/technicians/browse",
       "status": 200,
-      "snippet": "{\"technicians\":[{\"id\":\"bd4466bb-0852-4286-82b9-0efeb3bece0b\",\"full_name\":\"E2E Test Technician\",\"avatar_url\":\"https://placehold.co/400x400/png?text=E2E+Profile\",\"phone\":\"01111734655\",\"specialty_label\":\"كهرباء\",\"specialty_slug\":\"electrical\",\"area\":\"مدينة نصر\",\"governorate\":\"القاهرة\",\"verification_stat"
+      "snippet": "{\"technicians\":[{\"id\":\"ff7e4df5-e2ee-4893-b726-7dfab30aaa79\",\"full_name\":\"E2E Test Technician\",\"avatar_url\":\"https://placehold.co/400x400/png?text=E2E+Profile\",\"phone\":\"01111734655\",\"specialty_label\":\"كهرباء\",\"specialty_slug\":\"electrical\",\"area\":\"مدينة نصر\",\"governorate\":\"القاهرة\",\"verification_stat"
     },
     "screenshot": "docs\\e2e-screenshots\\tech-05-customer-browse.png"
+  },
+  {
+    "step": "Chat E2E — customer direct booking",
+    "result": "PASS",
+    "url": "http://localhost:3002/customer/bookings/be6109e9-51df-419e-acc5-5dd7c3471865",
+    "api": {
+      "method": "GET",
+      "path": "/api/bookings",
+      "status": 200,
+      "snippet": "[{\"id\":\"be6109e9-51df-419e-acc5-5dd7c3471865\",\"customer_id\":\"f22d5d4b-3a13-4c27-809f-4d3654baa4fd\",\"service_id\":\"64a17c1e-c5c3-4dd0-921e-dc73ca64e81b\",\"technician_id\":\"ff7e4df5-e2ee-4893-b726-7dfab30aaa79\",\"status\":\"matched\",\"description\":\"E2E chat realtime — direct booking for bidirectional messaging test.\",\"location_address\":\"مدينة نصر, القاهرة, 11765, مصر\",\"location_lat\":30.0521177,\"location_ln"
+    },
+    "screenshot": "docs\\e2e-screenshots\\chat-01-direct-booking.png"
+  },
+  {
+    "step": "Chat E2E — accept + conversation row",
+    "result": "PASS",
+    "url": "http://localhost:3002/technician/jobs",
+    "api": {
+      "method": "GET",
+      "path": "/api/chat/conversations",
+      "status": 200,
+      "snippet": "[{\"id\":\"c65a583c-0a97-432a-a001-ec6d04a0c90b\",\"booking_id\":\"be6109e9-51df-419e-acc5-5dd7c3471865\",\"customer_last_read_at\":\"2026-06-27T18:02:07.494057+00:00\",\"technician_last_read_at\":\"2026-06-27T18:02:07.494057+00:00\",\"created_at\":\"2026-06-27T18:02:07.494057+00:00\",\"last_message_at\":\"2026-06-27T18:02:07.494057+00:00\",\"booking\":{\"id\":\"be6109e9-51df-419e-acc5-5dd7c3471865\",\"status\":\"accepted\",\"custo"
+    },
+    "db": "Expected chat_conversations for booking be6109e9-51df-419e-acc5-5dd7c3471865",
+    "screenshot": "docs\\e2e-screenshots\\chat-02-tech-accept.png"
+  },
+  {
+    "step": "Chat E2E — list shows correct names",
+    "result": "PASS",
+    "url": "http://localhost:3002/technician/chat",
+    "notes": "Technician sees customer name; customer sees technician name",
+    "screenshot": "docs\\e2e-screenshots\\chat-03-tech-chat-list.png"
+  },
+  {
+    "step": "Chat E2E — customer chat list",
+    "result": "PASS",
+    "url": "http://localhost:3002/customer/chat",
+    "screenshot": "docs\\e2e-screenshots\\chat-04-customer-chat-list.png"
+  },
+  {
+    "step": "Chat E2E — bidirectional realtime",
+    "result": "PASS",
+    "url": "http://localhost:3002/customer/bookings/be6109e9-51df-419e-acc5-5dd7c3471865/chat",
+    "notes": "Customer sent \"E2E realtime 1782583367536\"; technician replied \"Tech reply 1782583371148\"",
+    "screenshot": "docs\\e2e-screenshots\\chat-05-customer-realtime-send.png"
+  },
+  {
+    "step": "Chat E2E — technician thread",
+    "result": "PASS",
+    "url": "http://localhost:3002/technician/chat/be6109e9-51df-419e-acc5-5dd7c3471865",
+    "screenshot": "docs\\e2e-screenshots\\chat-06-tech-sees-message.png"
+  },
+  {
+    "step": "Chat E2E — customer sees reply",
+    "result": "PASS",
+    "url": "http://localhost:3002/customer/bookings/be6109e9-51df-419e-acc5-5dd7c3471865/chat",
+    "screenshot": "docs\\e2e-screenshots\\chat-07-customer-sees-reply.png"
+  },
+  {
+    "step": "Chat E2E — chat notification",
+    "result": "PASS",
+    "api": {
+      "method": "GET",
+      "path": "/api/notifications",
+      "status": 200,
+      "snippet": "{\"notifications\":[{\"id\":\"09be6188-f126-4ffd-8390-b2817745ebcc\",\"user_id\":\"ff7e4df5-e2ee-4893-b726-7dfab30aaa79\",\"type\":\"chat_message\",\"title\":\"رسالة جديدة\",\"message\":\"E2E Test Customer: E2E notify 1782583377742\",\"entity_type\":\"chat\",\"entity_id\":\"c65a583c-0a97-432a-a001-ec6d04a0c90b\",\"is_read\":false,\"metadata\":{\"conversationId\":\"c65a583c-0a97-432a-a001-ec6d04a0c90b\"},\"created_at\":\"2026-06-27T18:03:"
+    },
+    "notes": "Technician received chat_message notification"
   }
 ]

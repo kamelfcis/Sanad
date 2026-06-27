@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
         customer_id,
         technician_id,
         services(name_ar, name_en, slug),
-        customer:profiles!bookings_customer_id_fkey(full_name, avatar_url)
+        customer:profiles!bookings_customer_id_fkey(full_name, avatar_url, phone),
+        technician:profiles!bookings_technician_id_fkey(full_name, avatar_url, phone)
       ),
       last_message:chat_messages(
         id, message, file_url, file_type, sender_id, created_at

@@ -10,9 +10,13 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "seed:e2e": "tsx --env-file=.env.local scripts/seed-e2e-users.ts",
     "cleanup:e2e": "tsx --env-file=.env.local scripts/run-cleanup-non-admin.ts",
+    "e2e:reset": "npm run cleanup:e2e && npm run seed:e2e",
     "verify:e2e-db": "tsx --env-file=.env.local scripts/verify-e2e-db.ts",
     "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:admin": "playwright test e2e/technician-admin-workflow.spec.ts",
+    "test:e2e:chat": "playwright test e2e/workflow-chat-realtime.spec.ts",
+    "test:e2e:professional": "playwright test e2e/technician-admin-workflow.spec.ts e2e/workflow-chat-realtime.spec.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

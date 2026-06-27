@@ -62,8 +62,13 @@ export function ChatList({ basePath }: ChatListProps) {
     <div className="space-y-1">
       {conversations.map((conv) => {
         const unread = getUnreadCount(conv);
-        const otherParty = conv.booking?.profiles;
-        const initials = (otherParty?.full_name ?? '?')
+        const isTechnician = profile?.role === 'technician';
+        const otherParty = isTechnician ? conv.booking?.customer : conv.booking?.technician;
+        const displayName =
+          otherParty?.full_name?.trim() ||
+          otherParty?.phone?.trim() ||
+          (isTechnician ? 'Customer' : 'Technician');
+        const initials = displayName
           .split(' ')
           .map((n) => n[0])
           .join('')
@@ -75,8 +80,8 @@ export function ChatList({ basePath }: ChatListProps) {
             key={conv.id}
             href={`${basePath}/${conv.booking_id}`}
             className={cn(
-              'flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted/50',
-              unread > 0 && 'bg-primary/5',
+              'flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[#FF6B00]/5',
+              unread > 0 && 'border border-[#FF6B00]/20 bg-[#FF6B00]/5',
             )}
           >
             <Avatar className="h-10 w-10">
@@ -85,11 +90,11 @@ export function ChatList({ basePath }: ChatListProps) {
             </Avatar>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className={cn('truncate text-sm', unread > 0 && 'font-semibold')}>
-                  {otherParty?.full_name ?? 'Unknown'}
+                <p className={cn('truncate text-sm', unread > 0 && 'font-semibold')} dir="auto">
+                  {displayName}
                 </p>
                 {unread > 0 && (
-                  <span className="flex h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span className="flex h-2 w-2 shrink-0 rounded-full bg-[#FF6B00]" />
                 )}
               </div>
               <p className="truncate text-xs text-muted-foreground">

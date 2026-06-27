@@ -76,13 +76,14 @@ export function ChatInput({ onSend, onFileUpload, disabled }: ChatInputProps) {
       </Button>
       <div className="flex-1">
         <textarea
+          data-testid="chat-input"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           rows={1}
           disabled={disabled || isLoading}
-          className="w-full resize-none rounded-xl border bg-muted/50 px-3 py-2 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 disabled:opacity-50"
+          className="w-full resize-none rounded-xl border bg-muted/50 px-3 py-2 text-sm outline-none focus:border-[#FF6B00]/50 focus:ring-1 focus:ring-[#FF6B00]/30 disabled:opacity-50"
           style={{ minHeight: 36, maxHeight: 120 }}
           onInput={(e) => {
             const el = e.currentTarget;
@@ -94,9 +95,10 @@ export function ChatInput({ onSend, onFileUpload, disabled }: ChatInputProps) {
       <Button
         type="button"
         size="icon"
+        data-testid="chat-send"
         onClick={handleSend}
         disabled={disabled || isLoading || !text.trim()}
-        className="shrink-0"
+        className="shrink-0 bg-[#FF6B00] text-white hover:bg-[#FF8A34] disabled:opacity-50"
       >
         {isSending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
       </Button>

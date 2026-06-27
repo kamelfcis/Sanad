@@ -145,6 +145,16 @@ export async function screenshot(page: Page, name: string): Promise<string> {
   return file.replace(process.cwd() + '\\', '').replace(process.cwd() + '/', '');
 }
 
+/** Screenshot without strict page-content waits (detail pages, chat threads). */
+export async function screenshotQuick(page: Page, name: string): Promise<string> {
+  mkdirSync(SCREENSHOT_DIR, { recursive: true });
+  const file = join(SCREENSHOT_DIR, `${name}.png`);
+  await waitForPageReady(page);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: file, fullPage: true });
+  return file.replace(process.cwd() + '\\', '').replace(process.cwd() + '/', '');
+}
+
 export async function logoutSession(page: Page) {
   await page.request.post(`${BASE_URL}/api/auth/signout`, {
     data: { scope: 'global' },
