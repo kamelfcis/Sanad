@@ -214,10 +214,14 @@ export function AdminEntityCard({
   return (
     <article
       className={cn(
-        'flex flex-col rounded-2xl border border-[#E2E8F0] bg-white p-4 text-center shadow-lg shadow-[#FF6B00]/10 transition-colors hover:border-[#FF6B00]/30 hover:bg-[#FF6B00]/[0.04] sm:text-start',
+        'relative flex flex-col rounded-2xl border border-gray-100 bg-white p-5 text-center shadow-sm transition-colors hover:border-[#FF6B00]/30 hover:bg-[#FF6B00]/[0.04] sm:p-6 sm:text-start',
         className,
       )}
     >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-4 start-4 w-1.5 rounded-full bg-gradient-to-b from-[#FF6B00] to-[#FF8A34]"
+      />
       {children}
     </article>
   );

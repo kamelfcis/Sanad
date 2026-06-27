@@ -27,6 +27,13 @@ export async function GET(request: NextRequest) {
     completedBk,
     cancelledBk,
     reviews,
+    hiddenReviews,
+    services,
+    categories,
+    pendingPayments,
+    approvedPaymentsCount,
+    auditLogs,
+    heroSlides,
   ] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'customer'),
     supabase.from('technician_profiles').select('*', { count: 'exact', head: true }),
@@ -39,6 +46,13 @@ export async function GET(request: NextRequest) {
     supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
     supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
     supabase.from('reviews').select('*', { count: 'exact', head: true }),
+    supabase.from('reviews').select('*', { count: 'exact', head: true }).eq('is_hidden', true),
+    supabase.from('services').select('*', { count: 'exact', head: true }),
+    supabase.from('service_categories').select('*', { count: 'exact', head: true }),
+    supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+    supabase.from('audit_logs').select('*', { count: 'exact', head: true }),
+    supabase.from('hero_slides').select('*', { count: 'exact', head: true }),
   ]);
 
   const { data: avgRating } = await supabase.from('reviews').select('rating');
@@ -87,18 +101,19 @@ export async function GET(request: NextRequest) {
     .from('bookings')
     .select(`
       id, status, created_at,
-      services(name_en),
+      services(name_en, name_ar),
       customer:profiles!bookings_customer_id_fkey(full_name)
     `)
     .order('created_at', { ascending: false })
     .limit(8);
 
   const recent_bookings = (recentBookingsRaw ?? []).map((b) => {
-    const svc = b.services as unknown as { name_en: string } | null;
+    const svc = b.services as unknown as { name_en: string; name_ar: string } | null;
     const cust = b.customer as unknown as { full_name: string | null } | null;
     return {
       id: b.id,
       service_name: svc?.name_en ?? 'Unknown service',
+      service_name_ar: svc?.name_ar ?? svc?.name_en ?? 'Unknown service',
       customer_name: cust?.full_name ?? 'Unknown customer',
       status: b.status,
       created_at: b.created_at,
@@ -124,6 +139,23 @@ export async function GET(request: NextRequest) {
     };
   });
 
+  const { data: recentAuditRaw } = await supabase
+    .from('audit_logs')
+    .select('id, action, entity_type, created_at, admin:profiles!admin_id(full_name)')
+    .order('created_at', { ascending: false })
+    .limit(6);
+
+  const recent_activity = (recentAuditRaw ?? []).map((log) => {
+    const adminProfile = log.admin as unknown as { full_name: string | null } | null;
+    return {
+      id: log.id,
+      action: log.action,
+      entity_type: log.entity_type,
+      admin_name: adminProfile?.full_name ?? 'Admin',
+      created_at: log.created_at,
+    };
+  });
+
   return NextResponse.json({
     overview: {
       total_technicians: techs.count ?? 0,
@@ -137,7 +169,14 @@ export async function GET(request: NextRequest) {
       in_progress_bookings: inProgressBk.count ?? 0,
       cancelled_bookings: cancelledBk.count ?? 0,
       total_reviews: reviews.count ?? 0,
+      hidden_reviews: hiddenReviews.count ?? 0,
       average_rating: Number(avgRatingValue.toFixed(1)),
+      total_services: services.count ?? 0,
+      total_categories: categories.count ?? 0,
+      pending_payments: pendingPayments.count ?? 0,
+      approved_payments: approvedPaymentsCount.count ?? 0,
+      total_audit_logs: auditLogs.count ?? 0,
+      hero_slides: heroSlides.count ?? 0,
     },
     revenue: {
       total: revenueTotal,
@@ -148,5 +187,19 @@ export async function GET(request: NextRequest) {
     recent_bookings,
     top_technicians,
     booking_trends,
+    recent_activity,
+    shortcuts: {
+      bookings: bookings.count ?? 0,
+      customers: customers.count ?? 0,
+      technicians: techs.count ?? 0,
+      services: services.count ?? 0,
+      categories: categories.count ?? 0,
+      payments: approvedPaymentsCount.count ?? 0,
+      pending_payments: pendingPayments.count ?? 0,
+      reviews: reviews.count ?? 0,
+      audit_logs: auditLogs.count ?? 0,
+      hero_slides: heroSlides.count ?? 0,
+      settings: 1,
+    },
   });
 }

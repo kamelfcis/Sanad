@@ -34,14 +34,27 @@
       "completedLabel": "مكتمل",
       "avgRating": "متوسط التقييم",
       "reviewsCount": "{{count}} تقييم",
-      "revenue": "الإيرادات"
+      "revenue": "الإيرادات",
+      "approvedPayments": "{{count}} دفعة معتمدة",
+      "pendingPayments": "مدفوعات معلّقة",
+      "totalServices": "الخدمات",
+      "categoriesCount": "{{count}} تصنيف",
+      "inProgressSub": "{{count}} قيد التنفيذ"
     },
     "recentBookings": "أحدث الحجوزات",
     "topTechnicians": "أفضل الفنيين",
     "jobsRating": "{{jobs}} مهمة · {{rating}}★",
     "noBookings": "لا توجد حجوزات بعد.",
     "noTechnicians": "لا يوجد فنيون بعد.",
-    "noRevenue": "لا توجد بيانات إيرادات بعد."
+    "noRevenue": "لا توجد بيانات إيرادات بعد.",
+    "kpiTitle": "مؤشرات الأداء",
+    "recentActivity": "آخر النشاطات",
+    "noActivity": "لا توجد نشاطات بعد.",
+    "viewAllActivity": "عرض كل سجل التدقيق",
+    "shortcuts": {
+      "title": "اختصارات سريعة",
+      "pendingCount": "{{count}} معلّق"
+    }
   },
   "charts": {
     "bookingsLast7Days": "الحجوزات (آخر 7 أيام)",
@@ -323,6 +336,7 @@
       "payment_rejected": "رفض دفعة",
       "payment_created": "إنشاء دفعة",
       "payment_settings_updated": "تحديث إعدادات الدفع",
+      "site_settings_updated": "تحديث إعدادات الموقع",
       "hero_slide_create": "إنشاء شريحة",
       "hero_slide_update": "تحديث شريحة",
       "hero_slide_delete": "حذف شريحة",
@@ -370,7 +384,18 @@
     "save": "حفظ الإعدادات",
     "saved": "تم الحفظ!",
     "about": "حول",
-    "aboutText": "سند v1.0.0 — منصة خدمات منزلية مبنية بـ Next.js و Supabase و TailwindCSS."
+    "aboutText": "سند v1.0.0 — منصة خدمات منزلية مبنية بـ Next.js و Supabase و TailwindCSS.",
+    "currency": "العملة",
+    "currencyDescription": "تُستخدم في لوحة التحكم وأسعار الخدمات على الموقع.",
+    "currencySaved": "تم حفظ العملة!"
+  },
+  "currencySettings": {
+    "title": "إعدادات العملة",
+    "label": "عملة العرض",
+    "description": "اختر العملة المعروضة في الإيرادات وأسعار الخدمات.",
+    "save": "حفظ العملة",
+    "saving": "جاري الحفظ…",
+    "saved": "تم الحفظ!"
   },
   "unauthorized": {
     "title": "غير مصرح",
@@ -485,7 +510,9 @@
       "ADMIN_APPROVE_PAYMENT_FAILED": "فشل الموافقة على الدفع",
       "ADMIN_REJECT_PAYMENT_FAILED": "فشل رفض الدفع",
       "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "فشل تحميل إعدادات الدفع",
-      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "فشل تحديث إعدادات الدفع"
+      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "فشل تحديث إعدادات الدفع",
+      "ADMIN_FETCH_SITE_SETTINGS_FAILED": "فشل تحميل إعدادات الموقع",
+      "ADMIN_UPDATE_SITE_SETTINGS_FAILED": "فشل تحديث إعدادات الموقع"
     },
     "generic": "حدث خطأ غير متوقع"
   },

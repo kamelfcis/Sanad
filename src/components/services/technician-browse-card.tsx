@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useFormatMoney } from '@/hooks/use-site-settings';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { Heart, Phone, Star, CalendarCheck } from 'lucide-react';
@@ -28,6 +29,7 @@ interface TechnicianBrowseCardProps {
 export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) {
   const router = useRouter();
   const [favorited, setFavorited] = useState(false);
+  const { formatMoney } = useFormatMoney();
 
   const initials = useMemo(() => {
     return (technician.full_name ?? 'ص')
@@ -124,10 +126,7 @@ export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) 
       <div className="mb-5 grid grid-cols-3 gap-3 rounded-xl bg-muted/50 p-3">
         <div className="text-center">
           <p className="text-lg font-bold text-primary">
-            {technician.starting_price > 0 ? `${Math.round(technician.starting_price)}` : '—'}
-            {technician.starting_price > 0 && (
-              <span className="mr-0.5 text-xs font-medium text-text-muted">ج.م</span>
-            )}
+            {technician.starting_price > 0 ? formatMoney(Math.round(technician.starting_price)) : '—'}
           </p>
           <p className="text-[11px] text-text-muted">يبدأ من</p>
         </div>

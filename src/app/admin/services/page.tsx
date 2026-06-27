@@ -48,14 +48,16 @@ function ServicePriceDisplay({
   service,
   priceTypeLabel,
   t,
+  formatCurrency,
 }: {
   service: any;
   priceTypeLabel: (type: string) => string;
   t: ReturnType<typeof useAdminT>['t'];
+  formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
 }) {
   return (
     <>
-      {service.price ? `SAR ${service.price}` : t('common.dash')}
+      {service.price ? formatCurrency(Number(service.price)) : t('common.dash')}
       <span className="ms-1 text-xs text-[#64748B]">/{priceTypeLabel(service.price_type)}</span>
     </>
   );
@@ -100,12 +102,14 @@ function ServiceCard({
   service,
   t,
   priceTypeLabel,
+  formatCurrency,
   onEdit,
   onDelete,
 }: {
   service: any;
   t: ReturnType<typeof useAdminT>['t'];
   priceTypeLabel: (type: string) => string;
+  formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
   onEdit: (service: any) => void;
   onDelete: (id: string) => void;
 }) {
@@ -127,7 +131,7 @@ function ServiceCard({
         </AdminEntityCardField>
         <AdminEntityCardField label={t('tables.price')}>
           <span className="text-[#0F172A]">
-            <ServicePriceDisplay service={service} priceTypeLabel={priceTypeLabel} t={t} />
+            <ServicePriceDisplay service={service} priceTypeLabel={priceTypeLabel} t={t} formatCurrency={formatCurrency} />
           </span>
         </AdminEntityCardField>
         <AdminEntityCardField label={t('common.active')}>
@@ -142,7 +146,7 @@ function ServiceCard({
 }
 
 export default function AdminServicesPage() {
-  const { t, dir } = useAdminT();
+  const { t, dir, formatCurrency } = useAdminT();
   const { data: services, isLoading } = useAdminServices();
   const { data: categories } = useCategories();
   const createService = useAdminCreateService();
@@ -351,7 +355,7 @@ export default function AdminServicesPage() {
                   {s.service_categories?.name_en ?? t('common.dash')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell className="text-[#0F172A]">
-                  <ServicePriceDisplay service={s} priceTypeLabel={priceTypeLabel} t={t} />
+                  <ServicePriceDisplay service={s} priceTypeLabel={priceTypeLabel} t={t} formatCurrency={formatCurrency} />
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
                   <ServiceActiveIcon isActive={s.is_active} />
@@ -376,6 +380,7 @@ export default function AdminServicesPage() {
             service={s}
             t={t}
             priceTypeLabel={priceTypeLabel}
+            formatCurrency={formatCurrency}
             onEdit={startEdit}
             onDelete={(id) => deleteService.mutate(id)}
           />

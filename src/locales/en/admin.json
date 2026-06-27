@@ -34,14 +34,27 @@
       "completedLabel": "Completed",
       "avgRating": "Avg Rating",
       "reviewsCount": "{{count}} reviews",
-      "revenue": "Revenue"
+      "revenue": "Revenue",
+      "approvedPayments": "{{count}} approved payments",
+      "pendingPayments": "Pending payments",
+      "totalServices": "Services",
+      "categoriesCount": "{{count}} categories",
+      "inProgressSub": "{{count}} in progress"
     },
     "recentBookings": "Recent Bookings",
     "topTechnicians": "Top Technicians",
     "jobsRating": "{{jobs}} jobs · {{rating}}★",
     "noBookings": "No bookings yet.",
     "noTechnicians": "No technicians yet.",
-    "noRevenue": "No revenue data yet."
+    "noRevenue": "No revenue data yet.",
+    "kpiTitle": "Key metrics",
+    "recentActivity": "Recent activity",
+    "noActivity": "No activity yet.",
+    "viewAllActivity": "View all audit logs",
+    "shortcuts": {
+      "title": "Quick shortcuts",
+      "pendingCount": "{{count}} pending"
+    }
   },
   "charts": {
     "bookingsLast7Days": "Bookings (Last 7 Days)",
@@ -323,6 +336,7 @@
       "payment_rejected": "Payment rejected",
       "payment_created": "Payment created",
       "payment_settings_updated": "Payment settings updated",
+      "site_settings_updated": "Site settings updated",
       "hero_slide_create": "Hero slide create",
       "hero_slide_update": "Hero slide update",
       "hero_slide_delete": "Hero slide delete",
@@ -370,7 +384,18 @@
     "save": "Save Settings",
     "saved": "Saved!",
     "about": "About",
-    "aboutText": "Sanad v1.0.0 — A home services marketplace platform built with Next.js, Supabase, and TailwindCSS."
+    "aboutText": "Sanad v1.0.0 — A home services marketplace platform built with Next.js, Supabase, and TailwindCSS.",
+    "currency": "Currency",
+    "currencyDescription": "Used for dashboard revenue and public service prices.",
+    "currencySaved": "Currency saved!"
+  },
+  "currencySettings": {
+    "title": "Currency settings",
+    "label": "Display currency",
+    "description": "Choose the currency shown in revenue KPIs and service prices.",
+    "save": "Save currency",
+    "saving": "Saving…",
+    "saved": "Saved!"
   },
   "unauthorized": {
     "title": "Unauthorized",
@@ -485,7 +510,9 @@
       "ADMIN_APPROVE_PAYMENT_FAILED": "Failed to approve payment",
       "ADMIN_REJECT_PAYMENT_FAILED": "Failed to reject payment",
       "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "Failed to load payment settings",
-      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "Failed to update payment settings"
+      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "Failed to update payment settings",
+      "ADMIN_FETCH_SITE_SETTINGS_FAILED": "Failed to load site settings",
+      "ADMIN_UPDATE_SITE_SETTINGS_FAILED": "Failed to update site settings"
     },
     "generic": "An unexpected error occurred"
   },

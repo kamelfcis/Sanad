@@ -6,7 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { createBookingSchema, type CreateBookingInput } from '@/lib/validations/booking';
 import { useCategories } from '@/hooks/use-categories';
-import { formatServicePrice, useService, useServices } from '@/hooks/use-services';
+import { useService, useServices } from '@/hooks/use-services';
+import { useFormatMoney } from '@/hooks/use-site-settings';
 import { useCreateBooking } from '@/hooks/use-bookings';
 import { useUpload } from '@/hooks/use-upload';
 import { ImageUploader } from '@/components/shared/image-uploader';
@@ -28,6 +29,7 @@ interface BookingFormProps {
 
 export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFormProps) {
   const router = useRouter();
+  const { formatMoneyOrEstimate } = useFormatMoney();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const lockedService = Boolean(defaultServiceId && defaultTechnicianId);
 
@@ -155,7 +157,7 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
             <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
               <p className="text-sm font-medium text-text-primary">{matchedService.name_ar}</p>
               <p className="mt-0.5 text-xs text-text-muted">
-                {formatServicePrice(matchedService.price)}
+                {formatMoneyOrEstimate(matchedService.price)}
               </p>
             </div>
           )
@@ -191,7 +193,7 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
                 <SelectContent>
                   {categoryServices?.map((svc) => (
                     <SelectItem key={svc.id} value={svc.id}>
-                      {svc.name_ar} — {formatServicePrice(svc.price)}
+                      {svc.name_ar} — {formatMoneyOrEstimate(svc.price)}
                     </SelectItem>
                   ))}
                 </SelectContent>

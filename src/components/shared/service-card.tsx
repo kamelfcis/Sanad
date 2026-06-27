@@ -3,6 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Wrench } from 'lucide-react';
+import { useFormatMoney } from '@/hooks/use-site-settings';
 
 interface ServiceCardProps {
   name_ar: string;
@@ -19,6 +20,8 @@ const priceTypeLabels: Record<string, string> = {
 };
 
 export function ServiceCard({ name_ar, name_en, description, price, price_type }: ServiceCardProps) {
+  const { formatMoneyOrEstimate } = useFormatMoney();
+
   return (
     <Card className="cursor-pointer transition-all hover:border-primary/50 hover:shadow-sm">
       <CardContent className="flex items-start gap-4 p-4">
@@ -33,9 +36,9 @@ export function ServiceCard({ name_ar, name_en, description, price, price_type }
               </h3>
               <p className="text-xs text-muted-foreground">{name_en}</p>
             </div>
-            {price && (
+            {price != null && price > 0 && (
               <div className="shrink-0 text-right">
-                <p className="font-semibold">{price.toFixed(0)} SAR</p>
+                <p className="font-semibold">{formatMoneyOrEstimate(price)}</p>
               </div>
             )}
           </div>

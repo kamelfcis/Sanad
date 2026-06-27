@@ -13,6 +13,7 @@ import type { PaymentMethod } from '@/types/payments';
 import { ArrowLeft, Copy, Check, Upload, Smartphone, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
+import { useFormatMoney } from '@/hooks/use-site-settings';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
@@ -36,6 +37,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 export function CustomerPaymentPageClient({ bookingId }: { bookingId: string }) {
   const { data, isLoading, error } = useBookingPayment(bookingId);
   const submit = useSubmitPayment();
+  const { formatMoney } = useFormatMoney();
 
   const [method, setMethod] = useState<PaymentMethod>('instapay');
   const [file, setFile] = useState<File | null>(null);
@@ -131,7 +133,7 @@ export function CustomerPaymentPageClient({ bookingId }: { bookingId: string }) 
             </div>
             <div className="flex justify-between text-sm font-semibold">
               <span>Amount due</span>
-              <span>{amount > 0 ? `${amount.toFixed(2)} EGP` : 'Contact support'}</span>
+              <span>{amount > 0 ? formatMoney(amount) : 'Contact support'}</span>
             </div>
           </CardContent>
         </Card>

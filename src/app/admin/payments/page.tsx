@@ -130,6 +130,7 @@ function PaymentCard({
   isRejecting,
   t,
   formatDateTime,
+  formatCurrency,
 }: {
   payment: AdminPayment;
   onApprove: (id: string) => void;
@@ -138,6 +139,7 @@ function PaymentCard({
   isRejecting: boolean;
   t: ReturnType<typeof useAdminT>['t'];
   formatDateTime: ReturnType<typeof useAdminT>['formatDateTime'];
+  formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
 }) {
   return (
     <AdminEntityCard className="text-start">
@@ -152,7 +154,7 @@ function PaymentCard({
           </div>
           <p className="text-sm text-[#64748B]">
             {payment.booking?.services?.name_ar ?? t('payments.booking')} ·{' '}
-            {Number(payment.amount).toFixed(2)} EGP
+            {formatCurrency(Number(payment.amount))}
           </p>
           <p className="text-xs text-[#94A3B8]">{formatDateTime(payment.created_at)}</p>
           {payment.rejection_reason ? (
@@ -184,7 +186,7 @@ function PaymentCard({
 }
 
 export default function AdminPaymentsPage() {
-  const { t, formatDateTime } = useAdminT();
+  const { t, formatDateTime, formatCurrency } = useAdminT();
   const [filter, setFilter] = useState<PaymentStatus | undefined>('pending');
   const [page, setPage] = useState(1);
 
@@ -255,7 +257,7 @@ export default function AdminPaymentsPage() {
                   {payment.booking?.services?.name_ar ?? t('payments.booking')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell className="tabular-nums text-[#0F172A]" dir="ltr">
-                  {Number(payment.amount).toFixed(2)} EGP
+                  {formatCurrency(Number(payment.amount))}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
                   <PaymentStatusBadge status={payment.status} context="admin" />
@@ -293,6 +295,7 @@ export default function AdminPaymentsPage() {
             isRejecting={reject.isPending}
             t={t}
             formatDateTime={formatDateTime}
+            formatCurrency={formatCurrency}
           />
         )) ?? null
       }

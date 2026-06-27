@@ -5,7 +5,9 @@ const LOCALE_MAP: Record<AdminLocale, string> = {
   en: 'en-US',
 };
 
-const CURRENCY = 'SAR';
+import { DEFAULT_CURRENCY } from '@/lib/currency/constants';
+
+const CURRENCY = DEFAULT_CURRENCY;
 
 export function getIntlLocale(locale: AdminLocale): string {
   return LOCALE_MAP[locale];
@@ -76,7 +78,7 @@ export function formatAdminNumber(
 export function formatAdminCurrency(
   locale: AdminLocale,
   value: number,
-  currency = CURRENCY,
+  currency: string = CURRENCY,
 ): string {
   return new Intl.NumberFormat(getIntlLocale(locale), {
     style: 'currency',

@@ -10,6 +10,8 @@ import {
   formatAdminShortDate,
   formatAdminTime,
 } from './format';
+import { useSiteCurrency } from '@/hooks/use-site-settings';
+import { DEFAULT_CURRENCY } from '@/lib/currency/constants';
 import { useAdminLocaleStore } from './store';
 import type { AdminDirection, AdminLocale, AdminTranslator } from './types';
 
@@ -66,6 +68,7 @@ export function AdminI18nProvider({ children }: { children: React.ReactNode }) {
   const hydrated = useAdminLocaleStore((s) => s.hydrated);
   const hydrate = useAdminLocaleStore((s) => s.hydrate);
   const setLocale = useAdminLocaleStore((s) => s.setLocale);
+  const { data: siteCurrency = DEFAULT_CURRENCY } = useSiteCurrency();
 
   useLayoutEffect(() => {
     hydrate();
@@ -108,8 +111,9 @@ export function AdminI18nProvider({ children }: { children: React.ReactNode }) {
     [locale],
   );
   const formatCurrency = useCallback(
-    (value: number, currency?: string) => formatAdminCurrency(locale, value, currency),
-    [locale],
+    (value: number, currency?: string) =>
+      formatAdminCurrency(locale, value, currency ?? siteCurrency),
+    [locale, siteCurrency],
   );
 
   const value = useMemo(

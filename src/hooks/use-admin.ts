@@ -19,16 +19,51 @@ export interface DashboardAnalytics {
     in_progress_bookings: number;
     cancelled_bookings: number;
     total_reviews: number;
+    hidden_reviews: number;
     average_rating: number;
+    total_services: number;
+    total_categories: number;
+    pending_payments: number;
+    approved_payments: number;
+    total_audit_logs: number;
+    hero_slides: number;
   };
   revenue: { total: number; by_month: { month: string; amount: number }[] };
   recent_bookings: {
-    id: string; service_name: string; customer_name: string; status: string; created_at: string;
+    id: string;
+    service_name: string;
+    service_name_ar?: string;
+    customer_name: string;
+    status: string;
+    created_at: string;
   }[];
   top_technicians: {
-    id: string; full_name: string; completed_jobs: number; average_rating: number;
+    id: string;
+    full_name: string;
+    completed_jobs: number;
+    average_rating: number;
   }[];
   booking_trends: { date: string; count: number }[];
+  recent_activity: {
+    id: string;
+    action: string;
+    entity_type: string;
+    admin_name: string;
+    created_at: string;
+  }[];
+  shortcuts: {
+    bookings: number;
+    customers: number;
+    technicians: number;
+    services: number;
+    categories: number;
+    payments: number;
+    pending_payments: number;
+    reviews: number;
+    audit_logs: number;
+    hero_slides: number;
+    settings: number;
+  };
 }
 
 export const EMPTY_DASHBOARD: DashboardAnalytics = {
@@ -44,12 +79,33 @@ export const EMPTY_DASHBOARD: DashboardAnalytics = {
     in_progress_bookings: 0,
     cancelled_bookings: 0,
     total_reviews: 0,
+    hidden_reviews: 0,
     average_rating: 0,
+    total_services: 0,
+    total_categories: 0,
+    pending_payments: 0,
+    approved_payments: 0,
+    total_audit_logs: 0,
+    hero_slides: 0,
   },
   revenue: { total: 0, by_month: [] },
   recent_bookings: [],
   top_technicians: [],
   booking_trends: [],
+  recent_activity: [],
+  shortcuts: {
+    bookings: 0,
+    customers: 0,
+    technicians: 0,
+    services: 0,
+    categories: 0,
+    payments: 0,
+    pending_payments: 0,
+    reviews: 0,
+    audit_logs: 0,
+    hero_slides: 0,
+    settings: 1,
+  },
 };
 
 async function fetchDashboard(): Promise<DashboardAnalytics> {
@@ -66,6 +122,8 @@ async function fetchDashboard(): Promise<DashboardAnalytics> {
     recent_bookings: data.recent_bookings ?? [],
     top_technicians: data.top_technicians ?? [],
     booking_trends: data.booking_trends ?? [],
+    recent_activity: data.recent_activity ?? [],
+    shortcuts: { ...EMPTY_DASHBOARD.shortcuts, ...data.shortcuts },
   };
 }
 

@@ -7,12 +7,26 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { usePaymentSettings, useUpdatePaymentSettings } from '@/hooks/use-payments';
+import { useAdminSiteSettings, useUpdateSiteSettings } from '@/hooks/use-site-settings';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Save } from 'lucide-react';
+import { Coins, Save } from 'lucide-react';
 import type { PaymentSettings } from '@/types/payments';
+import type { SiteSettings } from '@/types/site-settings';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { cn } from '@/lib/utils/cn';
+import {
+  CURRENCY_LABELS,
+  SUPPORTED_CURRENCIES,
+  type SiteCurrency,
+} from '@/lib/currency/constants';
 
 function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
   const { t, dir } = useAdminT();
@@ -77,6 +91,55 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
   );
 }
 
+function CurrencySettingsForm({ settings }: { settings: SiteSettings }) {
+  const { t, locale, dir } = useAdminT();
+  const [currency, setCurrency] = useState<SiteCurrency>(settings.currency);
+  const [saved, setSaved] = useState(false);
+  const updateSettings = useUpdateSiteSettings();
+  const iconMargin = dir === 'ltr' ? 'mr-1' : 'ml-1';
+
+  const handleSave = () => {
+    updateSettings.mutate(
+      { currency },
+      {
+        onSuccess: () => {
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2000);
+        },
+      },
+    );
+  };
+
+  return (
+    <>
+      <p className="text-sm text-muted-foreground">{t('currencySettings.description')}</p>
+      <div className="space-y-2">
+        <Label htmlFor="currency">{t('currencySettings.label')}</Label>
+        <Select value={currency} onValueChange={(value) => setCurrency(value as SiteCurrency)}>
+          <SelectTrigger id="currency" className="border-[#E2E8F0] bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SUPPORTED_CURRENCIES.map((code) => (
+              <SelectItem key={code} value={code}>
+                {CURRENCY_LABELS[code][locale]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <Button onClick={handleSave} disabled={updateSettings.isPending || currency === settings.currency}>
+        <Save className={cn('h-4 w-4', iconMargin)} />
+        {saved
+          ? t('currencySettings.saved')
+          : updateSettings.isPending
+            ? t('currencySettings.saving')
+            : t('currencySettings.save')}
+      </Button>
+    </>
+  );
+}
+
 export default function AdminSettingsPage() {
   const { t, dir } = useAdminT();
   const [platformName, setPlatformName] = useState('Sanad');
@@ -84,7 +147,8 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
   const iconMargin = dir === 'ltr' ? 'mr-1' : 'ml-1';
 
-  const { data: paymentSettings, isLoading: settingsLoading } = usePaymentSettings();
+  const { data: paymentSettings, isLoading: paymentLoading } = usePaymentSettings();
+  const { data: siteSettings, isLoading: siteLoading } = useAdminSiteSettings();
 
   const handleSave = () => {
     setSaved(true);
@@ -94,12 +158,28 @@ export default function AdminSettingsPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">{t('settings.title')}</h1>
-        <p className="mt-1 text-muted-foreground">{t('settings.subtitle')}</p>
+        <h1 className="text-3xl font-bold tracking-tight text-[#0F172A]">{t('settings.title')}</h1>
+        <p className="mt-1 text-[#64748B]">{t('settings.subtitle')}</p>
       </div>
 
       <div className="mx-auto max-w-lg space-y-6">
-        <Card>
+        <Card className="rounded-2xl border-gray-100 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <Coins className="h-4 w-4 text-[#FF6B00]" />
+              {t('currencySettings.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {siteLoading ? (
+              <Skeleton className="h-24 w-full rounded-xl" />
+            ) : siteSettings ? (
+              <CurrencySettingsForm key={siteSettings.updated_at} settings={siteSettings} />
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border-gray-100 shadow-sm">
           <CardHeader><CardTitle className="text-sm font-medium">{t('settings.general')}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -117,18 +197,18 @@ export default function AdminSettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl border-gray-100 shadow-sm">
           <CardHeader><CardTitle className="text-sm font-medium">{t('paymentSettings.title')}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            {settingsLoading ? (
-              <Skeleton className="h-40 w-full" />
+            {paymentLoading ? (
+              <Skeleton className="h-40 w-full rounded-xl" />
             ) : paymentSettings ? (
               <PaymentSettingsForm key={paymentSettings.updated_at} settings={paymentSettings} />
             ) : null}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl border-gray-100 shadow-sm">
           <CardHeader><CardTitle className="text-sm font-medium">{t('settings.about')}</CardTitle></CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">{t('settings.aboutText')}</p>
