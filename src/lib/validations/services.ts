@@ -6,6 +6,8 @@ export const listServicesQuerySchema = paginationPageSchema.extend({
   category_id: uuidSchema.optional(),
   id: uuidSchema.optional(),
   search: z.string().max(100).optional(),
+  is_active: z.enum(['true', 'false']).optional(),
+  price_type: priceTypeSchema.optional(),
 });
 
 export const createServiceSchema = z.object({

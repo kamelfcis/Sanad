@@ -1,8 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
-import { LayoutGrid, LayoutList, Search } from 'lucide-react';
+import { LayoutGrid, LayoutList, Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { AdminListViewMode } from '@/hooks/use-admin-list-view';
@@ -138,6 +139,93 @@ export function AdminFilterPills({
           {f.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+export const adminFilterSelectClass =
+  'flex h-9 w-full rounded-md border border-[#E2E8F0] bg-white px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00]/30';
+
+export function AdminAdvancedFiltersPanel({
+  title,
+  resetLabel,
+  hasActiveFilters,
+  activeCount = 0,
+  onReset,
+  defaultOpen,
+  children,
+}: {
+  title: string;
+  resetLabel: string;
+  hasActiveFilters: boolean;
+  activeCount?: number;
+  onReset: () => void;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen ?? hasActiveFilters);
+
+  useEffect(() => {
+    if (hasActiveFilters) setOpen(true);
+  }, [hasActiveFilters]);
+
+  return (
+    <div className="mb-6 overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          aria-expanded={open}
+          className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-[#0F172A] transition-colors hover:bg-[#F8FAFC]"
+        >
+          <SlidersHorizontal className="h-4 w-4 text-[#FF6B00]" aria-hidden />
+          {title}
+          {activeCount > 0 ? (
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#FF6B00] px-1.5 text-[11px] font-semibold text-white">
+              {activeCount}
+            </span>
+          ) : null}
+          <ChevronDown
+            className={cn('h-4 w-4 text-[#64748B] transition-transform', open && 'rotate-180')}
+            aria-hidden
+          />
+        </button>
+        {hasActiveFilters ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onReset}
+            className="text-[#64748B] hover:text-[#FF6B00]"
+          >
+            {resetLabel}
+          </Button>
+        ) : null}
+      </div>
+      {open ? (
+        <div className="border-t border-[#E2E8F0] px-4 py-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function AdminFilterField({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <label htmlFor={htmlFor} className="text-xs font-medium text-[#64748B]">
+        {label}
+      </label>
+      {children}
     </div>
   );
 }

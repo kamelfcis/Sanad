@@ -274,17 +274,25 @@ export interface AdminServicesResponse {
   limit: number;
 }
 
+export interface AdminServicesQueryFilters {
+  categoryId?: string;
+  search?: string;
+  isActive?: 'true' | 'false';
+  priceType?: string;
+}
+
 async function fetchAdminServices(
   page = 1,
   limit = 25,
-  categoryId?: string,
-  search?: string,
+  filters: AdminServicesQueryFilters = {},
 ): Promise<AdminServicesResponse> {
   const params = new URLSearchParams();
   params.set('page', String(page));
   params.set('limit', String(limit));
-  if (categoryId) params.set('category_id', categoryId);
-  if (search) params.set('search', search);
+  if (filters.categoryId) params.set('category_id', filters.categoryId);
+  if (filters.search) params.set('search', filters.search);
+  if (filters.isActive) params.set('is_active', filters.isActive);
+  if (filters.priceType) params.set('price_type', filters.priceType);
   const res = await fetch(`/api/admin/services?${params}`);
   if (!res.ok) throw new Error(E.FETCH_SERVICES_FAILED);
   return res.json();
@@ -316,10 +324,14 @@ async function deleteAdminService(id: string) {
   return res.json();
 }
 
-export function useAdminServices(page = 1, limit = 25, categoryId?: string, search?: string) {
+export function useAdminServices(
+  page = 1,
+  limit = 25,
+  filters: AdminServicesQueryFilters = {},
+) {
   return useQuery({
-    queryKey: ['admin-services', page, limit, categoryId, search],
-    queryFn: () => fetchAdminServices(page, limit, categoryId, search),
+    queryKey: ['admin-services', page, limit, filters],
+    queryFn: () => fetchAdminServices(page, limit, filters),
   });
 }
 

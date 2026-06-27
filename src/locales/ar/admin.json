@@ -239,9 +239,23 @@
     "new": "خدمة جديدة",
     "empty": {
       "title": "لا توجد خدمات",
-      "subtitle": "أنشئ أول خدمة للبدء."
+      "subtitle": "أنشئ أول خدمة للبدء.",
+      "filtered": "لا توجد خدمات تطابق الفلاتر."
     },
     "deleteConfirm": "حذف هذه الخدمة؟",
+    "searchPlaceholder": "البحث بالاسم العربي أو الإنجليزي أو المعرّف…",
+    "filters": {
+      "advanced": "فلاتر متقدمة",
+      "reset": "إعادة تعيين الفلاتر",
+      "category": "التصنيف",
+      "categoryAll": "جميع التصنيفات",
+      "status": "الحالة",
+      "statusAll": "جميع الحالات",
+      "statusActive": "نشط فقط",
+      "statusInactive": "غير نشط فقط",
+      "priceType": "نوع السعر",
+      "priceTypeAll": "جميع أنواع الأسعار"
+    },
     "card": {
       "subtitle": "عرض خدمة"
     },

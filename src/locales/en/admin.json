@@ -239,9 +239,23 @@
     "new": "New Service",
     "empty": {
       "title": "No services",
-      "subtitle": "Create your first service to get started."
+      "subtitle": "Create your first service to get started.",
+      "filtered": "No services match your filters."
     },
     "deleteConfirm": "Delete this service?",
+    "searchPlaceholder": "Search by Arabic, English name, or slug…",
+    "filters": {
+      "advanced": "Advanced filters",
+      "reset": "Reset filters",
+      "category": "Category",
+      "categoryAll": "All categories",
+      "status": "Status",
+      "statusAll": "All statuses",
+      "statusActive": "Active only",
+      "statusInactive": "Inactive only",
+      "priceType": "Price type",
+      "priceTypeAll": "All price types"
+    },
     "card": {
       "subtitle": "Service offering"
     },

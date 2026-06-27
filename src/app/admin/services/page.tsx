@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   useAdminServices,
   useAdminCreateService,
@@ -36,14 +36,18 @@ import {
   AdminEntityCardMetaPill,
   AdminEntityCardPrimaryAction,
   AdminEntityCardTagPill,
+  AdminAdvancedFiltersPanel,
+  AdminFilterField,
+  AdminSearchInput,
   adminActionButtonClass,
   adminActionButtonDestructiveClass,
+  adminFilterSelectClass,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
 import { Plus, Wrench, Pencil, Trash2, X, Check } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
-import { useAdminListPagination } from '@/hooks/use-admin-list-pagination';
+import { useAdminServicesFilters } from '@/hooks/use-admin-services-filters';
 import { asAdminListItems } from '@/lib/admin/list-items';
 import { cn } from '@/lib/utils/cn';
 
@@ -212,14 +216,32 @@ function ServiceCard({
 
 export default function AdminServicesPage() {
   const { t, dir, locale, formatCurrency } = useAdminT();
-  const { page, limit, setPage, setLimit } = useAdminListPagination();
-  const { data, isLoading } = useAdminServices(page, limit);
+  const {
+    page,
+    limit,
+    setPage,
+    setLimit,
+    filters,
+    setFilters,
+    resetFilters,
+    hasActiveFilters,
+    activeFilterCount,
+  } = useAdminServicesFilters();
+  const { data, isLoading } = useAdminServices(page, limit, {
+    search: filters.search || undefined,
+    categoryId: filters.category_id || undefined,
+    isActive: filters.is_active || undefined,
+    priceType: filters.price_type || undefined,
+  });
   const services = asAdminListItems(data, 'services');
   const { data: categories } = useCategories();
   const createService = useAdminCreateService();
   const updateService = useAdminUpdateService();
   const deleteService = useAdminDeleteService();
   const iconMargin = dir === 'ltr' ? 'mr-1' : 'ml-1';
+
+  const formRef = useRef<HTMLDivElement>(null);
+  const scrollToFormOnMount = useRef(false);
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -269,7 +291,18 @@ export default function AdminServicesPage() {
     });
     setEditingId(s.id);
     setShowForm(true);
+    scrollToFormOnMount.current = true;
   };
+
+  useEffect(() => {
+    if (!showForm || !scrollToFormOnMount.current) return;
+    scrollToFormOnMount.current = false;
+
+    requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      formRef.current?.querySelector<HTMLInputElement>('#name_ar')?.focus({ preventScroll: true });
+    });
+  }, [showForm, editingId]);
 
   const priceTypeLabel = (type: string) => {
     const map: Record<string, string> = {
@@ -280,8 +313,72 @@ export default function AdminServicesPage() {
     return map[type] ?? type;
   };
 
+  const categoryLabel = (category: { name_ar?: string; name_en?: string }) =>
+    locale === 'ar'
+      ? (category.name_ar ?? category.name_en ?? '')
+      : (category.name_en ?? category.name_ar ?? '');
+
+  const servicesFilters = (
+    <AdminAdvancedFiltersPanel
+      title={t('services.filters.advanced')}
+      resetLabel={t('services.filters.reset')}
+      hasActiveFilters={hasActiveFilters}
+      activeCount={activeFilterCount}
+      onReset={resetFilters}
+    >
+      <AdminFilterField label={t('services.filters.category')} htmlFor="filter-category">
+        <select
+          id="filter-category"
+          value={filters.category_id}
+          onChange={(e) => setFilters({ category_id: e.target.value })}
+          className={adminFilterSelectClass}
+        >
+          <option value="">{t('services.filters.categoryAll')}</option>
+          {categories?.map((c: any) => (
+            <option key={c.id} value={c.id}>
+              {categoryLabel(c)}
+            </option>
+          ))}
+        </select>
+      </AdminFilterField>
+
+      <AdminFilterField label={t('services.filters.status')} htmlFor="filter-status">
+        <select
+          id="filter-status"
+          value={filters.is_active}
+          onChange={(e) =>
+            setFilters({ is_active: e.target.value as '' | 'true' | 'false' })
+          }
+          className={adminFilterSelectClass}
+        >
+          <option value="">{t('services.filters.statusAll')}</option>
+          <option value="true">{t('services.filters.statusActive')}</option>
+          <option value="false">{t('services.filters.statusInactive')}</option>
+        </select>
+      </AdminFilterField>
+
+      <AdminFilterField label={t('services.filters.priceType')} htmlFor="filter-price-type">
+        <select
+          id="filter-price-type"
+          value={filters.price_type}
+          onChange={(e) =>
+            setFilters({
+              price_type: e.target.value as '' | 'fixed' | 'hourly' | 'estimate',
+            })
+          }
+          className={adminFilterSelectClass}
+        >
+          <option value="">{t('services.filters.priceTypeAll')}</option>
+          <option value="fixed">{t('services.form.fixed')}</option>
+          <option value="hourly">{t('services.form.hourly')}</option>
+          <option value="estimate">{t('services.form.estimate')}</option>
+        </select>
+      </AdminFilterField>
+    </AdminAdvancedFiltersPanel>
+  );
+
   const serviceForm = showForm ? (
-    <Card className="mb-6">
+    <Card ref={formRef} className="mb-6 scroll-mt-[4.5rem]" data-testid="service-form">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-sm">
           {editingId ? t('services.edit') : t('services.new')}
@@ -392,13 +489,24 @@ export default function AdminServicesPage() {
         </Button>
       }
       beforeContent={serviceForm}
+      filters={servicesFilters}
+      search={
+        <AdminSearchInput
+          placeholder={t('services.searchPlaceholder')}
+          value={filters.search}
+          onChange={(value) => setFilters({ search: value })}
+          className="max-w-md"
+        />
+      }
       isLoading={isLoading}
       isEmpty={!services?.length}
       empty={
         <AdminEmptyState
           icon={Wrench}
           title={t('services.empty.title')}
-          subtitle={t('services.empty.subtitle')}
+          subtitle={
+            hasActiveFilters ? t('services.empty.filtered') : t('services.empty.subtitle')
+          }
         />
       }
       pagination={

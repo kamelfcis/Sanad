@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const query = parseSearchParams(request.nextUrl.searchParams, listServicesQuerySchema);
   if ('response' in query) return query.response;
 
-  const { category_id, search } = query.data;
+  const { category_id, search, is_active, price_type } = query.data;
   const page = query.data.page ?? 1;
   const limit = query.data.limit ?? 25;
   const offset = (page - 1) * limit;
@@ -27,6 +27,16 @@ export async function GET(request: NextRequest) {
 
   if (category_id) {
     dbQuery = dbQuery.eq('category_id', category_id);
+  }
+
+  if (is_active === 'true') {
+    dbQuery = dbQuery.eq('is_active', true);
+  } else if (is_active === 'false') {
+    dbQuery = dbQuery.eq('is_active', false);
+  }
+
+  if (price_type) {
+    dbQuery = dbQuery.eq('price_type', price_type);
   }
 
   if (search) {
