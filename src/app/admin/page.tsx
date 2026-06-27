@@ -10,7 +10,11 @@ import {
 import { useAdminDashboard, EMPTY_DASHBOARD } from '@/hooks/use-admin';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AdminEntityCard, AdminPageHeader } from '@/components/admin/admin-list-chrome';
+import {
+  AdminCardAccent,
+  AdminEntityCard,
+  AdminPageHeader,
+} from '@/components/admin/admin-list-chrome';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 import { BookingStatus } from '@/components/shared/booking-status';
@@ -38,14 +42,8 @@ function PremiumStatCard({
         highlight && 'ring-1 ring-[#FF6B00]/20',
       )}
     >
-      <span
-        aria-hidden="true"
-        className={cn(
-          'pointer-events-none absolute inset-y-4 start-4 w-1.5 rounded-full bg-gradient-to-b',
-          accent,
-        )}
-      />
-      <div className="flex items-start justify-between gap-3 ps-5">
+      <AdminCardAccent className={accent} />
+      <div className="relative z-0 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium uppercase tracking-wide text-[#94A3B8]">{label}</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-[#0F172A]">{value}</p>
@@ -75,13 +73,10 @@ function ShortcutCard({
   return (
     <Link
       href={href}
-      className="group relative flex flex-col rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#FF6B00]/30 hover:bg-[#FF6B00]/[0.03] hover:shadow-md"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#FF6B00]/30 hover:bg-[#FF6B00]/[0.03] hover:shadow-md"
     >
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-y-3 start-3 w-1 rounded-full bg-gradient-to-b from-[#FF6B00] to-[#FF8A34] opacity-0 transition-opacity group-hover:opacity-100"
-      />
-      <div className="flex items-center justify-between gap-2">
+      <AdminCardAccent />
+      <div className="relative z-0 flex items-center justify-between gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FF6B00]/10 transition-colors group-hover:bg-[#FF6B00]/15">
           <Icon className="h-5 w-5 text-[#FF6B00]" />
         </div>
