@@ -19,6 +19,7 @@ import {
   AdminEntityCardAvatar,
   AdminEntityCardHeader,
   AdminEntityCardInfoBox,
+  AdminEntityCardInfoLtrValue,
   AdminEntityCardInfoRow,
   AdminEntityCardMeta,
   AdminEntityCardMetaPill,
@@ -102,15 +103,15 @@ function TechnicianCard({
       />
 
       <AdminEntityCardInfoBox className="mt-4">
-        <AdminEntityCardInfoRow label={t('tables.email')}>
-          <span className="text-[#64748B]" dir="ltr">
+        <AdminEntityCardInfoRow label={t('tables.email')} fullWidth>
+          <AdminEntityCardInfoLtrValue className="text-[#64748B]">
             {tech.email ?? t('common.dash')}
-          </span>
+          </AdminEntityCardInfoLtrValue>
         </AdminEntityCardInfoRow>
-        <AdminEntityCardInfoRow label={t('tables.phone')}>
-          <span className="text-[#64748B]" dir="ltr">
+        <AdminEntityCardInfoRow label={t('tables.phone')} fullWidth>
+          <AdminEntityCardInfoLtrValue className="text-[#64748B]">
             {tech.phone ?? t('common.dash')}
-          </span>
+          </AdminEntityCardInfoLtrValue>
         </AdminEntityCardInfoRow>
         <AdminEntityCardInfoRow label={t('tables.jobs')}>
           <span className="font-semibold tabular-nums">{tech.completed_jobs ?? 0}</span>

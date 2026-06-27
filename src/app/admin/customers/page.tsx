@@ -20,6 +20,7 @@ import {
   AdminEntityCardAvatar,
   AdminEntityCardHeader,
   AdminEntityCardInfoBox,
+  AdminEntityCardInfoLtrValue,
   AdminEntityCardInfoRow,
   AdminEntityCardMeta,
   AdminEntityCardMetaPill,
@@ -83,14 +84,14 @@ function CustomerCard({
 
       <AdminEntityCardInfoBox className="mt-4" columns={1}>
         <AdminEntityCardInfoRow label={t('tables.email')}>
-          <span className="text-[#64748B]" dir="ltr">
+          <AdminEntityCardInfoLtrValue className="text-[#64748B]">
             {customer.email ?? t('common.dash')}
-          </span>
+          </AdminEntityCardInfoLtrValue>
         </AdminEntityCardInfoRow>
         <AdminEntityCardInfoRow label={t('tables.phone')}>
-          <span className="text-[#64748B]" dir="ltr">
+          <AdminEntityCardInfoLtrValue className="text-[#64748B]">
             {customer.phone ?? t('common.dash')}
-          </span>
+          </AdminEntityCardInfoLtrValue>
         </AdminEntityCardInfoRow>
       </AdminEntityCardInfoBox>
 

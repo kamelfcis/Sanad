@@ -348,8 +348,10 @@ export function AdminEntityCardInfoBox({
   return (
     <div
       className={cn(
-        'rounded-xl border border-gray-100 bg-[#F8FAFC]/90 p-3.5 sm:p-4',
-        columns === 2 ? 'grid gap-3 sm:grid-cols-2' : 'space-y-3',
+        'min-w-0 w-full rounded-xl border border-gray-100 bg-[#F8FAFC]/90 p-3.5 sm:p-4',
+        columns === 2
+          ? 'grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2'
+          : 'flex flex-col gap-3',
         className,
       )}
     >
@@ -367,13 +369,38 @@ export function AdminEntityCardInfoRow({
   label: string;
   children: React.ReactNode;
   className?: string;
+  /** Span both columns in a 2-column info box (e.g. email/phone). */
   fullWidth?: boolean;
 }) {
   return (
-    <div className={cn('min-w-0', fullWidth && 'sm:col-span-2', className)}>
+    <div className={cn('min-w-0 overflow-hidden', fullWidth && 'sm:col-span-2', className)}>
       <p className="text-[11px] font-medium uppercase tracking-wide text-[#94A3B8]">{label}</p>
-      <div className="mt-1 text-sm text-[#0F172A]">{children}</div>
+      <div className="mt-1 min-w-0 overflow-hidden text-sm text-[#0F172A]">{children}</div>
     </div>
+  );
+}
+
+/** LTR contact/value text (email, phone) — truncates safely inside RTL card grids. */
+export function AdminEntityCardInfoLtrValue({
+  children,
+  className,
+  title,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  title?: string;
+}) {
+  const resolvedTitle =
+    title ?? (typeof children === 'string' || typeof children === 'number' ? String(children) : undefined);
+
+  return (
+    <span
+      dir="ltr"
+      title={resolvedTitle}
+      className={cn('block min-w-0 truncate text-start', className)}
+    >
+      {children}
+    </span>
   );
 }
 
