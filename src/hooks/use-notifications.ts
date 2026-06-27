@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   useInfiniteQuery,
   useMutation,
@@ -10,9 +10,85 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/store/auth-store';
 import type { Notification, NotificationListResponse } from '@/types/notifications';
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+  SupabaseClient,
+} from '@supabase/supabase-js';
 
 const PAGE_SIZE = 20;
+
+/** One subscribed channel per user — Supabase rejects .on() after .subscribe(). */
+type NotificationsChannelEntry = {
+  channel: RealtimeChannel;
+  refCount: number;
+  seenIds: Set<string>;
+  callbacks: { invalidate: () => void };
+};
+
+const notificationsChannels = new Map<string, NotificationsChannelEntry>();
+
+function acquireNotificationsChannel(
+  supabase: SupabaseClient,
+  userId: string,
+  invalidate: () => void,
+): () => void {
+  let entry = notificationsChannels.get(userId);
+
+  if (!entry) {
+    const seenIds = new Set<string>();
+    const callbacks = { invalidate };
+
+    const channel = supabase
+      .channel(`notifications:${userId}`)
+      .on(
+        'postgres_changes' as never,
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload: RealtimePostgresChangesPayload<Notification>) => {
+          const row = payload.new as Notification;
+          if (!row?.id || seenIds.has(row.id)) return;
+          seenIds.add(row.id);
+          callbacks.invalidate();
+        },
+      )
+      .on(
+        'postgres_changes' as never,
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          callbacks.invalidate();
+        },
+      )
+      .subscribe();
+
+    entry = { channel, refCount: 0, seenIds, callbacks };
+    notificationsChannels.set(userId, entry);
+  } else {
+    entry.callbacks.invalidate = invalidate;
+  }
+
+  entry.refCount += 1;
+
+  return () => {
+    const current = notificationsChannels.get(userId);
+    if (!current) return;
+
+    current.refCount -= 1;
+    if (current.refCount <= 0) {
+      supabase.removeChannel(current.channel);
+      notificationsChannels.delete(userId);
+    }
+  };
+}
 
 async function fetchNotifications(params: {
   offset: number;
@@ -139,11 +215,10 @@ export function useDeleteNotificationsBulk() {
   });
 }
 
-/** Live updates via Supabase Realtime — dedupes by notification id */
+/** Live updates via Supabase Realtime — shared channel per user, dedupes by notification id */
 export function useNotificationsRealtime(enabled = true) {
   const { profile } = useAuthStore();
   const qc = useQueryClient();
-  const seenIds = useRef(new Set<string>());
 
   const invalidate = useCallback(() => {
     qc.invalidateQueries({ queryKey: ['notifications'] });
@@ -154,42 +229,7 @@ export function useNotificationsRealtime(enabled = true) {
     if (!enabled || !profile?.id) return;
 
     const supabase = createClient();
-    const userId = profile.id;
-
-    const channel = supabase
-      .channel(`notifications:${userId}`)
-      .on(
-        'postgres_changes' as never,
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload: RealtimePostgresChangesPayload<Notification>) => {
-          const row = payload.new as Notification;
-          if (!row?.id || seenIds.current.has(row.id)) return;
-          seenIds.current.add(row.id);
-          invalidate();
-        },
-      )
-      .on(
-        'postgres_changes' as never,
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
-        },
-        () => {
-          invalidate();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return acquireNotificationsChannel(supabase, profile.id, invalidate);
   }, [enabled, profile?.id, invalidate]);
 }
 

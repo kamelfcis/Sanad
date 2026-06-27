@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
-import { resetVoluntaryLogoutFlag } from '@/lib/auth/logout';
+import { resetVoluntaryLogoutFlag, clearLogoutTransition } from '@/lib/auth/logout';
 import { useAuthStore } from '@/store/auth-store';
 
 async function fetchProfile(userId: string) {
@@ -16,6 +16,8 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const { setUser, setProfile, setLoading, setSessionResolved } = useAuthStore();
 
   useEffect(() => {
+    clearLogoutTransition();
+
     // Server bootstrap (AuthBootstrap) may have already hydrated the store.
     if (useAuthStore.getState().sessionResolved) {
       return;

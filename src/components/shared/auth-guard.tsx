@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { buildLoginHrefWithNext } from '@/lib/auth/safe-redirect';
+import { isVoluntaryLogout } from '@/lib/auth/logout';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/store/auth-store';
 import { PageLoading } from '@/components/shared/page-loading';
@@ -35,7 +36,7 @@ export function AuthGuard({ children, allowedRoles, fallbackPath = '/auth/login'
   const rolesKey = allowedRoles.join(',');
 
   useEffect(() => {
-    if (!sessionResolved) return;
+    if (!sessionResolved || isVoluntaryLogout()) return;
 
     let cancelled = false;
 
@@ -87,6 +88,10 @@ export function AuthGuard({ children, allowedRoles, fallbackPath = '/auth/login'
       cancelled = true;
     };
   }, [user, profile, sessionResolved, rolesKey, fallbackPath, router, setUser, setProfile]);
+
+  if (isVoluntaryLogout()) {
+    return <AuthGuardLoading />;
+  }
 
   if (!sessionResolved || isLoading || !user || !profile) {
     return <AuthGuardLoading />;

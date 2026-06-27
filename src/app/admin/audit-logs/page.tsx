@@ -8,15 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { History, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AdminPagination } from '@/components/admin/admin-pagination';
+import { History } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
-import { cn } from '@/lib/utils/cn';
 
 const entityFilters = ['', 'booking', 'technician', 'customer', 'service', 'category', 'review'] as const;
 
 export default function AdminAuditLogsPage() {
-  const { t, formatDateTime, dir } = useAdminT();
+  const { t, formatDateTime } = useAdminT();
   const [entityType, setEntityType] = useState('');
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useAdminAuditLogs(entityType || undefined, undefined, page);
@@ -88,23 +88,13 @@ export default function AdminAuditLogsPage() {
             ))}
           </div>
 
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {t('common.pageOf', {
-                page: data.page,
-                totalPages: Math.ceil(data.total / data.limit),
-                total: data.total,
-              })}
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                <ChevronLeft className={cn('h-4 w-4', dir === 'ltr' ? 'mr-1' : 'ml-1')} /> {t('common.previous')}
-              </Button>
-              <Button variant="outline" size="sm" disabled={page * data.limit >= data.total} onClick={() => setPage(page + 1)}>
-                {t('common.next')} <ChevronRight className={cn('h-4 w-4', dir === 'ltr' ? 'ml-1' : 'mr-1')} />
-              </Button>
-            </div>
-          </div>
+          <AdminPagination
+            page={page}
+            totalPages={Math.ceil(data.total / data.limit)}
+            total={data.total}
+            onPageChange={setPage}
+            summaryClassName="text-muted-foreground"
+          />
         </>
       )}
     </div>

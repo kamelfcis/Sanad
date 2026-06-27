@@ -646,18 +646,37 @@ test.describe.serial('Sanad full E2E workflows', () => {
     await page.getByRole('button', { name: 'قائمة المستخدم' }).click();
     await page.getByRole('menuitem', { name: 'تسجيل الخروج' }).click();
     await page.getByRole('button', { name: 'تسجيل الخروج' }).last().click();
-    await page.waitForTimeout(2000);
+
+    await page.waitForURL((url) => url.pathname === '/services', { timeout: 15_000 });
+    await waitForPageReady(page);
+
+    const bodyOpacity = await page.evaluate(() => getComputedStyle(document.body).opacity);
+    const headingVisible = await page
+      .getByRole('heading', { name: /دور على الخدمة/ })
+      .isVisible()
+      .catch(() => false);
+    const loginVisible = await page
+      .getByRole('link', { name: 'تسجيل الدخول' })
+      .isVisible()
+      .catch(() => false);
 
     const cookies = await getCookiesHeader(context);
     const bookings = await apiGet(request, '/api/bookings', cookies);
     const shot = await screenshot(page, '14-logout');
 
+    const contentVisible = bodyOpacity === '1' && (headingVisible || loginVisible);
+
     record({
       step: 'Auth — logout',
-      result: bookings.status === 401 || page.url().includes('/auth') ? 'PASS' : 'FAIL',
+      result: bookings.status === 401 && contentVisible ? 'PASS' : 'FAIL',
       url: page.url(),
       api: { method: 'GET', path: '/api/bookings post-logout', status: bookings.status, snippet: bookings.body },
+      notes: `body opacity=${bodyOpacity}, heading=${headingVisible}, login=${loginVisible}`,
       screenshot: shot,
     });
+
+    expect(bookings.status).toBe(401);
+    expect(bodyOpacity).toBe('1');
+    expect(headingVisible || loginVisible).toBe(true);
   });
 });

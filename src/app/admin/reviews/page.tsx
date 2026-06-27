@@ -10,7 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Star, Eye, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AdminPagination } from '@/components/admin/admin-pagination';
+import { Star, Eye, EyeOff } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 import { cn } from '@/lib/utils/cn';
@@ -116,23 +117,13 @@ export default function AdminReviewsPage() {
             ))}
           </div>
 
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {t('common.pageOf', {
-                page: data.page,
-                totalPages: Math.ceil(data.total / data.limit),
-                total: data.total,
-              })}
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                <ChevronLeft className="h-4 w-4" /> {t('common.previous')}
-              </Button>
-              <Button variant="outline" size="sm" disabled={page * data.limit >= data.total} onClick={() => setPage(page + 1)}>
-                {t('common.next')} <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <AdminPagination
+            page={page}
+            totalPages={Math.ceil(data.total / data.limit)}
+            total={data.total}
+            onPageChange={setPage}
+            summaryClassName="text-muted-foreground"
+          />
         </>
       )}
     </div>

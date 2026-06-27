@@ -78,6 +78,19 @@ export function useAdminDashboard() {
 }
 
 // ---- Technicians ----
+export interface AdminTechnicianListItem {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  verification_status: string;
+  completed_jobs: number | null;
+  average_rating: number | null;
+  created_at: string | null;
+  skills_count?: number;
+}
+
 export interface AdminTechnicianDetail {
   id: string;
   full_name: string | null;
@@ -98,7 +111,7 @@ export interface AdminTechnicianDetail {
 }
 
 export interface AdminTechniciansResponse {
-  technicians: Record<string, unknown>[];
+  technicians: AdminTechnicianListItem[];
   total: number;
   page: number;
   limit: number;

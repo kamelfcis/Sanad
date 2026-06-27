@@ -42,11 +42,32 @@ export async function GET(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const transformed = data?.map((t: Record<string, unknown>) => ({
-    ...t,
-    skills_count: (t.skills as { count: number }[])?.[0]?.count ?? 0,
-    skills: undefined,
-  }));
+  type ProfileJoin = {
+    id: string;
+    full_name: string | null;
+    email: string;
+    phone: string | null;
+    avatar_url: string | null;
+    created_at: string;
+  };
+
+  const transformed = data?.map((row: Record<string, unknown>) => {
+    const profile = row.profile as ProfileJoin | null;
+    const skills = row.skills as { count: number }[] | undefined;
+    const tech = { ...row };
+    delete tech.profile;
+    delete tech.skills;
+
+    return {
+      ...tech,
+      full_name: profile?.full_name ?? null,
+      email: profile?.email ?? null,
+      phone: profile?.phone ?? null,
+      avatar_url: profile?.avatar_url ?? null,
+      created_at: profile?.created_at ?? tech.created_at,
+      skills_count: skills?.[0]?.count ?? 0,
+    };
+  });
 
   return NextResponse.json({
     technicians: transformed ?? [],

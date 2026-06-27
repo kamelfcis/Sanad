@@ -14,7 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, Banknote, ExternalLink } from 'lucide-react';
+import { AdminPagination } from '@/components/admin/admin-pagination';
+import { Banknote, ExternalLink } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 
@@ -190,23 +191,13 @@ export default function AdminPaymentsPage() {
             ))}
           </div>
 
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {t('common.pageOf', {
-                page: data.page,
-                totalPages: Math.max(1, Math.ceil(data.total / data.limit)),
-                total: data.total,
-              })}
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                <ChevronLeft className="h-4 w-4" /> {t('common.previous')}
-              </Button>
-              <Button variant="outline" size="sm" disabled={page * data.limit >= data.total} onClick={() => setPage(page + 1)}>
-                {t('common.next')} <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <AdminPagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(data.total / data.limit))}
+            total={data.total}
+            onPageChange={setPage}
+            summaryClassName="text-muted-foreground"
+          />
         </>
       )}
     </div>
