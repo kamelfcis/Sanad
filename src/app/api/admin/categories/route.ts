@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
   const parsed = await parseJsonBody(request, createCategorySchema);
   if ('response' in parsed) return parsed.response;
 
-  const { name_ar, name_en, slug, description, icon, is_active } = parsed.data;
+  const { name_ar, name_en, slug, description, icon, icon_type, is_active } = parsed.data;
 
   const { data, error } = await supabase
     .from('service_categories')
-    .insert({ name_ar, name_en, slug, description, icon, is_active })
+    .insert({ name_ar, name_en, slug, description, icon, icon_type, is_active })
     .select()
     .single();
 

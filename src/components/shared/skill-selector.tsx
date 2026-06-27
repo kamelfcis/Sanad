@@ -2,6 +2,8 @@
 
 import { useCategories } from '@/hooks/use-categories';
 import { useServices } from '@/hooks/use-services';
+import { CategoryIconDisplay } from '@/components/shared/category-icon-display';
+import { resolveCategoryIconType } from '@/lib/icons/category-icons';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -81,7 +83,7 @@ function CategoryServiceGroup({
   isSelected,
   getOverride,
 }: {
-  category: { slug: string; name_ar: string; name_en: string };
+  category: { slug: string; name_ar: string; name_en: string; icon?: string | null; icon_type?: string | null };
   isExpanded: boolean;
   onToggle: () => void;
   selectedSkills: SelectedSkill[];
@@ -102,9 +104,17 @@ function CategoryServiceGroup({
         onClick={onToggle}
         className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-muted/50"
       >
-        <div>
-          <span className="font-medium" dir="auto">{category.name_ar}</span>
-          <span className="ml-2 text-sm text-muted-foreground">{category.name_en}</span>
+        <div className="flex items-center gap-3">
+          <CategoryIconDisplay
+            icon={category.icon}
+            iconType={resolveCategoryIconType(category.icon, category.icon_type)}
+            size="sm"
+            variant="avatar"
+          />
+          <div>
+            <span className="font-medium" dir="auto">{category.name_ar}</span>
+            <span className="ml-2 text-sm text-muted-foreground">{category.name_en}</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {categoryCount > 0 && (

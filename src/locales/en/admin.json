@@ -216,9 +216,19 @@
       "nameEn": "Name (English)",
       "slug": "Slug",
       "description": "Description",
-      "icon": "Icon (emoji or icon name)",
+      "icon": "Icon",
+      "preset": "Preset icons",
+      "upload": "Upload",
+      "iconSearch": "Search icons…",
+      "iconPreview": "Preview",
+      "uploadHint": "PNG, JPEG, WebP or SVG — max 1MB",
+      "uploading": "Uploading…",
+      "removeIcon": "Remove uploaded icon",
       "update": "Update",
       "create": "Create"
+    },
+    "card": {
+      "subtitle": "Service category"
     }
   },
   "services": {

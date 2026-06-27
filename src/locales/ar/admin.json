@@ -216,9 +216,19 @@
       "nameEn": "الاسم (إنجليزي)",
       "slug": "المعرّف",
       "description": "الوصف",
-      "icon": "الأيقونة (رمز تعبيري أو اسم)",
+      "icon": "الأيقونة",
+      "preset": "أيقونات جاهزة",
+      "upload": "رفع",
+      "iconSearch": "بحث في الأيقونات…",
+      "iconPreview": "معاينة",
+      "uploadHint": "PNG أو JPEG أو WebP أو SVG — بحد أقصى 1MB",
+      "uploading": "جاري الرفع…",
+      "removeIcon": "إزالة الأيقونة المرفوعة",
       "update": "تحديث",
       "create": "إنشاء"
+    },
+    "card": {
+      "subtitle": "تصنيف خدمة"
     }
   },
   "services": {

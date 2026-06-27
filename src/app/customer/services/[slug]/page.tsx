@@ -6,6 +6,8 @@ import { useCategories } from '@/hooks/use-categories';
 import { useServices } from '@/hooks/use-services';
 import { ServiceCard } from '@/components/shared/service-card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CategoryIconDisplay } from '@/components/shared/category-icon-display';
+import { resolveCategoryIconType } from '@/lib/icons/category-icons';
 import { ArrowLeft, PackageOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -65,15 +67,24 @@ export default function CategoryServicesPage() {
       </Button>
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight" dir="auto">{category.name_ar}</h1>
-        <p className="mt-1 text-muted-foreground">{category.name_en}</p>
-        {category.description && (
-          <p className="mt-1 text-sm text-muted-foreground/70">{category.description}</p>
-        )}
-        <p className="mt-2 text-sm text-muted-foreground">
-          {services?.length ?? 0} services available
-        </p>
+      <div className="mb-8 flex items-start gap-4">
+        <CategoryIconDisplay
+          icon={category.icon}
+          iconType={resolveCategoryIconType(category.icon, category.icon_type)}
+          alt={category.name_en}
+          size="xl"
+          variant="avatar"
+        />
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight" dir="auto">{category.name_ar}</h1>
+          <p className="mt-1 text-muted-foreground">{category.name_en}</p>
+          {category.description && (
+            <p className="mt-1 text-sm text-muted-foreground/70">{category.description}</p>
+          )}
+          <p className="mt-2 text-sm text-muted-foreground">
+            {services?.length ?? 0} services available
+          </p>
+        </div>
       </div>
 
       {/* Services */}

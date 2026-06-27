@@ -10,6 +10,7 @@ interface Category {
   slug: string;
   description: string | null;
   icon: string | null;
+  icon_type?: 'preset' | 'upload' | null;
   image_url: string | null;
   sort_order: number;
 }

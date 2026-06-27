@@ -4,6 +4,7 @@ import { requireAuth, requireAdmin } from '@/lib/api/auth';
 import { parseJsonBody } from '@/lib/api/validate';
 import { adminEntityIdSchema } from '@/lib/validations/admin';
 import { updateCategorySchema } from '@/lib/validations/categories';
+import { deleteCategoryIconByUrl } from '@/lib/storage/category-icons';
 
 export async function PATCH(
   request: NextRequest,
@@ -26,12 +27,26 @@ export async function PATCH(
   const parsed = await parseJsonBody(request, updateCategorySchema);
   if ('response' in parsed) return parsed.response;
 
+  const { data: existing } = await supabase
+    .from('service_categories')
+    .select('icon, icon_type')
+    .eq('id', id)
+    .single();
+
   const { data, error } = await supabase
     .from('service_categories')
     .update(parsed.data)
     .eq('id', id)
     .select()
     .single();
+
+  if (!error && existing?.icon_type === 'upload' && existing.icon) {
+    const nextIcon = parsed.data.icon ?? existing.icon;
+    const nextType = parsed.data.icon_type ?? existing.icon_type;
+    if (nextType !== 'upload' || nextIcon !== existing.icon) {
+      await deleteCategoryIconByUrl(existing.icon);
+    }
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

@@ -78,6 +78,13 @@ async function waitForStableContent(page: Page) {
     return;
   }
 
+  if (path === '/admin/categories') {
+    await page
+      .getByRole('heading', { name: /Categories|التصنيفات/ })
+      .waitFor({ state: 'visible', timeout: 60_000 });
+    return;
+  }
+
   if (path === '/admin/hero-slides') {
     await page
       .getByRole('heading', { name: /Hero Slides|شرائح الصفحة الرئيسية/ })
