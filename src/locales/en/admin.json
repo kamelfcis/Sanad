@@ -299,7 +299,67 @@
       "review": "Review"
     },
     "performed": "{{admin}} performed {{action}} on {{entityType}}",
-    "details": "Details"
+    "performedOn": "performed action on",
+    "admin": "Admin",
+    "entity": "Entity",
+    "entityId": "Entity ID",
+    "details": "Details",
+    "actions": {
+      "technician_approve": "Technician approve",
+      "technician_reject": "Technician reject",
+      "technician_suspend": "Technician suspend",
+      "technician_reactivate": "Technician reactivate",
+      "booking_status_update": "Booking status update",
+      "service_create": "Service create",
+      "service_update": "Service update",
+      "service_delete": "Service delete",
+      "category_create": "Category create",
+      "category_update": "Category update",
+      "category_delete": "Category delete",
+      "review_approve": "Review approve",
+      "review_reject": "Review reject",
+      "review_hide": "Review hide",
+      "payment_approved": "Payment approved",
+      "payment_rejected": "Payment rejected",
+      "payment_created": "Payment created",
+      "payment_settings_updated": "Payment settings updated",
+      "hero_slide_create": "Hero slide create",
+      "hero_slide_update": "Hero slide update",
+      "hero_slide_delete": "Hero slide delete",
+      "hero_slide_reorder": "Hero slide reorder"
+    },
+    "meta": {
+      "statusChange": "Status change",
+      "noDetails": "No additional details",
+      "itemsCount": "{{count}} items",
+      "from": "Previous status",
+      "to": "New status",
+      "reason": "Reason",
+      "note": "Note",
+      "rejection_reason": "Rejection reason",
+      "booking_id": "Booking ID",
+      "amount": "Amount",
+      "name_ar": "Name (Arabic)",
+      "name_en": "Name (English)",
+      "slug": "Slug",
+      "title_ar": "Title (Arabic)",
+      "description": "Description",
+      "icon": "Icon",
+      "ordered_ids": "Slide order",
+      "soft_delete": "Soft delete",
+      "hard_delete": "Hard delete",
+      "resubmission": "Resubmission",
+      "actor": "Actor",
+      "payment_method": "Payment method",
+      "instapay_name": "InstaPay account name",
+      "instapay_number": "InstaPay number",
+      "vodafone_number": "Vodafone Cash number",
+      "instructions": "Payment instructions",
+      "actors": {
+        "customer": "Customer",
+        "admin": "Admin"
+      }
+    }
   },
   "settings": {
     "title": "Settings",
@@ -316,6 +376,13 @@
     "title": "Unauthorized",
     "description": "You do not have permission to access this area. Only administrators can view this page.",
     "backHome": "Back to Home"
+  },
+  "view": {
+    "table": "Table",
+    "cards": "Cards",
+    "toggleLabel": "List view mode",
+    "toggleTable": "Switch to table view",
+    "toggleCards": "Switch to card view"
   },
   "common": {
     "loading": "Loading…",
@@ -363,7 +430,8 @@
     "order": "Order",
     "preview": "Preview",
     "title": "Title",
-    "subtitle": "Subtitle"
+    "subtitle": "Subtitle",
+    "amount": "Amount"
   },
   "bookingStatus": {
     "pending": "Pending",

@@ -15,10 +15,26 @@ import { useUpload } from '@/hooks/use-upload';
 import { ImageUploader } from '@/components/shared/image-uploader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import {
+  AdminPremiumTable,
+  AdminPremiumTableBody,
+  AdminPremiumTableCell,
+  AdminPremiumTableHead,
+  AdminPremiumTableHeaderCell,
+  AdminPremiumTableRow,
+} from '@/components/admin/admin-premium-table';
+import {
+  AdminEmptyState,
+  AdminEntityCard,
+  AdminEntityCardActions,
+  AdminEntityCardField,
+  adminActionButtonClass,
+  adminActionButtonDestructiveClass,
+} from '@/components/admin/admin-list-chrome';
+import { AdminListShell } from '@/components/admin/admin-list-shell';
 import {
   Plus,
   Images,
@@ -35,6 +51,149 @@ import { cn } from '@/lib/utils/cn';
 
 const ICON_OPTIONS = Object.keys(categoryIconMap);
 
+function HeroSlideActiveIcon({ isActive }: { isActive: boolean }) {
+  return isActive ? (
+    <Check className="h-4 w-4 text-green-600" />
+  ) : (
+    <X className="h-4 w-4 text-red-600" />
+  );
+}
+
+function HeroSlideRowActions({
+  slide,
+  onEdit,
+  onDelete,
+  t,
+}: {
+  slide: any;
+  onEdit: (slide: any) => void;
+  onDelete: (id: string) => void;
+  t: ReturnType<typeof useAdminT>['t'];
+}) {
+  return (
+    <div className="flex items-center justify-center gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        className={adminActionButtonClass}
+        onClick={() => onEdit(slide)}
+        aria-label={t('common.edit')}
+      >
+        <Pencil className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={adminActionButtonDestructiveClass}
+        onClick={() => {
+          if (confirm(t('heroSlides.deleteConfirm'))) onDelete(slide.id);
+        }}
+        aria-label={t('common.delete')}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+function HeroSlideReorderButtons({
+  index,
+  total,
+  onMove,
+  isPending,
+}: {
+  index: number;
+  total: number;
+  onMove: (direction: -1 | 1) => void;
+  isPending: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        className={adminActionButtonClass}
+        disabled={index === 0 || isPending}
+        onClick={() => onMove(-1)}
+      >
+        <ChevronUp className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={adminActionButtonClass}
+        disabled={index === total - 1 || isPending}
+        onClick={() => onMove(1)}
+      >
+        <ChevronDown className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+function HeroSlideCard({
+  slide,
+  index,
+  total,
+  t,
+  onMove,
+  onEdit,
+  onDelete,
+  onToggleActive,
+  isReorderPending,
+}: {
+  slide: any;
+  index: number;
+  total: number;
+  t: ReturnType<typeof useAdminT>['t'];
+  onMove: (index: number, direction: -1 | 1) => void;
+  onEdit: (slide: any) => void;
+  onDelete: (id: string) => void;
+  onToggleActive: (slide: any) => void;
+  isReorderPending: boolean;
+}) {
+  return (
+    <AdminEntityCard>
+      <img
+        src={slide.image_url}
+        alt={slide.title_ar}
+        className="mx-auto mb-3 h-28 w-full max-w-xs rounded-lg object-cover sm:mx-0"
+      />
+      <AdminEntityCardField label={t('tables.title')}>
+        <span className="font-medium text-[#0F172A]" dir="auto">
+          {slide.title_ar}
+        </span>
+      </AdminEntityCardField>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <AdminEntityCardField label={t('tables.subtitle')}>
+          <span className="text-[#64748B]" dir="auto">
+            {slide.subtitle_ar}
+          </span>
+        </AdminEntityCardField>
+        <AdminEntityCardField label={t('tables.icon')}>
+          <span className="text-[#64748B]">{slide.icon_key ?? t('common.dash')}</span>
+        </AdminEntityCardField>
+        <AdminEntityCardField label={t('common.active')}>
+          <button type="button" onClick={() => onToggleActive(slide)}>
+            <HeroSlideActiveIcon isActive={slide.is_active} />
+          </button>
+        </AdminEntityCardField>
+        <AdminEntityCardField label={t('tables.order')}>
+          <HeroSlideReorderButtons
+            index={index}
+            total={total}
+            onMove={(dir) => onMove(index, dir)}
+            isPending={isReorderPending}
+          />
+        </AdminEntityCardField>
+      </div>
+      <AdminEntityCardActions>
+        <HeroSlideRowActions slide={slide} onEdit={onEdit} onDelete={onDelete} t={t} />
+      </AdminEntityCardActions>
+    </AdminEntityCard>
+  );
+}
+
 export default function AdminHeroSlidesPage() {
   const { t, dir } = useAdminT();
   const { data: slides, isLoading } = useAdminHeroSlides();
@@ -45,9 +204,7 @@ export default function AdminHeroSlidesPage() {
   const reorderSlides = useAdminReorderHeroSlides();
   const upload = useUpload();
 
-  const textAlign = dir === 'ltr' ? 'text-left' : '';
   const iconMargin = dir === 'ltr' ? 'mr-1' : 'ml-1';
-  const actionsAlign = dir === 'ltr' ? 'text-right' : 'text-end';
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -122,220 +279,219 @@ export default function AdminHeroSlidesPage() {
     updateSlide.mutate({ id: slide.id, data: { is_active: !slide.is_active } });
   };
 
+  const slideForm = showForm ? (
+    <Card className="mb-6">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-sm">
+          {editingId ? t('heroSlides.edit') : t('heroSlides.new')}
+        </CardTitle>
+        <Button variant="ghost" size="icon" onClick={resetForm} aria-label={t('common.cancel')}>
+          <X className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label>{t('heroSlides.form.slideImage')}</Label>
+            <ImageUploader
+              urls={form.image_url ? [form.image_url] : upload.uploadedUrls}
+              onUpload={upload.uploadFile}
+              onRemove={(url) => {
+                upload.removeUrl(url);
+                if (form.image_url === url) setForm({ ...form, image_url: '' });
+              }}
+              uploading={upload.uploading}
+              maxFiles={1}
+              error={upload.error}
+            />
+            {!form.image_url && (
+              <Input
+                placeholder={t('heroSlides.form.pasteUrl')}
+                value={form.image_url}
+                onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+              />
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title_ar">{t('heroSlides.form.titleAr')}</Label>
+              <Input
+                id="title_ar"
+                dir="auto"
+                value={form.title_ar}
+                onChange={(e) => setForm({ ...form, title_ar: e.target.value })}
+                placeholder={t('heroSlides.form.titlePlaceholder')}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="subtitle_ar">{t('heroSlides.form.subtitleAr')}</Label>
+              <Input
+                id="subtitle_ar"
+                dir="auto"
+                value={form.subtitle_ar}
+                onChange={(e) => setForm({ ...form, subtitle_ar: e.target.value })}
+                placeholder={t('heroSlides.form.subtitlePlaceholder')}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="icon_key">{t('heroSlides.form.icon')}</Label>
+              <select
+                id="icon_key"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={form.icon_key}
+                onChange={(e) => setForm({ ...form, icon_key: e.target.value })}
+              >
+                {ICON_OPTIONS.map((key) => (
+                  <option key={key} value={key}>
+                    {key}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category_slug">{t('heroSlides.form.categoryOptional')}</Label>
+              <select
+                id="category_slug"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={form.service_category_slug}
+                onChange={(e) => setForm({ ...form, service_category_slug: e.target.value })}
+              >
+                <option value="">{t('heroSlides.form.none')}</option>
+                {categories?.map((category) => (
+                  <option key={category.id} value={category.slug}>
+                    {category.name_ar}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="is_active"
+              checked={form.is_active}
+              onCheckedChange={(checked) => setForm({ ...form, is_active: checked })}
+            />
+            <Label htmlFor="is_active">{t('heroSlides.form.active')}</Label>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={
+              !form.image_url ||
+              createSlide.isPending ||
+              updateSlide.isPending ||
+              upload.uploading
+            }
+          >
+            {editingId ? t('heroSlides.form.update') : t('heroSlides.form.create')}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  ) : null;
+
   return (
-    <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('heroSlides.title')}</h1>
-          <p className="mt-1 text-muted-foreground">{t('heroSlides.subtitle')}</p>
-        </div>
+    <AdminListShell
+      pageId="hero-slides"
+      title={t('heroSlides.title')}
+      subtitle={t('heroSlides.subtitle')}
+      defaultView="table"
+      headerActions={
         <Button onClick={() => { resetForm(); setShowForm(true); }} disabled={showForm}>
           <Plus className={cn('h-4 w-4', iconMargin)} /> {t('heroSlides.add')}
         </Button>
-      </div>
-
-      {showForm && (
-        <Card className="mb-6">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">
-              {editingId ? t('heroSlides.edit') : t('heroSlides.new')}
-            </CardTitle>
-            <Button variant="ghost" size="icon" onClick={resetForm} aria-label={t('common.cancel')}>
-              <X className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t('heroSlides.form.slideImage')}</Label>
-                <ImageUploader
-                  urls={form.image_url ? [form.image_url] : upload.uploadedUrls}
-                  onUpload={upload.uploadFile}
-                  onRemove={(url) => {
-                    upload.removeUrl(url);
-                    if (form.image_url === url) setForm({ ...form, image_url: '' });
-                  }}
-                  uploading={upload.uploading}
-                  maxFiles={1}
-                  error={upload.error}
-                />
-                {!form.image_url && (
-                  <Input
-                    placeholder={t('heroSlides.form.pasteUrl')}
-                    value={form.image_url}
-                    onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+      }
+      beforeContent={slideForm}
+      skeletonCount={3}
+      skeletonClassName="h-20 w-full rounded-2xl"
+      isLoading={isLoading}
+      isEmpty={!slides?.length}
+      empty={<AdminEmptyState icon={Images} title={t('heroSlides.empty')} />}
+      cardsLayout="grid"
+      table={
+        <AdminPremiumTable>
+          <AdminPremiumTableHead>
+            <AdminPremiumTableHeaderCell>{t('tables.order')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.preview')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.title')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.subtitle')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.icon')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('common.active')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('common.actions')}</AdminPremiumTableHeaderCell>
+          </AdminPremiumTableHead>
+          <AdminPremiumTableBody>
+            {slides?.map((slide: any, index: number) => (
+              <AdminPremiumTableRow key={slide.id}>
+                <AdminPremiumTableCell>
+                  <HeroSlideReorderButtons
+                    index={index}
+                    total={slides.length}
+                    onMove={(dir) => moveSlide(index, dir)}
+                    isPending={reorderSlides.isPending}
                   />
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title_ar">{t('heroSlides.form.titleAr')}</Label>
-                  <Input
-                    id="title_ar"
-                    dir="auto"
-                    value={form.title_ar}
-                    onChange={(e) => setForm({ ...form, title_ar: e.target.value })}
-                    placeholder={t('heroSlides.form.titlePlaceholder')}
-                    required
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell>
+                  <img
+                    src={slide.image_url}
+                    alt={slide.title_ar}
+                    className="mx-auto h-14 w-20 rounded-md object-cover"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="subtitle_ar">{t('heroSlides.form.subtitleAr')}</Label>
-                  <Input
-                    id="subtitle_ar"
-                    dir="auto"
-                    value={form.subtitle_ar}
-                    onChange={(e) => setForm({ ...form, subtitle_ar: e.target.value })}
-                    placeholder={t('heroSlides.form.subtitlePlaceholder')}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="icon_key">{t('heroSlides.form.icon')}</Label>
-                  <select
-                    id="icon_key"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={form.icon_key}
-                    onChange={(e) => setForm({ ...form, icon_key: e.target.value })}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell className="font-medium text-[#0F172A]" dir="auto">
+                  {slide.title_ar}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell className="text-[#64748B]" dir="auto">
+                  {slide.subtitle_ar}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell className="text-[#64748B]">
+                  {slide.icon_key ?? t('common.dash')}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell>
+                  <button
+                    type="button"
+                    className="mx-auto block"
+                    onClick={() => toggleActive(slide)}
+                    aria-label={t('heroSlides.form.active')}
                   >
-                    {ICON_OPTIONS.map((key) => (
-                      <option key={key} value={key}>{key}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category_slug">{t('heroSlides.form.categoryOptional')}</Label>
-                  <select
-                    id="category_slug"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={form.service_category_slug}
-                    onChange={(e) => setForm({ ...form, service_category_slug: e.target.value })}
-                  >
-                    <option value="">{t('heroSlides.form.none')}</option>
-                    {categories?.map((category) => (
-                      <option key={category.id} value={category.slug}>{category.name_ar}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="is_active"
-                  checked={form.is_active}
-                  onCheckedChange={(checked) => setForm({ ...form, is_active: checked })}
-                />
-                <Label htmlFor="is_active">{t('heroSlides.form.active')}</Label>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={
-                  !form.image_url ||
-                  createSlide.isPending ||
-                  updateSlide.isPending ||
-                  upload.uploading
-                }
-              >
-                {editingId ? t('heroSlides.form.update') : t('heroSlides.form.create')}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {isLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : !slides?.length ? (
-        <div className="flex flex-col items-center gap-4 py-16 text-center">
-          <Images className="h-12 w-12 text-muted-foreground/50" />
-          <h2 className="text-lg font-semibold">{t('heroSlides.empty')}</h2>
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-xl border">
-          <table className={cn('w-full text-sm', textAlign)}>
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 font-medium">{t('tables.order')}</th>
-                <th className="px-4 py-3 font-medium">{t('tables.preview')}</th>
-                <th className="px-4 py-3 font-medium">{t('tables.title')}</th>
-                <th className="px-4 py-3 font-medium">{t('tables.subtitle')}</th>
-                <th className="px-4 py-3 font-medium">{t('tables.icon')}</th>
-                <th className="px-4 py-3 font-medium">{t('common.active')}</th>
-                <th className={cn('px-4 py-3 font-medium', actionsAlign)}>{t('common.actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {slides.map((slide: any, index: number) => (
-                <tr key={slide.id} className="border-b last:border-0 hover:bg-muted/30">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={index === 0 || reorderSlides.isPending}
-                        onClick={() => moveSlide(index, -1)}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={index === slides.length - 1 || reorderSlides.isPending}
-                        onClick={() => moveSlide(index, 1)}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <img
-                      src={slide.image_url}
-                      alt={slide.title_ar}
-                      className="h-14 w-20 rounded-md object-cover"
-                    />
-                  </td>
-                  <td className="px-4 py-3 font-medium" dir="auto">{slide.title_ar}</td>
-                  <td className="px-4 py-3 text-muted-foreground" dir="auto">{slide.subtitle_ar}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{slide.icon_key ?? t('common.dash')}</td>
-                  <td className="px-4 py-3">
-                    <button type="button" onClick={() => toggleActive(slide)} aria-label={t('heroSlides.form.active')}>
-                      {slide.is_active ? (
-                        <Check className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <X className="h-4 w-4 text-red-600" />
-                      )}
-                    </button>
-                  </td>
-                  <td className={cn('px-4 py-3', actionsAlign)}>
-                    <Button variant="ghost" size="icon" onClick={() => startEdit(slide)} aria-label={t('common.edit')}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm(t('heroSlides.deleteConfirm'))) deleteSlide.mutate(slide.id);
-                      }}
-                      aria-label={t('common.delete')}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+                    <HeroSlideActiveIcon isActive={slide.is_active} />
+                  </button>
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell>
+                  <HeroSlideRowActions
+                    slide={slide}
+                    onEdit={startEdit}
+                    onDelete={(id) => deleteSlide.mutate(id)}
+                    t={t}
+                  />
+                </AdminPremiumTableCell>
+              </AdminPremiumTableRow>
+            ))}
+          </AdminPremiumTableBody>
+        </AdminPremiumTable>
+      }
+      cards={
+        slides?.map((slide: any, index: number) => (
+          <HeroSlideCard
+            key={slide.id}
+            slide={slide}
+            index={index}
+            total={slides.length}
+            t={t}
+            onMove={moveSlide}
+            onEdit={startEdit}
+            onDelete={(id) => deleteSlide.mutate(id)}
+            onToggleActive={toggleActive}
+            isReorderPending={reorderSlides.isPending}
+          />
+        )) ?? null
+      }
+    />
   );
 }

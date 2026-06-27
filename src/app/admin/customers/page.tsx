@@ -3,100 +3,167 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useAdminCustomers } from '@/hooks/use-admin';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
+import {
+  AdminPremiumTable,
+  AdminPremiumTableBody,
+  AdminPremiumTableCell,
+  AdminPremiumTableHead,
+  AdminPremiumTableHeaderCell,
+  AdminPremiumTableRow,
+} from '@/components/admin/admin-premium-table';
+import {
+  AdminEmptyState,
+  AdminEntityCard,
+  AdminEntityCardActions,
+  AdminEntityCardField,
+  AdminSearchInput,
+  AdminTableActionLink,
+} from '@/components/admin/admin-list-chrome';
+import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
-import { Search, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
-import { cn } from '@/lib/utils/cn';
+
+function CustomerNameDisplay({
+  customer,
+  t,
+}: {
+  customer: any;
+  t: ReturnType<typeof useAdminT>['t'];
+}) {
+  return (
+    <span className="font-medium text-[#0F172A]">
+      {customer.full_name ?? t('customers.unnamed')}
+    </span>
+  );
+}
+
+function CustomerCard({
+  customer,
+  t,
+  formatDate,
+}: {
+  customer: any;
+  t: ReturnType<typeof useAdminT>['t'];
+  formatDate: ReturnType<typeof useAdminT>['formatDate'];
+}) {
+  return (
+    <AdminEntityCard>
+      <AdminEntityCardField label={t('tables.name')}>
+        <CustomerNameDisplay customer={customer} t={t} />
+      </AdminEntityCardField>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <AdminEntityCardField label={t('tables.email')}>
+          <span className="text-[#64748B]" dir="ltr">
+            {customer.email ?? t('common.dash')}
+          </span>
+        </AdminEntityCardField>
+        <AdminEntityCardField label={t('tables.phone')}>
+          <span className="text-[#64748B]" dir="ltr">
+            {customer.phone ?? t('common.dash')}
+          </span>
+        </AdminEntityCardField>
+        <AdminEntityCardField label={t('tables.bookings')}>
+          <span className="font-medium tabular-nums text-[#0F172A]">{customer.booking_count}</span>
+        </AdminEntityCardField>
+        <AdminEntityCardField label={t('tables.joined')}>
+          <span className="text-[#64748B]">
+            {customer.created_at ? formatDate(customer.created_at) : t('common.dash')}
+          </span>
+        </AdminEntityCardField>
+      </div>
+      <AdminEntityCardActions>
+        <AdminTableActionLink href={`/admin/customers/${customer.id}`}>
+          {t('common.view')}
+        </AdminTableActionLink>
+      </AdminEntityCardActions>
+    </AdminEntityCard>
+  );
+}
 
 export default function AdminCustomersPage() {
-  const { t, formatDate, dir } = useAdminT();
+  const { t, formatDate } = useAdminT();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useAdminCustomers(search, page);
-  const isRtl = dir === 'rtl';
-  const textAlign = dir === 'ltr' ? 'text-left' : '';
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">{t('customers.title')}</h1>
-        <p className="mt-1 text-muted-foreground">{t('customers.subtitle')}</p>
-      </div>
-
-      <div className="mb-6 flex items-center gap-4">
-        <div className="relative max-w-sm flex-1">
-          <Search className={cn('absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground', isRtl ? 'right-3' : 'left-3')} />
-          <Input
-            placeholder={t('customers.searchPlaceholder')}
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className={isRtl ? 'pr-9' : 'pl-9'}
-          />
-        </div>
-      </div>
-
-      {isLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
-        </div>
-      ) : error ? (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
-          {translateAdminError(error.message, t)}
-        </div>
-      ) : !data?.customers.length ? (
-        <div className="flex flex-col items-center gap-4 py-16 text-center">
-          <Users className="h-12 w-12 text-muted-foreground/50" />
-          <h2 className="text-lg font-semibold">{t('customers.empty')}</h2>
-        </div>
-      ) : (
-        <>
-          <div className="overflow-hidden rounded-xl border">
-            <table className={cn('w-full text-sm', textAlign)}>
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="px-4 py-3 font-medium">{t('tables.name')}</th>
-                  <th className="px-4 py-3 font-medium">{t('tables.email')}</th>
-                  <th className="px-4 py-3 font-medium">{t('tables.phone')}</th>
-                  <th className="px-4 py-3 font-medium">{t('tables.bookings')}</th>
-                  <th className="hidden px-4 py-3 font-medium md:table-cell">{t('tables.joined')}</th>
-                  <th className="px-4 py-3 text-end font-medium">{t('tables.action')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.customers.map((c: any) => (
-                  <tr key={c.id} className="border-b last:border-0 hover:bg-muted/30">
-                    <td className="px-4 py-3 font-medium">{c.full_name ?? t('customers.unnamed')}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{c.email ?? t('common.dash')}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{c.phone ?? t('common.dash')}</td>
-                    <td className="px-4 py-3">{c.booking_count}</td>
-                    <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
-                      {c.created_at ? formatDate(c.created_at) : t('common.dash')}
-                    </td>
-                    <td className="px-4 py-3 text-end">
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/customers/${c.id}`}>{t('common.view')}</Link>
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+    <AdminListShell
+      pageId="customers"
+      title={t('customers.title')}
+      subtitle={t('customers.subtitle')}
+      defaultView="table"
+      search={
+        <AdminSearchInput
+          placeholder={t('customers.searchPlaceholder')}
+          value={search}
+          onChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
+        />
+      }
+      isLoading={isLoading}
+      error={error ? translateAdminError(error.message, t) : null}
+      isEmpty={!data?.customers.length}
+      empty={<AdminEmptyState icon={Users} title={t('customers.empty')} />}
+      pagination={
+        data ? (
           <AdminPagination
             page={page}
             totalPages={Math.ceil(data.total / data.limit)}
             total={data.total}
             onPageChange={setPage}
-            summaryClassName="text-muted-foreground"
           />
-        </>
-      )}
-    </div>
+        ) : null
+      }
+      table={
+        <AdminPremiumTable>
+          <AdminPremiumTableHead>
+            <AdminPremiumTableHeaderCell>{t('tables.name')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.email')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.phone')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.bookings')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell className="hidden md:table-cell">
+              {t('tables.joined')}
+            </AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.action')}</AdminPremiumTableHeaderCell>
+          </AdminPremiumTableHead>
+          <AdminPremiumTableBody>
+            {data?.customers.map((c: any) => (
+              <AdminPremiumTableRow key={c.id}>
+                <AdminPremiumTableCell>
+                  <CustomerNameDisplay customer={c} t={t} />
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell className="text-[#64748B]" dir="ltr">
+                  {c.email ?? t('common.dash')}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell className="text-[#64748B]" dir="ltr">
+                  {c.phone ?? t('common.dash')}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell className="font-medium tabular-nums text-[#0F172A]">
+                  {c.booking_count}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                  {c.created_at ? formatDate(c.created_at) : t('common.dash')}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell>
+                  <AdminTableActionLink href={`/admin/customers/${c.id}`}>
+                    {t('common.view')}
+                  </AdminTableActionLink>
+                </AdminPremiumTableCell>
+              </AdminPremiumTableRow>
+            ))}
+          </AdminPremiumTableBody>
+        </AdminPremiumTable>
+      }
+      cards={
+        data?.customers.map((c: any) => (
+          <CustomerCard key={c.id} customer={c} t={t} formatDate={formatDate} />
+        )) ?? null
+      }
+    />
   );
 }

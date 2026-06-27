@@ -299,7 +299,67 @@
       "review": "تقييم"
     },
     "performed": "{{admin}} نفّذ {{action}} على {{entityType}}",
-    "details": "التفاصيل"
+    "performedOn": "نفّذ إجراءً على",
+    "admin": "المسؤول",
+    "entity": "الكيان",
+    "entityId": "معرف الكيان",
+    "details": "التفاصيل",
+    "actions": {
+      "technician_approve": "اعتماد فني",
+      "technician_reject": "رفض فني",
+      "technician_suspend": "تعليق فني",
+      "technician_reactivate": "إعادة تفعيل فني",
+      "booking_status_update": "تحديث حالة الحجز",
+      "service_create": "إنشاء خدمة",
+      "service_update": "تحديث خدمة",
+      "service_delete": "حذف خدمة",
+      "category_create": "إنشاء تصنيف",
+      "category_update": "تحديث تصنيف",
+      "category_delete": "حذف تصنيف",
+      "review_approve": "اعتماد تقييم",
+      "review_reject": "رفض تقييم",
+      "review_hide": "إخفاء تقييم",
+      "payment_approved": "اعتماد دفعة",
+      "payment_rejected": "رفض دفعة",
+      "payment_created": "إنشاء دفعة",
+      "payment_settings_updated": "تحديث إعدادات الدفع",
+      "hero_slide_create": "إنشاء شريحة",
+      "hero_slide_update": "تحديث شريحة",
+      "hero_slide_delete": "حذف شريحة",
+      "hero_slide_reorder": "إعادة ترتيب الشرائح"
+    },
+    "meta": {
+      "statusChange": "تغيير الحالة",
+      "noDetails": "لا توجد تفاصيل إضافية",
+      "itemsCount": "{{count}} عنصر",
+      "from": "الحالة السابقة",
+      "to": "الحالة الجديدة",
+      "reason": "السبب",
+      "note": "ملاحظة",
+      "rejection_reason": "سبب الرفض",
+      "booking_id": "معرّف الحجز",
+      "amount": "المبلغ",
+      "name_ar": "الاسم (عربي)",
+      "name_en": "الاسم (إنجليزي)",
+      "slug": "المعرّف",
+      "title_ar": "العنوان (عربي)",
+      "description": "الوصف",
+      "icon": "الأيقونة",
+      "ordered_ids": "ترتيب الشرائح",
+      "soft_delete": "حذف مؤقت",
+      "hard_delete": "حذف نهائي",
+      "resubmission": "إعادة إرسال",
+      "actor": "الفاعل",
+      "payment_method": "طريقة الدفع",
+      "instapay_name": "اسم حساب InstaPay",
+      "instapay_number": "رقم InstaPay",
+      "vodafone_number": "رقم Vodafone Cash",
+      "instructions": "تعليمات الدفع",
+      "actors": {
+        "customer": "عميل",
+        "admin": "مسؤول"
+      }
+    }
   },
   "settings": {
     "title": "الإعدادات",
@@ -316,6 +376,13 @@
     "title": "غير مصرح",
     "description": "ليس لديك صلاحية للوصول إلى هذه المنطقة. يمكن للمسؤولين فقط عرض هذه الصفحة.",
     "backHome": "العودة للرئيسية"
+  },
+  "view": {
+    "table": "جدول",
+    "cards": "بطاقات",
+    "toggleLabel": "نمط عرض القائمة",
+    "toggleTable": "التبديل إلى عرض الجدول",
+    "toggleCards": "التبديل إلى عرض البطاقات"
   },
   "common": {
     "loading": "جاري التحميل…",
@@ -363,7 +430,8 @@
     "order": "الترتيب",
     "preview": "معاينة",
     "title": "العنوان",
-    "subtitle": "العنوان الفرعي"
+    "subtitle": "العنوان الفرعي",
+    "amount": "المبلغ"
   },
   "bookingStatus": {
     "pending": "قيد الانتظار",

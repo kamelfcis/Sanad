@@ -82,3 +82,16 @@ export function AdminPremiumTableCell({
     </td>
   );
 }
+
+export const adminPremiumActionClass =
+  'text-[#FF6B00] hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]';
+
+export function AdminPremiumTableFooter({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return <div className={cn('mt-4', className)}>{children}</div>;
+}

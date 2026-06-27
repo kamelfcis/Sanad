@@ -6,15 +6,176 @@ import { useState } from 'react';
 import { useAdminReviews, useAdminModerateReview } from '@/hooks/use-admin';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  AdminPremiumTable,
+  AdminPremiumTableBody,
+  AdminPremiumTableCell,
+  AdminPremiumTableHead,
+  AdminPremiumTableHeaderCell,
+  AdminPremiumTableRow,
+} from '@/components/admin/admin-premium-table';
+import {
+  AdminEmptyState,
+  AdminEntityCard,
+  AdminFilterPills,
+} from '@/components/admin/admin-list-chrome';
+import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
 import { Star, Eye, EyeOff } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 import { cn } from '@/lib/utils/cn';
+
+function ReviewRating({ rating }: { rating: number }) {
+  return <span className="text-yellow-500">{'★'.repeat(rating)}{'☆'.repeat(5 - rating)}</span>;
+}
+
+function ReviewModerationPanel({
+  review,
+  note,
+  onNoteChange,
+  onModerate,
+  onCancel,
+  isPending,
+  t,
+}: {
+  review: any;
+  note: string;
+  onNoteChange: (value: string) => void;
+  onModerate: () => void;
+  onCancel: () => void;
+  isPending: boolean;
+  t: ReturnType<typeof useAdminT>['t'];
+}) {
+  return (
+    <div className="space-y-2">
+      <div>
+        <Label htmlFor={`note-${review.id}`} className="text-xs">
+          {t('reviews.noteOptional')}
+        </Label>
+        <Input
+          id={`note-${review.id}`}
+          value={note}
+          onChange={(e) => onNoteChange(e.target.value)}
+          placeholder={t('reviews.notePlaceholder')}
+          className="h-8 w-full text-xs sm:w-40"
+        />
+      </div>
+      <div className="flex gap-1">
+        <Button size="sm" variant="outline" onClick={onModerate} disabled={isPending}>
+          {review.is_hidden ? t('reviews.restore') : t('reviews.hide')}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onCancel}>
+          {t('common.cancel')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ReviewModerateButton({
+  review,
+  onClick,
+  t,
+  iconMargin,
+}: {
+  review: any;
+  onClick: () => void;
+  t: ReturnType<typeof useAdminT>['t'];
+  iconMargin: string;
+}) {
+  return (
+    <Button size="sm" variant="outline" onClick={onClick}>
+      {review.is_hidden ? (
+        <Eye className={cn('h-4 w-4', iconMargin)} />
+      ) : (
+        <EyeOff className={cn('h-4 w-4', iconMargin)} />
+      )}
+      {t('reviews.moderate')}
+    </Button>
+  );
+}
+
+function ReviewCard({
+  review,
+  activeModeration,
+  note,
+  onNoteChange,
+  onStartModeration,
+  onCancelModeration,
+  onModerate,
+  isPending,
+  t,
+  formatDateTime,
+  iconMargin,
+}: {
+  review: any;
+  activeModeration: string | null;
+  note: string;
+  onNoteChange: (value: string) => void;
+  onStartModeration: (id: string) => void;
+  onCancelModeration: () => void;
+  onModerate: (reviewId: string, action: 'hide' | 'restore') => void;
+  isPending: boolean;
+  t: ReturnType<typeof useAdminT>['t'];
+  formatDateTime: ReturnType<typeof useAdminT>['formatDateTime'];
+  iconMargin: string;
+}) {
+  return (
+    <AdminEntityCard className="text-start">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+            <span className="font-medium text-[#0F172A]">
+              {review.customer?.full_name ?? t('technicians.detail.anonymous')}
+            </span>
+            <ReviewRating rating={review.rating} />
+            {review.is_hidden ? (
+              <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                {t('reviews.hidden')}
+              </Badge>
+            ) : null}
+          </div>
+          <p className="mt-1 text-xs text-[#64748B]">
+            {t('reviews.forTechnician', {
+              name: review.technician?.full_name ?? t('common.unknown'),
+            })}
+          </p>
+          {review.comment ? (
+            <p className="mt-2 text-sm text-[#0F172A]" dir="auto">
+              {review.comment}
+            </p>
+          ) : null}
+          <p className="mt-1 text-xs text-[#94A3B8]">{formatDateTime(review.created_at)}</p>
+        </div>
+        <div className="shrink-0">
+          {activeModeration === review.id ? (
+            <ReviewModerationPanel
+              review={review}
+              note={note}
+              onNoteChange={onNoteChange}
+              onModerate={() =>
+                onModerate(review.id, review.is_hidden ? 'restore' : 'hide')
+              }
+              onCancel={onCancelModeration}
+              isPending={isPending}
+              t={t}
+            />
+          ) : (
+            <ReviewModerateButton
+              review={review}
+              onClick={() => onStartModeration(review.id)}
+              t={t}
+              iconMargin={iconMargin}
+            />
+          )}
+        </div>
+      </div>
+    </AdminEntityCard>
+  );
+}
 
 export default function AdminReviewsPage() {
   const { t, formatDateTime, dir } = useAdminT();
@@ -28,104 +189,142 @@ export default function AdminReviewsPage() {
   const moderate = useAdminModerateReview();
 
   const handleModerate = (reviewId: string, action: 'hide' | 'restore') => {
-    moderate.mutate({ reviewId, action, note: note || undefined }, {
-      onSuccess: () => { setActiveModeration(null); setNote(''); },
-    });
+    moderate.mutate(
+      { reviewId, action, note: note || undefined },
+      {
+        onSuccess: () => {
+          setActiveModeration(null);
+          setNote('');
+        },
+      },
+    );
   };
 
   const filters = [
-    { label: t('reviews.filters.all'), value: undefined },
+    { label: t('reviews.filters.all'), value: '' },
     { label: t('reviews.filters.visible'), value: 'false' },
     { label: t('reviews.filters.hidden'), value: 'true' },
   ];
 
+  const filterValue = filter ?? '';
+
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">{t('reviews.title')}</h1>
-        <p className="mt-1 text-muted-foreground">{t('reviews.subtitle')}</p>
-      </div>
-
-      <div className="mb-6 flex gap-2">
-        {filters.map((f) => (
-          <button
-            key={String(f.value)}
-            onClick={() => { setFilter(f.value); setPage(1); }}
-            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
-              filter === f.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-muted-foreground/50'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {isLoading ? (
-        <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}</div>
-      ) : error ? (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
-          {translateAdminError(error.message, t)}
-        </div>
-      ) : !data?.reviews.length ? (
-        <div className="flex flex-col items-center gap-4 py-16 text-center">
-          <Star className="h-12 w-12 text-muted-foreground/50" />
-          <h2 className="text-lg font-semibold">{t('reviews.empty')}</h2>
-        </div>
-      ) : (
-        <>
-          <div className="space-y-3">
-            {data.reviews.map((r: any) => (
-              <Card key={r.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{r.customer?.full_name ?? t('technicians.detail.anonymous')}</span>
-                        <span className="text-yellow-500">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
-                        {r.is_hidden && <Badge variant="outline" className="bg-gray-100 text-gray-600">{t('reviews.hidden')}</Badge>}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {t('reviews.forTechnician', { name: r.technician?.full_name ?? t('common.unknown') })}
-                      </p>
-                      {r.comment && <p className="mt-2 text-sm" dir="auto">{r.comment}</p>}
-                      <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(r.created_at)}</p>
-                    </div>
-                    <div className="shrink-0">
-                      {activeModeration === r.id ? (
-                        <div className="space-y-2">
-                          <div>
-                            <Label htmlFor="note" className="text-xs">{t('reviews.noteOptional')}</Label>
-                            <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('reviews.notePlaceholder')} className="h-8 w-40 text-xs" />
-                          </div>
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="outline" onClick={() => handleModerate(r.id, r.is_hidden ? 'restore' : 'hide')} disabled={moderate.isPending}>
-                              {r.is_hidden ? t('reviews.restore') : t('reviews.hide')}
-                            </Button>
-                            <Button size="sm" variant="ghost" onClick={() => { setActiveModeration(null); setNote(''); }}>{t('common.cancel')}</Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <Button size="sm" variant="outline" onClick={() => setActiveModeration(r.id)}>
-                          {r.is_hidden ? <Eye className={cn('h-4 w-4', iconMargin)} /> : <EyeOff className={cn('h-4 w-4', iconMargin)} />}
-                          {t('reviews.moderate')}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
+    <AdminListShell
+      pageId="reviews"
+      title={t('reviews.title')}
+      subtitle={t('reviews.subtitle')}
+      defaultView="cards"
+      cardsLayout="stack"
+      skeletonClassName="h-24 w-full rounded-2xl"
+      filters={
+        <AdminFilterPills
+          filters={filters}
+          value={filterValue}
+          onChange={(value) => {
+            setFilter(value || undefined);
+            setPage(1);
+          }}
+        />
+      }
+      isLoading={isLoading}
+      error={error ? translateAdminError(error.message, t) : null}
+      isEmpty={!data?.reviews.length}
+      empty={<AdminEmptyState icon={Star} title={t('reviews.empty')} />}
+      pagination={
+        data ? (
           <AdminPagination
             page={page}
             totalPages={Math.ceil(data.total / data.limit)}
             total={data.total}
             onPageChange={setPage}
-            summaryClassName="text-muted-foreground"
           />
-        </>
-      )}
-    </div>
+        ) : null
+      }
+      table={
+        <AdminPremiumTable>
+          <AdminPremiumTableHead>
+            <AdminPremiumTableHeaderCell>{t('tables.customer')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.technician')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.rating')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.status')}</AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell className="hidden md:table-cell">
+              {t('tables.date')}
+            </AdminPremiumTableHeaderCell>
+            <AdminPremiumTableHeaderCell>{t('tables.action')}</AdminPremiumTableHeaderCell>
+          </AdminPremiumTableHead>
+          <AdminPremiumTableBody>
+            {data?.reviews.map((r: any) => (
+              <AdminPremiumTableRow key={r.id}>
+                <AdminPremiumTableCell className="font-medium text-[#0F172A]">
+                  {r.customer?.full_name ?? t('technicians.detail.anonymous')}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell className="text-[#64748B]">
+                  {r.technician?.full_name ?? t('common.unknown')}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell>
+                  <ReviewRating rating={r.rating} />
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell>
+                  {r.is_hidden ? (
+                    <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                      {t('reviews.hidden')}
+                    </Badge>
+                  ) : (
+                    <span className="text-[#64748B]">{t('reviews.filters.visible')}</span>
+                  )}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                  {formatDateTime(r.created_at)}
+                </AdminPremiumTableCell>
+                <AdminPremiumTableCell>
+                  {activeModeration === r.id ? (
+                    <ReviewModerationPanel
+                      review={r}
+                      note={note}
+                      onNoteChange={setNote}
+                      onModerate={() => handleModerate(r.id, r.is_hidden ? 'restore' : 'hide')}
+                      onCancel={() => {
+                        setActiveModeration(null);
+                        setNote('');
+                      }}
+                      isPending={moderate.isPending}
+                      t={t}
+                    />
+                  ) : (
+                    <ReviewModerateButton
+                      review={r}
+                      onClick={() => setActiveModeration(r.id)}
+                      t={t}
+                      iconMargin={iconMargin}
+                    />
+                  )}
+                </AdminPremiumTableCell>
+              </AdminPremiumTableRow>
+            ))}
+          </AdminPremiumTableBody>
+        </AdminPremiumTable>
+      }
+      cards={
+        data?.reviews.map((r: any) => (
+          <ReviewCard
+            key={r.id}
+            review={r}
+            activeModeration={activeModeration}
+            note={note}
+            onNoteChange={setNote}
+            onStartModeration={setActiveModeration}
+            onCancelModeration={() => {
+              setActiveModeration(null);
+              setNote('');
+            }}
+            onModerate={handleModerate}
+            isPending={moderate.isPending}
+            t={t}
+            formatDateTime={formatDateTime}
+            iconMargin={iconMargin}
+          />
+        )) ?? null
+      }
+    />
   );
 }
