@@ -1,10 +1,11 @@
 import { z } from 'zod';
-import { priceTypeSchema, slugSchema, uuidSchema } from '@/lib/validations/common';
+import { paginationPageSchema, priceTypeSchema, slugSchema, uuidSchema } from '@/lib/validations/common';
 
-export const listServicesQuerySchema = z.object({
+export const listServicesQuerySchema = paginationPageSchema.extend({
   category: z.string().max(100).optional(),
   category_id: uuidSchema.optional(),
   id: uuidSchema.optional(),
+  search: z.string().max(100).optional(),
 });
 
 export const createServiceSchema = z.object({

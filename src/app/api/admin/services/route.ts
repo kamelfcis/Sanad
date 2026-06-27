@@ -15,18 +15,34 @@ export async function GET(request: NextRequest) {
   const query = parseSearchParams(request.nextUrl.searchParams, listServicesQuerySchema);
   if ('response' in query) return query.response;
 
+  const { category_id, search } = query.data;
+  const page = query.data.page ?? 1;
+  const limit = query.data.limit ?? 25;
+  const offset = (page - 1) * limit;
+
   let dbQuery = supabase
     .from('services')
-    .select('*, service_categories(name_ar, name_en)')
+    .select('*, service_categories(name_ar, name_en)', { count: 'exact' })
     .order('name_ar', { ascending: true });
 
-  if (query.data.category_id) {
-    dbQuery = dbQuery.eq('category_id', query.data.category_id);
+  if (category_id) {
+    dbQuery = dbQuery.eq('category_id', category_id);
   }
 
-  const { data, error } = await dbQuery;
+  if (search) {
+    dbQuery = dbQuery.or(
+      `name_ar.ilike.%${search}%,name_en.ilike.%${search}%,slug.ilike.%${search}%`,
+    );
+  }
+
+  const { data, error, count } = await dbQuery.range(offset, offset + limit - 1);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+  return NextResponse.json({
+    services: data ?? [],
+    total: count ?? 0,
+    page,
+    limit,
+  });
 }
 
 export async function POST(request: NextRequest) {

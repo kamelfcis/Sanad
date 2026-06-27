@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { slugSchema } from '@/lib/validations/common';
+import { paginationPageSchema, slugSchema } from '@/lib/validations/common';
 import { CATEGORY_PRESET_ICON_KEYS } from '@/lib/icons/category-icons';
 
 const categoryIconTypeSchema = z.enum(['preset', 'upload']);
@@ -55,3 +55,7 @@ export const updateCategorySchema = categoryFieldsSchema
   });
 
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
+
+export const adminCategoriesQuerySchema = paginationPageSchema.extend({
+  search: z.string().max(100).optional(),
+});

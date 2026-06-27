@@ -38,11 +38,13 @@ import {
   adminActionButtonDestructiveClass,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
+import { AdminPagination } from '@/components/admin/admin-pagination';
 import { CategoryIconPicker } from '@/components/admin/category-icon-picker';
 import { CategoryIconDisplay } from '@/components/shared/category-icon-display';
 import { resolveCategoryIconType, type CategoryIconType } from '@/lib/icons/category-icons';
 import { Plus, FolderTree, Pencil, Trash2, X, Check, Hash } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { useAdminListPagination } from '@/hooks/use-admin-list-pagination';
 import { cn } from '@/lib/utils/cn';
 
 function CategoryActiveIcon({ isActive }: { isActive: boolean }) {
@@ -206,7 +208,9 @@ interface CategoryFormState {
 
 export default function AdminCategoriesPage() {
   const { t, dir } = useAdminT();
-  const { data: categories, isLoading } = useAdminCategories();
+  const { page, limit, setPage, setLimit } = useAdminListPagination();
+  const { data, isLoading } = useAdminCategories(page, limit);
+  const categories = data?.categories;
   const createCategory = useAdminCreateCategory();
   const updateCategory = useAdminUpdateCategory();
   const deleteCategory = useAdminDeleteCategory();
@@ -369,6 +373,18 @@ export default function AdminCategoriesPage() {
       isEmpty={!categories?.length}
       empty={<AdminEmptyState icon={FolderTree} title={t('categories.empty')} />}
       cardsLayout="grid"
+      pagination={
+        data ? (
+          <AdminPagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(data.total / data.limit))}
+            total={data.total}
+            limit={limit}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+          />
+        ) : null
+      }
       table={
         <AdminPremiumTable>
           <AdminPremiumTableHead>

@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireAuth, requireAdmin } from '@/lib/api/auth';
 import { parseJsonBody, parseSearchParams } from '@/lib/api/validate';
-import { createCategorySchema } from '@/lib/validations/categories';
-import { emptyQuerySchema } from '@/lib/validations/common';
+import { adminCategoriesQuerySchema, createCategorySchema } from '@/lib/validations/categories';
 
 export async function GET(request: NextRequest) {
-  const query = parseSearchParams(request.nextUrl.searchParams, emptyQuerySchema);
+  const query = parseSearchParams(request.nextUrl.searchParams, adminCategoriesQuerySchema);
   if ('response' in query) return query.response;
 
   const supabase = await createServerSupabaseClient();
@@ -16,13 +15,31 @@ export async function GET(request: NextRequest) {
   const admin = await requireAdmin(supabase, auth.user);
   if ('response' in admin) return admin.response;
 
-  const { data, error } = await supabase
+  const { search } = query.data;
+  const page = query.data.page ?? 1;
+  const limit = query.data.limit ?? 25;
+  const offset = (page - 1) * limit;
+
+  let dbQuery = supabase
     .from('service_categories')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('name_ar', { ascending: true });
 
+  if (search) {
+    dbQuery = dbQuery.or(
+      `name_ar.ilike.%${search}%,name_en.ilike.%${search}%,slug.ilike.%${search}%`,
+    );
+  }
+
+  const { data, error, count } = await dbQuery.range(offset, offset + limit - 1);
+
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+  return NextResponse.json({
+    categories: data ?? [],
+    total: count ?? 0,
+    page,
+    limit,
+  });
 }
 
 export async function POST(request: NextRequest) {

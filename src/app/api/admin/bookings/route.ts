@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   const { status } = query.data;
   const page = query.data.page ?? 1;
-  const limit = query.data.limit ?? 50;
+  const limit = query.data.limit ?? 25;
   const offset = (page - 1) * limit;
 
   const db = isServiceRoleConfigured() ? createServiceRoleClient() : supabase;

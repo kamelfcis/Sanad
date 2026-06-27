@@ -27,10 +27,14 @@ import {
   AdminTableActionLink,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
+import { AdminPagination } from '@/components/admin/admin-pagination';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
+import { useAdminListPagination } from '@/hooks/use-admin-list-pagination';
 
-type BookingRow = NonNullable<ReturnType<typeof useAdminBookings>['data']>[number];
+type BookingRow = NonNullable<
+  ReturnType<typeof useAdminBookings>['data']
+>['bookings'][number];
 
 function bookingStatusVariant(
   status: string,
@@ -177,7 +181,9 @@ function BookingCard({
 export default function AdminBookingsPage() {
   const { t, formatDateTime, formatCurrency } = useAdminT();
   const [statusFilter, setStatusFilter] = useState('');
-  const { data: bookings, isLoading, error } = useAdminBookings(statusFilter || undefined);
+  const { page, limit, setPage, setLimit, resetPage } = useAdminListPagination();
+  const { data, isLoading, error } = useAdminBookings(statusFilter || undefined, page, limit);
+  const bookings = data?.bookings;
 
   const statusFilters = [
     { label: t('bookings.filters.all'), value: '' },
@@ -195,7 +201,14 @@ export default function AdminBookingsPage() {
       subtitle={t('bookings.subtitle')}
       defaultView="table"
       filters={
-        <AdminFilterPills filters={statusFilters} value={statusFilter} onChange={setStatusFilter} />
+        <AdminFilterPills
+          filters={statusFilters}
+          value={statusFilter}
+          onChange={(value) => {
+            setStatusFilter(value);
+            resetPage();
+          }}
+        />
       }
       isLoading={isLoading}
       error={error ? translateAdminError(error.message, t) : null}
@@ -210,6 +223,18 @@ export default function AdminBookingsPage() {
               : t('bookings.empty.none')
           }
         />
+      }
+      pagination={
+        data ? (
+          <AdminPagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(data.total / data.limit))}
+            total={data.total}
+            limit={limit}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+          />
+        ) : null
       }
       table={
         <AdminPremiumTable>

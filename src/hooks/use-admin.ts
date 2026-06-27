@@ -267,9 +267,24 @@ export function useAdminCustomer(id: string) {
 }
 
 // ---- Services (Admin) ----
-async function fetchAdminServices(categoryId?: string) {
+export interface AdminServicesResponse {
+  services: any[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+async function fetchAdminServices(
+  page = 1,
+  limit = 25,
+  categoryId?: string,
+  search?: string,
+): Promise<AdminServicesResponse> {
   const params = new URLSearchParams();
+  params.set('page', String(page));
+  params.set('limit', String(limit));
   if (categoryId) params.set('category_id', categoryId);
+  if (search) params.set('search', search);
   const res = await fetch(`/api/admin/services?${params}`);
   if (!res.ok) throw new Error(E.FETCH_SERVICES_FAILED);
   return res.json();
@@ -301,10 +316,10 @@ async function deleteAdminService(id: string) {
   return res.json();
 }
 
-export function useAdminServices(categoryId?: string) {
+export function useAdminServices(page = 1, limit = 25, categoryId?: string, search?: string) {
   return useQuery({
-    queryKey: ['admin-services', categoryId],
-    queryFn: () => fetchAdminServices(categoryId),
+    queryKey: ['admin-services', page, limit, categoryId, search],
+    queryFn: () => fetchAdminServices(page, limit, categoryId, search),
   });
 }
 
@@ -333,8 +348,23 @@ export function useAdminDeleteService() {
 }
 
 // ---- Categories (Admin) ----
-async function fetchAdminCategories() {
-  const res = await fetch('/api/admin/categories');
+export interface AdminCategoriesResponse {
+  categories: any[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+async function fetchAdminCategories(
+  page = 1,
+  limit = 25,
+  search?: string,
+): Promise<AdminCategoriesResponse> {
+  const params = new URLSearchParams();
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+  if (search) params.set('search', search);
+  const res = await fetch(`/api/admin/categories?${params}`);
   if (!res.ok) throw new Error(E.FETCH_CATEGORIES_FAILED);
   return res.json();
 }
@@ -365,10 +395,10 @@ async function deleteAdminCategory(id: string) {
   return res.json();
 }
 
-export function useAdminCategories() {
+export function useAdminCategories(page = 1, limit = 25, search?: string) {
   return useQuery({
-    queryKey: ['admin-categories'],
-    queryFn: fetchAdminCategories,
+    queryKey: ['admin-categories', page, limit, search],
+    queryFn: () => fetchAdminCategories(page, limit, search),
   });
 }
 
@@ -423,17 +453,21 @@ export interface AdminBookingsResponse {
   limit: number;
 }
 
-async function fetchAdminBookings(status?: string): Promise<AdminBookingListItem[]> {
+async function fetchAdminBookings(
+  status?: string,
+  page = 1,
+  limit = 25,
+): Promise<AdminBookingsResponse> {
   const params = new URLSearchParams();
   if (status) params.set('status', status);
-  params.set('limit', '100');
+  params.set('page', String(page));
+  params.set('limit', String(limit));
   const res = await fetch(`/api/admin/bookings?${params}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error ?? E.FETCH_BOOKINGS_FAILED);
   }
-  const data: AdminBookingsResponse = await res.json();
-  return data.bookings ?? [];
+  return res.json();
 }
 
 async function fetchAdminBooking(id: string): Promise<AdminBookingListItem & {
@@ -448,10 +482,10 @@ async function fetchAdminBooking(id: string): Promise<AdminBookingListItem & {
   return res.json();
 }
 
-export function useAdminBookings(status?: string) {
+export function useAdminBookings(status?: string, page = 1, limit = 25) {
   return useQuery({
-    queryKey: ['admin-bookings', status],
-    queryFn: () => fetchAdminBookings(status),
+    queryKey: ['admin-bookings', status, page, limit],
+    queryFn: () => fetchAdminBookings(status, page, limit),
   });
 }
 

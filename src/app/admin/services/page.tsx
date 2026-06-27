@@ -40,8 +40,10 @@ import {
   adminActionButtonDestructiveClass,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
+import { AdminPagination } from '@/components/admin/admin-pagination';
 import { Plus, Wrench, Pencil, Trash2, X, Check } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { useAdminListPagination } from '@/hooks/use-admin-list-pagination';
 import { cn } from '@/lib/utils/cn';
 
 function ServiceActiveIcon({ isActive }: { isActive: boolean }) {
@@ -209,7 +211,9 @@ function ServiceCard({
 
 export default function AdminServicesPage() {
   const { t, dir, locale, formatCurrency } = useAdminT();
-  const { data: services, isLoading } = useAdminServices();
+  const { page, limit, setPage, setLimit } = useAdminListPagination();
+  const { data, isLoading } = useAdminServices(page, limit);
+  const services = data?.services;
   const { data: categories } = useCategories();
   const createService = useAdminCreateService();
   const updateService = useAdminUpdateService();
@@ -395,6 +399,18 @@ export default function AdminServicesPage() {
           title={t('services.empty.title')}
           subtitle={t('services.empty.subtitle')}
         />
+      }
+      pagination={
+        data ? (
+          <AdminPagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(data.total / data.limit))}
+            total={data.total}
+            limit={limit}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+          />
+        ) : null
       }
       table={
         <AdminPremiumTable>
