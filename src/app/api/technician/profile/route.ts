@@ -33,23 +33,45 @@ export async function PUT(request: NextRequest) {
 
   const { bio, years_experience, max_distance_km, is_available, phone } = parsed.data;
 
-  const { data, error } = await supabase
-    .from('technician_profiles')
-    .upsert({
-      id: auth.user.id,
-      bio: bio ?? null,
-      years_experience: years_experience ?? null,
-      max_distance_km: max_distance_km ?? 20.0,
-      is_available: is_available ?? true,
-    })
-    .select()
-    .single();
+  const updates: Record<string, unknown> = {};
+  if (bio !== undefined) updates.bio = bio;
+  if (years_experience !== undefined) updates.years_experience = years_experience;
+  if (max_distance_km !== undefined) updates.max_distance_km = max_distance_km;
+  if (is_available !== undefined) updates.is_available = is_available;
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (Object.keys(updates).length === 0 && !phone) {
+    return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+  }
+
+  let profileData = null;
+
+  if (Object.keys(updates).length > 0) {
+    const { data, error } = await supabase
+      .from('technician_profiles')
+      .update(updates)
+      .eq('id', auth.user.id)
+      .select()
+      .maybeSingle();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data) {
+      return NextResponse.json({ error: 'Technician profile not found' }, { status: 404 });
+    }
+    profileData = data;
+  } else {
+    const { data, error } = await supabase
+      .from('technician_profiles')
+      .select('*')
+      .eq('id', auth.user.id)
+      .maybeSingle();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    profileData = data;
+  }
 
   if (phone) {
     await supabase.from('profiles').update({ phone }).eq('id', auth.user.id);
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(profileData);
 }

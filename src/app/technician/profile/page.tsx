@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useTechnicianProfile, useUpdateTechnicianProfile, useTechnicianSkills, useUpdateTechnicianSkills } from '@/hooks/use-technician';
 import { useTechnicianReviews } from '@/hooks/use-reviews';
 import { useAuthStore } from '@/store/auth-store';
+import { getTechnicianProfileMissingFields } from '@/lib/technician/profile-complete';
 import { SkillSelector } from '@/components/shared/skill-selector';
 import { RatingSummary } from '@/components/shared/rating-summary';
 import { ReviewCard } from '@/components/shared/review-card';
@@ -78,7 +79,22 @@ export default function TechnicianProfilePage() {
   const toggleAvailability = async () => {
     const newVal = !isAvailable;
     setIsAvailable(newVal);
-    await updateProfile.mutateAsync({ is_available: newVal });
+    try {
+      await updateProfile.mutateAsync({ is_available: newVal });
+      toast({
+        title: newVal ? 'You are now available' : 'You are now offline',
+        description: newVal
+          ? 'Customers can assign you to new jobs.'
+          : 'You will not receive new job requests.',
+      });
+    } catch {
+      setIsAvailable(!newVal);
+      toast({
+        title: 'Could not update availability',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading) {
@@ -104,7 +120,15 @@ export default function TechnicianProfilePage() {
     rejected: { label: 'Rejected', variant: 'destructive' as const },
   }[statusKey] ?? { label: 'Unknown', variant: 'outline' as const };
 
-  const needsSetup = !techProfile?.bio;
+  const needsSetup =
+    !techProfile?.national_id ||
+    !techProfile?.governorate ||
+    !techProfile?.profile_photo_url ||
+    !techProfile?.id_card_photo_url;
+
+  const missingFields = techProfile
+    ? getTechnicianProfileMissingFields(techProfile, techSkills?.length ?? 0)
+    : [];
 
   if (needsSetup) {
     return (
@@ -115,7 +139,7 @@ export default function TechnicianProfilePage() {
           Complete your profile setup to start receiving jobs.
         </p>
         <Button asChild>
-          <a href="/technician/setup">Set up now</a>
+          <a href="/auth/register-technician?complete=1">Complete registration</a>
         </Button>
       </div>
     );
@@ -126,6 +150,11 @@ export default function TechnicianProfilePage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
         <p className="mt-1 text-muted-foreground">Manage your profile, skills, and availability.</p>
+        {missingFields.includes('bio') && (
+          <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Your bio was cleared. Add a short bio below and save to stay eligible for jobs.
+          </p>
+        )}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 lg:grid-cols-3">

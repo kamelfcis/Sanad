@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { isTechnicianProfileComplete } from '@/lib/technician/profile-complete';
+import { getTechnicianProfileMissingFields } from '@/lib/technician/profile-complete';
 import { getSafeInternalRedirect, redirectUrlForPath } from '@/lib/auth/safe-redirect';
 
 /** Strip spoofed client identity; set trusted user id for downstream rate limiting */
@@ -31,7 +31,24 @@ async function getTechnicianOnboardingStatus(
     .select('*', { count: 'exact', head: true })
     .eq('technician_id', userId);
 
-  return isTechnicianProfileComplete(tp, count ?? 0);
+  const skillsCount = count ?? 0;
+  const missing = getTechnicianProfileMissingFields(tp, skillsCount);
+
+  return {
+    complete: missing.length === 0,
+    missing,
+    profile: tp,
+    skillsCount,
+  };
+}
+
+/** Routes an incomplete technician may use to fix soft gaps (e.g. bio cleared by a bad update). */
+function canAccessTechnicianRouteWhileIncomplete(pathname: string, missing: string[]) {
+  if (missing.length === 0) return true;
+  const hardFields = ['national_id', 'governorate', 'profile_photo_url', 'id_card_photo_url'];
+  const hasHardGap = missing.some((field) => hardFields.includes(field));
+  if (hasHardGap) return false;
+  return pathname === '/technician/profile';
 }
 
 function technicianHomePath(complete: boolean) {
@@ -127,7 +144,7 @@ export async function updateSession(request: NextRequest) {
     if (!profile) {
       url.pathname = '/auth/role-selection';
     } else if (profile.role === 'technician') {
-      const complete = await getTechnicianOnboardingStatus(supabase, user.id);
+      const { complete } = await getTechnicianOnboardingStatus(supabase, user.id);
       url.pathname = technicianHomePath(complete);
     } else if (profile.role === 'admin') {
       url.pathname = '/admin';
@@ -182,17 +199,17 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (profile?.role === 'technician') {
-      const onboardingComplete = await getTechnicianOnboardingStatus(supabase, user.id);
+      const { complete, missing } = await getTechnicianOnboardingStatus(supabase, user.id);
       const isSetupRoute = pathname === '/technician/setup' || isCompleteRegistration;
 
-      if (!onboardingComplete && !isSetupRoute) {
+      if (!complete && !isSetupRoute && !canAccessTechnicianRouteWhileIncomplete(pathname, missing)) {
         const url = request.nextUrl.clone();
         url.pathname = '/auth/register-technician';
         url.search = 'complete=1';
         return NextResponse.redirect(url);
       }
 
-      if (onboardingComplete && (pathname === '/technician/setup' || isCompleteRegistration)) {
+      if (complete && (pathname === '/technician/setup' || isCompleteRegistration)) {
         const url = request.nextUrl.clone();
         url.pathname = '/technician/jobs';
         url.search = '';
