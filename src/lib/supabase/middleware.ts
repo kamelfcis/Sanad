@@ -92,6 +92,17 @@ export async function updateSession(request: NextRequest) {
   }
 
   const pathname = request.nextUrl.pathname;
+
+  // Recover from query string embedded in pathname (e.g. /auth/register-technician%3Fcomplete=1)
+  if (pathname.startsWith('/auth/register-technician') && pathname !== '/auth/register-technician') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/register-technician';
+    const suffix = decodeURIComponent(pathname.slice('/auth/register-technician'.length));
+    const query = suffix.replace(/^\?/, '');
+    url.search = query ? `?${query}` : '';
+    return NextResponse.redirect(url);
+  }
+
   const isCompleteRegistration =
     pathname === '/auth/register-technician' && request.nextUrl.searchParams.get('complete') === '1';
 
@@ -145,7 +156,7 @@ export async function updateSession(request: NextRequest) {
       url.pathname = '/auth/role-selection';
     } else if (profile.role === 'technician') {
       const { complete } = await getTechnicianOnboardingStatus(supabase, user.id);
-      url.pathname = technicianHomePath(complete);
+      return NextResponse.redirect(redirectUrlForPath(technicianHomePath(complete), request.url));
     } else if (profile.role === 'admin') {
       url.pathname = '/admin';
     } else {

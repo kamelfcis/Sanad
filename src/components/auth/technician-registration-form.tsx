@@ -64,6 +64,14 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
       yearsExperience: 0,
       startingPrice: 100,
       fullName: profile?.full_name ?? '',
+      phone: '',
+      nationalId: '',
+      specialty: '' as TechnicianRegisterInput['specialty'],
+      governorate: '' as TechnicianRegisterInput['governorate'],
+      area: '',
+      workingHours: '',
+      bio: '',
+      ...(isCompleteMode ? {} : { password: '' }),
     },
   });
 
@@ -312,7 +320,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
               name="specialty"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value ?? ''} onValueChange={field.onChange}>
                   <SelectTrigger className="border-border bg-card focus:border-primary">
                     <SelectValue placeholder="اختر التخصص" />
                   </SelectTrigger>
@@ -352,7 +360,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
               name="governorate"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value ?? ''} onValueChange={field.onChange}>
                   <SelectTrigger className="border-border bg-card focus:border-primary">
                     <SelectValue placeholder="اختر المحافظة" />
                   </SelectTrigger>

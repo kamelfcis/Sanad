@@ -69,9 +69,10 @@ export async function GET(request: Request) {
             .from('technician_skills')
             .select('*', { count: 'exact', head: true })
             .eq('technician_id', data.user.id);
-          url.pathname = isTechnicianProfileComplete(tp, count ?? 0)
+          const destination = isTechnicianProfileComplete(tp, count ?? 0)
             ? '/technician/jobs'
             : '/auth/register-technician?complete=1';
+          return NextResponse.redirect(redirectUrlForPath(destination, origin));
         } else if (profile.role === 'admin') url.pathname = '/admin';
         else url.pathname = '/services';
 
@@ -86,10 +87,9 @@ export async function GET(request: Request) {
           { onConflict: 'id' },
         );
 
-        const url = new URL(origin);
-        url.pathname =
+        const destination =
           role === 'technician' ? '/auth/register-technician?complete=1' : '/services';
-        return NextResponse.redirect(url);
+        return NextResponse.redirect(redirectUrlForPath(destination, origin));
       }
 
       // No role in metadata — create basic profile and redirect to role selection
