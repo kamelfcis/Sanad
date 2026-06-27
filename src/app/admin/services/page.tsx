@@ -8,8 +8,8 @@ import {
   useAdminCreateService,
   useAdminUpdateService,
   useAdminDeleteService,
+  useAdminCategoriesAll,
 } from '@/hooks/use-admin';
-import { useCategories } from '@/hooks/use-categories';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -234,7 +234,8 @@ export default function AdminServicesPage() {
     priceType: filters.price_type || undefined,
   });
   const services = asAdminListItems(data, 'services');
-  const { data: categories } = useCategories();
+  const { data: categoriesData } = useAdminCategoriesAll();
+  const categories = asAdminListItems(categoriesData, 'categories');
   const createService = useAdminCreateService();
   const updateService = useAdminUpdateService();
   const deleteService = useAdminDeleteService();
@@ -334,7 +335,7 @@ export default function AdminServicesPage() {
           className={adminFilterSelectClass}
         >
           <option value="">{t('services.filters.categoryAll')}</option>
-          {categories?.map((c: any) => (
+          {categories.map((c: any) => (
             <option key={c.id} value={c.id}>
               {categoryLabel(c)}
             </option>
@@ -437,9 +438,9 @@ export default function AdminServicesPage() {
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
               >
                 <option value="">{t('services.form.selectCategory')}</option>
-                {categories?.map((c: any) => (
+                {categories.map((c: any) => (
                   <option key={c.id} value={c.id}>
-                    {c.name_ar} / {c.name_en}
+                    {categoryLabel(c)}
                   </option>
                 ))}
               </select>

@@ -414,6 +414,11 @@ export function useAdminCategories(page = 1, limit = 25, search?: string) {
   });
 }
 
+/** All categories for admin filter/select dropdowns (API max limit is 100). */
+export function useAdminCategoriesAll() {
+  return useAdminCategories(1, 100);
+}
+
 export function useAdminCreateCategory() {
   const qc = useQueryClient();
   return useMutation({
