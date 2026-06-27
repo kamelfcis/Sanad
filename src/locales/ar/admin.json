@@ -311,6 +311,7 @@
   },
   "paymentSettings": {
     "title": "إعدادات الدفع اليدوي",
+    "description": "إعداد بيانات InstaPay و Vodafone Cash المعروضة للعملاء عند الدفع.",
     "instapayName": "اسم حساب InstaPay",
     "instapayNumber": "رقم InstaPay",
     "vodafoneNumber": "رقم Vodafone Cash",
@@ -426,6 +427,7 @@
     "title": "الإعدادات",
     "subtitle": "إعدادات المنصة.",
     "general": "عام",
+    "generalDescription": "هوية المنصة وبيانات التواصل الأساسية.",
     "platformName": "اسم المنصة",
     "supportEmail": "بريد الدعم",
     "save": "حفظ الإعدادات",

@@ -40,6 +40,138 @@ import { cn } from '@/lib/utils/cn';
 
 type TrendDirection = 'up' | 'down' | 'neutral';
 
+type StatCardVariant =
+  | 'revenue'
+  | 'bookings'
+  | 'pending'
+  | 'rating'
+  | 'technicians'
+  | 'customers'
+  | 'payments'
+  | 'services';
+
+const STAT_CARD_THEMES: Record<
+  StatCardVariant,
+  {
+    card: string;
+    border: string;
+    hover: string;
+    accent: string;
+    iconWrap: string;
+    icon: string;
+    label: string;
+    sub: string;
+    highlightRing?: string;
+    watermark: string;
+  }
+> = {
+  revenue: {
+    card: 'bg-gradient-to-br from-orange-50 via-amber-50/90 to-orange-100/80',
+    border: 'border-orange-200/60',
+    hover:
+      'hover:-translate-y-0.5 hover:border-orange-300/80 hover:shadow-[0_8px_24px_rgba(255,107,0,0.14)]',
+    accent: 'from-[#FF6B00] to-[#FF8A34]',
+    iconWrap:
+      'bg-gradient-to-br from-[#FF6B00] to-[#FF8A34] shadow-lg shadow-orange-500/30 ring-1 ring-orange-400/20',
+    icon: 'text-white',
+    label: 'text-orange-800/65',
+    sub: 'text-orange-900/55',
+    highlightRing: 'ring-2 ring-orange-300/45',
+    watermark: 'text-orange-500',
+  },
+  bookings: {
+    card: 'bg-gradient-to-br from-sky-50 via-blue-50/90 to-sky-100/75',
+    border: 'border-sky-200/60',
+    hover:
+      'hover:-translate-y-0.5 hover:border-sky-300/80 hover:shadow-[0_8px_24px_rgba(14,165,233,0.14)]',
+    accent: 'from-sky-500 to-blue-600',
+    iconWrap:
+      'bg-gradient-to-br from-sky-500 to-blue-600 shadow-lg shadow-sky-500/30 ring-1 ring-sky-400/20',
+    icon: 'text-white',
+    label: 'text-sky-800/65',
+    sub: 'text-sky-900/55',
+    watermark: 'text-sky-500',
+  },
+  pending: {
+    card: 'bg-gradient-to-br from-rose-50 via-orange-50/80 to-rose-100/70',
+    border: 'border-rose-200/60',
+    hover:
+      'hover:-translate-y-0.5 hover:border-rose-300/80 hover:shadow-[0_8px_24px_rgba(244,63,94,0.14)]',
+    accent: 'from-rose-500 to-orange-500',
+    iconWrap:
+      'bg-gradient-to-br from-rose-500 to-orange-500 shadow-lg shadow-rose-500/30 ring-1 ring-rose-400/20',
+    icon: 'text-white',
+    label: 'text-rose-800/65',
+    sub: 'text-rose-900/55',
+    watermark: 'text-rose-500',
+  },
+  rating: {
+    card: 'bg-gradient-to-br from-amber-50 via-yellow-50/90 to-amber-100/75',
+    border: 'border-amber-200/60',
+    hover:
+      'hover:-translate-y-0.5 hover:border-amber-300/80 hover:shadow-[0_8px_24px_rgba(245,158,11,0.14)]',
+    accent: 'from-amber-400 to-yellow-500',
+    iconWrap:
+      'bg-gradient-to-br from-amber-400 to-yellow-500 shadow-lg shadow-amber-500/30 ring-1 ring-amber-400/20',
+    icon: 'text-white',
+    label: 'text-amber-900/65',
+    sub: 'text-amber-900/55',
+    watermark: 'text-amber-500',
+  },
+  technicians: {
+    card: 'bg-gradient-to-br from-emerald-50 via-green-50/90 to-emerald-100/75',
+    border: 'border-emerald-200/60',
+    hover:
+      'hover:-translate-y-0.5 hover:border-emerald-300/80 hover:shadow-[0_8px_24px_rgba(16,185,129,0.14)]',
+    accent: 'from-emerald-500 to-green-600',
+    iconWrap:
+      'bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/30 ring-1 ring-emerald-400/20',
+    icon: 'text-white',
+    label: 'text-emerald-800/65',
+    sub: 'text-emerald-900/55',
+    watermark: 'text-emerald-500',
+  },
+  customers: {
+    card: 'bg-gradient-to-br from-violet-50 via-purple-50/90 to-violet-100/75',
+    border: 'border-violet-200/60',
+    hover:
+      'hover:-translate-y-0.5 hover:border-violet-300/80 hover:shadow-[0_8px_24px_rgba(139,92,246,0.14)]',
+    accent: 'from-violet-500 to-purple-600',
+    iconWrap:
+      'bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/30 ring-1 ring-violet-400/20',
+    icon: 'text-white',
+    label: 'text-violet-800/65',
+    sub: 'text-violet-900/55',
+    watermark: 'text-violet-500',
+  },
+  payments: {
+    card: 'bg-gradient-to-br from-rose-50 via-red-50/80 to-orange-100/65',
+    border: 'border-rose-200/60',
+    hover:
+      'hover:-translate-y-0.5 hover:border-rose-300/80 hover:shadow-[0_8px_24px_rgba(244,63,94,0.14)]',
+    accent: 'from-rose-500 to-red-500',
+    iconWrap:
+      'bg-gradient-to-br from-rose-500 to-red-500 shadow-lg shadow-rose-500/30 ring-1 ring-rose-400/20',
+    icon: 'text-white',
+    label: 'text-rose-800/65',
+    sub: 'text-rose-900/55',
+    watermark: 'text-rose-500',
+  },
+  services: {
+    card: 'bg-gradient-to-br from-teal-50 via-cyan-50/90 to-teal-100/75',
+    border: 'border-teal-200/60',
+    hover:
+      'hover:-translate-y-0.5 hover:border-teal-300/80 hover:shadow-[0_8px_24px_rgba(20,184,166,0.14)]',
+    accent: 'from-teal-500 to-cyan-600',
+    iconWrap:
+      'bg-gradient-to-br from-teal-500 to-cyan-600 shadow-lg shadow-teal-500/30 ring-1 ring-teal-400/20',
+    icon: 'text-white',
+    label: 'text-teal-800/65',
+    sub: 'text-teal-900/55',
+    watermark: 'text-teal-500',
+  },
+};
+
 function computeBookingTrend(data: { date: string; count: number }[]): {
   direction: TrendDirection;
   percent: number;
@@ -89,10 +221,10 @@ function TrendBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
-        direction === 'up' && 'bg-emerald-50 text-emerald-700',
-        direction === 'down' && 'bg-red-50 text-red-600',
-        direction === 'neutral' && 'bg-zinc-100 text-zinc-500',
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium backdrop-blur-sm',
+        direction === 'up' && 'bg-white/75 text-emerald-700 ring-1 ring-emerald-200/60',
+        direction === 'down' && 'bg-white/75 text-red-600 ring-1 ring-red-200/60',
+        direction === 'neutral' && 'bg-white/70 text-zinc-500 ring-1 ring-zinc-200/60',
       )}
     >
       <Icon className="h-3 w-3" aria-hidden />
@@ -106,7 +238,7 @@ function PremiumStatCard({
   value,
   sub,
   icon: Icon,
-  accent = 'from-[#FF6B00] to-[#FF8A34]',
+  variant = 'revenue',
   highlight,
   trend,
   trendLabel,
@@ -115,31 +247,48 @@ function PremiumStatCard({
   value: number | string;
   sub?: string;
   icon: LucideIcon;
-  accent?: string;
+  variant?: StatCardVariant;
   highlight?: boolean;
   trend?: { direction: TrendDirection; percent: number };
   trendLabel?: string;
 }) {
+  const theme = STAT_CARD_THEMES[variant];
+
   return (
     <article
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all hover:border-[#FF6B00]/25 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]',
-        highlight && 'ring-1 ring-[#FF6B00]/15',
+        'relative overflow-hidden rounded-2xl border p-5 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-all duration-200',
+        theme.card,
+        theme.border,
+        theme.hover,
+        highlight && theme.highlightRing,
       )}
     >
-      <AdminCardAccent className={accent} />
+      <AdminCardAccent className={theme.accent} />
+      <Icon
+        className={cn(
+          'pointer-events-none absolute -end-3 -top-3 h-24 w-24 opacity-[0.08]',
+          theme.watermark,
+        )}
+        aria-hidden
+      />
       <div className="relative z-0">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <p className={cn('text-[11px] font-semibold uppercase tracking-wider', theme.label)}>
               {label}
             </p>
             <p className="mt-2 text-[1.65rem] font-semibold tabular-nums leading-none tracking-tight text-zinc-900">
               {value}
             </p>
           </div>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-50 ring-1 ring-zinc-100">
-            <Icon className="h-[18px] w-[18px] text-[#FF6B00]" />
+          <div
+            className={cn(
+              'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl',
+              theme.iconWrap,
+            )}
+          >
+            <Icon className={cn('h-6 w-6', theme.icon)} aria-hidden />
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -150,7 +299,7 @@ function PremiumStatCard({
               label={trendLabel}
             />
           ) : null}
-          {sub ? <p className="text-xs text-zinc-500">{sub}</p> : null}
+          {sub ? <p className={cn('text-xs', theme.sub)}>{sub}</p> : null}
         </div>
       </div>
     </article>
@@ -163,24 +312,45 @@ function ShortcutCard({
   icon: Icon,
   count,
   badge,
+  variant = 'bookings',
 }: {
   href: string;
   label: string;
   icon: LucideIcon;
   count?: number;
   badge?: string;
+  variant?: StatCardVariant;
 }) {
+  const theme = STAT_CARD_THEMES[variant];
+
   return (
     <Link
       href={href}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-200/70 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all hover:border-[#FF6B00]/30 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+      className={cn(
+        'group relative flex flex-col overflow-hidden rounded-xl border p-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-all duration-200',
+        theme.card,
+        theme.border,
+        theme.hover,
+      )}
     >
-      <AdminCardAccent />
+      <AdminCardAccent className={theme.accent} />
+      <Icon
+        className={cn(
+          'pointer-events-none absolute -end-2 -top-2 h-16 w-16 opacity-[0.07]',
+          theme.watermark,
+        )}
+        aria-hidden
+      />
       <div className="relative z-0 flex items-center justify-between gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-50 ring-1 ring-zinc-100 transition-colors group-hover:bg-[#FF6B00]/10 group-hover:ring-[#FF6B00]/20">
-          <Icon className="h-4 w-4 text-[#FF6B00]" />
+        <div
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105',
+            theme.iconWrap,
+          )}
+        >
+          <Icon className={cn('h-5 w-5', theme.icon)} aria-hidden />
         </div>
-        <ArrowUpRight className="h-3.5 w-3.5 text-zinc-300 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#FF6B00] rtl:group-hover:-translate-x-0.5" />
+        <ArrowUpRight className="h-3.5 w-3.5 text-zinc-400/80 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-zinc-700 rtl:group-hover:-translate-x-0.5" />
       </div>
       <p className="relative z-0 mt-3 text-sm font-medium text-zinc-800">{label}</p>
       <div className="relative z-0 mt-1 flex items-center gap-2">
@@ -190,7 +360,7 @@ function ShortcutCard({
         {badge ? (
           <Badge
             variant="secondary"
-            className="border-amber-200/80 bg-amber-50 text-[11px] font-medium text-amber-700 hover:bg-amber-50"
+            className="border-amber-200/80 bg-white/75 text-[11px] font-medium text-amber-700 backdrop-blur-sm hover:bg-white/75"
           >
             {badge}
           </Badge>
@@ -359,12 +529,20 @@ export default function AdminDashboardPage() {
   const serviceName = (b: (typeof recentBookings)[0]) =>
     locale === 'ar' ? (b.service_name_ar ?? b.service_name) : b.service_name;
 
-  const shortcutItems = [
+  const shortcutItems: {
+    href: string;
+    label: string;
+    icon: LucideIcon;
+    count?: number;
+    badge?: string;
+    variant: StatCardVariant;
+  }[] = [
     {
       href: '/admin/bookings',
       label: t('nav.bookings'),
       icon: ClipboardList,
       count: shortcuts.bookings,
+      variant: 'bookings',
       badge:
         overview.pending_bookings > 0
           ? t('dashboard.shortcuts.pendingCount', { count: overview.pending_bookings })
@@ -375,12 +553,14 @@ export default function AdminDashboardPage() {
       label: t('nav.customers'),
       icon: UserCog,
       count: shortcuts.customers,
+      variant: 'customers',
     },
     {
       href: '/admin/technicians',
       label: t('nav.technicians'),
       icon: Users,
       count: shortcuts.technicians,
+      variant: 'technicians',
       badge:
         overview.pending_technicians > 0
           ? t('dashboard.shortcuts.pendingCount', { count: overview.pending_technicians })
@@ -391,45 +571,65 @@ export default function AdminDashboardPage() {
       label: t('nav.services'),
       icon: Wrench,
       count: shortcuts.services,
+      variant: 'services',
     },
     {
       href: '/admin/categories',
       label: t('nav.categories'),
       icon: FolderTree,
       count: shortcuts.categories,
+      variant: 'services',
     },
     {
       href: '/admin/payments',
       label: t('nav.payments'),
       icon: Banknote,
       count: shortcuts.payments,
+      variant: 'payments',
       badge:
         overview.pending_payments > 0
           ? t('dashboard.shortcuts.pendingCount', { count: overview.pending_payments })
           : undefined,
     },
-    { href: '/admin/reviews', label: t('nav.reviews'), icon: Star, count: shortcuts.reviews },
+    {
+      href: '/admin/reviews',
+      label: t('nav.reviews'),
+      icon: Star,
+      count: shortcuts.reviews,
+      variant: 'rating',
+    },
     {
       href: '/admin/audit-logs',
       label: t('nav.auditLogs'),
       icon: History,
       count: shortcuts.audit_logs,
+      variant: 'customers',
     },
     {
       href: '/admin/hero-slides',
       label: t('nav.heroSlides'),
       icon: Images,
       count: shortcuts.hero_slides,
+      variant: 'revenue',
     },
-    { href: '/admin/settings', label: t('nav.settings'), icon: Settings },
+    { href: '/admin/settings', label: t('nav.settings'), icon: Settings, variant: 'bookings' },
   ];
 
-  const heroStats = [
+  const heroStats: {
+    label: string;
+    value: number | string;
+    sub?: string;
+    icon: LucideIcon;
+    variant: StatCardVariant;
+    highlight?: boolean;
+    trend?: { direction: TrendDirection; percent: number };
+  }[] = [
     {
       label: t('dashboard.stats.revenue'),
       value: formatCurrency(revenue.total),
       sub: t('dashboard.stats.approvedPayments', { count: overview.approved_payments }),
       icon: DollarSign,
+      variant: 'revenue',
       highlight: true,
       trend: revenueTrend,
     },
@@ -438,6 +638,7 @@ export default function AdminDashboardPage() {
       value: overview.total_bookings,
       sub: t('dashboard.stats.completed', { count: overview.completed_bookings }),
       icon: ClipboardList,
+      variant: 'bookings',
       trend: bookingTrend,
     },
     {
@@ -445,37 +646,49 @@ export default function AdminDashboardPage() {
       value: overview.pending_bookings,
       sub: t('dashboard.stats.inProgressSub', { count: overview.in_progress_bookings }),
       icon: Clock,
+      variant: 'pending',
     },
     {
       label: t('dashboard.stats.avgRating'),
       value: overview.average_rating.toFixed(1),
       sub: t('dashboard.stats.reviewsCount', { count: overview.total_reviews }),
       icon: Star,
+      variant: 'rating',
     },
   ];
 
-  const secondaryStats = [
+  const secondaryStats: {
+    label: string;
+    value: number | string;
+    sub?: string;
+    icon: LucideIcon;
+    variant: StatCardVariant;
+  }[] = [
     {
       label: t('dashboard.stats.totalTechnicians'),
       value: overview.total_technicians,
       sub: t('dashboard.stats.verified', { count: overview.verified_technicians }),
       icon: Users,
+      variant: 'technicians',
     },
     {
       label: t('dashboard.stats.totalCustomers'),
       value: overview.total_customers,
       icon: UserCog,
+      variant: 'customers',
     },
     {
       label: t('dashboard.stats.pendingPayments'),
       value: overview.pending_payments,
       icon: Banknote,
+      variant: 'payments',
     },
     {
       label: t('dashboard.stats.totalServices'),
       value: overview.total_services,
       sub: t('dashboard.stats.categoriesCount', { count: overview.total_categories }),
       icon: Wrench,
+      variant: 'services',
     },
   ];
 

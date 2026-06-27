@@ -311,6 +311,7 @@
   },
   "paymentSettings": {
     "title": "Manual Payment Settings",
+    "description": "Configure InstaPay and Vodafone Cash details shown to customers at checkout.",
     "instapayName": "InstaPay Account Name",
     "instapayNumber": "InstaPay Number",
     "vodafoneNumber": "Vodafone Cash Number",
@@ -426,6 +427,7 @@
     "title": "Settings",
     "subtitle": "Platform configuration.",
     "general": "General",
+    "generalDescription": "Basic platform identity and contact details.",
     "platformName": "Platform Name",
     "supportEmail": "Support Email",
     "save": "Save Settings",
