@@ -229,7 +229,7 @@ export default function AdminReviewsPage() {
       pageId="reviews"
       title={t('reviews.title')}
       subtitle={t('reviews.subtitle')}
-      defaultView="cards"
+      defaultView="table"
       cardsLayout="stack"
       skeletonClassName="h-24 w-full rounded-2xl"
       filters={

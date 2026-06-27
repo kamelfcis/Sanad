@@ -133,7 +133,7 @@ export default function AdminAuditLogsPage() {
       pageId="audit-logs"
       title={t('auditLogs.title')}
       subtitle={t('auditLogs.subtitle')}
-      defaultView="cards"
+      defaultView="table"
       cardsLayout="stack"
       skeletonCount={10}
       skeletonClassName="h-24 w-full rounded-2xl"

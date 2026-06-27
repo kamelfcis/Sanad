@@ -219,7 +219,7 @@ export default function AdminPaymentsPage() {
       pageId="payments"
       title={t('payments.title')}
       subtitle={t('payments.subtitle')}
-      defaultView="cards"
+      defaultView="table"
       cardsLayout="stack"
       skeletonClassName="h-28 w-full rounded-2xl"
       filters={
