@@ -92,6 +92,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   const pathname = request.nextUrl.pathname;
+  const isApiRoute = pathname.startsWith('/api/');
 
   // Recover from query string embedded in pathname (e.g. /auth/register-technician%3Fcomplete=1)
   if (pathname.startsWith('/auth/register-technician') && pathname !== '/auth/register-technician') {
@@ -213,7 +214,12 @@ export async function updateSession(request: NextRequest) {
       const { complete, missing } = await getTechnicianOnboardingStatus(supabase, user.id);
       const isSetupRoute = pathname === '/technician/setup' || isCompleteRegistration;
 
-      if (!complete && !isSetupRoute && !canAccessTechnicianRouteWhileIncomplete(pathname, missing)) {
+      if (
+        !complete &&
+        !isSetupRoute &&
+        !isApiRoute &&
+        !canAccessTechnicianRouteWhileIncomplete(pathname, missing)
+      ) {
         const url = request.nextUrl.clone();
         url.pathname = '/auth/register-technician';
         url.search = 'complete=1';
