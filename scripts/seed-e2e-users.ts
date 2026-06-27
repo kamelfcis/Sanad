@@ -11,10 +11,12 @@ const CUSTOMER = {
   email: 'test-customer@sanad.app',
   password: 'TestCustomer2025!',
   fullName: 'E2E Test Customer',
+  phone: '01122334455',
 };
 
+/** Dedicated E2E technician — complete profile, pending admin approval */
 const TECH = {
-  phone: '01099998888',
+  phone: '01111734655',
   password: 'TestTech2025!',
   fullName: 'E2E Test Technician',
   nationalId: '29001011234567',
@@ -24,8 +26,11 @@ const TECH = {
   area: 'مدينة نصر',
   startingPrice: 150,
   workingHours: '9 ص - 6 م',
-  bio: 'فني كهرباء للاختبار الآلي E2E',
+  bio: 'فني كهرباء محترف للاختبار الآلي E2E — خبرة في التمديدات والصيانة.',
 };
+
+/** Default verified so full-workflow booking tests pass; technician-admin-workflow resets to pending */
+const TECH_SEED_PENDING = process.env.E2E_TECH_PENDING === 'true';
 
 const PLACEHOLDER_PHOTO =
   'https://placehold.co/400x400/png?text=E2E+Profile';
@@ -82,7 +87,9 @@ async function main() {
       id: customerId,
       email: CUSTOMER.email,
       full_name: CUSTOMER.fullName,
+      phone: CUSTOMER.phone,
       role: 'customer',
+      avatar_url: PLACEHOLDER_PHOTO,
     },
     { onConflict: 'id' },
   );
@@ -120,8 +127,8 @@ async function main() {
       id_card_photo_url: PLACEHOLDER_ID,
       id_document_url: PLACEHOLDER_ID,
       verification_docs: [PLACEHOLDER_ID],
-      verification_status: 'verified',
-      is_available: true,
+      verification_status: TECH_SEED_PENDING ? 'pending' : 'verified',
+      is_available: false,
       location_lat: 30.0444,
       location_lng: 31.2357,
     },

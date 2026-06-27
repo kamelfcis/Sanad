@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -40,7 +40,11 @@ export default function TechnicianProfilePage() {
   const updateSkills = useUpdateTechnicianSkills();
   const { profile: userProfile } = useAuthStore();
 
-  const [isAvailable, setIsAvailable] = useState(techProfile?.is_available ?? true);
+  const [isAvailable, setIsAvailable] = useState(techProfile?.is_available ?? false);
+
+  useEffect(() => {
+    if (techProfile) setIsAvailable(techProfile.is_available);
+  }, [techProfile?.is_available]);
   const [selectedSkills, setSelectedSkills] = useState(
     techSkills?.map((s) => ({
       service_id: s.service_id,

@@ -4,7 +4,7 @@
       "c:\\Program Files\\cursor\\resources\\app\\resources\\helpers\\node.exe",
       "D:\\Graduation Project 2025\\Sanad\\node_modules\\@playwright\\test\\cli.js",
       "test",
-      "e2e/admin-i18n.spec.ts"
+      "e2e/technician-admin-workflow.spec.ts"
     ],
     "configFile": "D:\\Graduation Project 2025\\Sanad\\playwright.config.ts",
     "rootDir": "D:/Graduation Project 2025/Sanad/e2e",
@@ -66,20 +66,20 @@
   },
   "suites": [
     {
-      "title": "admin-i18n.spec.ts",
-      "file": "admin-i18n.spec.ts",
+      "title": "technician-admin-workflow.spec.ts",
+      "file": "technician-admin-workflow.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Admin dashboard i18n",
-          "file": "admin-i18n.spec.ts",
-          "line": 7,
-          "column": 6,
+          "title": "Technician admin approval + notifications",
+          "file": "technician-admin-workflow.spec.ts",
+          "line": 19,
+          "column": 15,
           "specs": [
             {
-              "title": "default Arabic: RTL sidebar and html lang/dir",
+              "title": "Technician: pending login reaches jobs (no complete=1 redirect)",
               "ok": true,
               "tags": [],
               "tests": [
@@ -94,12 +94,29 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 12260,
+                      "duration": 9884,
                       "errors": [],
-                      "stdout": [],
-                      "stderr": [],
+                      "stdout": [
+                        {
+                          "buffer": "VGVjaG5pY2lhbiBiZDQ0NjZiYi0wODUyLTQyODYtODJiOS0wZWZlYjNiZWNlMGIgcmVzZXQgdG8gcGVuZGluZwo="
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "buffer": "KG5vZGU6MjU4MTYpIFdhcm5pbmc6IFRoZSAnTk9fQ09MT1InIGVudiBpcyBpZ25vcmVkIGR1ZSB0byB0aGUgJ0ZPUkNFX0NPTE9SJyBlbnYgYmVpbmcgc2V0LgooVXNlIGBub2RlIC0tdHJhY2Utd2FybmluZ3MgLi4uYCB0byBzaG93IHdoZXJlIHRoZSB3YXJuaW5nIHdhcyBjcmVhdGVkKQo="
+                        },
+                        {
+                          "buffer": "KG5vZGU6Mjg0OTIpIFdhcm5pbmc6IFRoZSAnTk9fQ09MT1InIGVudiBpcyBpZ25vcmVkIGR1ZSB0byB0aGUgJ0ZPUkNFX0NPTE9SJyBlbnYgYmVpbmcgc2V0LgooVXNlIGBub2RlIC0tdHJhY2Utd2FybmluZ3MgLi4uYCB0byBzaG93IHdoZXJlIHRoZSB3YXJuaW5nIHdhcyBjcmVhdGVkKQo="
+                        },
+                        {
+                          "buffer": "KG5vZGU6MzA4NTIpIFdhcm5pbmc6IFRoZSAnTk9fQ09MT1InIGVudiBpcyBpZ25vcmVkIGR1ZSB0byB0aGUgJ0ZPUkNFX0NPTE9SJyBlbnYgYmVpbmcgc2V0LgooVXNlIGBub2RlIC0tdHJhY2Utd2FybmluZ3MgLi4uYCB0byBzaG93IHdoZXJlIHRoZSB3YXJuaW5nIHdhcyBjcmVhdGVkKQo="
+                        },
+                        {
+                          "buffer": "KG5vZGU6MzA4NTIpIFdhcm5pbmc6IFRoZSAnTk9fQ09MT1InIGVudiBpcyBpZ25vcmVkIGR1ZSB0byB0aGUgJ0ZPUkNFX0NPTE9SJyBlbnYgYmVpbmcgc2V0LgooVXNlIGBub2RlIC0tdHJhY2Utd2FybmluZ3MgLi4uYCB0byBzaG93IHdoZXJlIHRoZSB3YXJuaW5nIHdhcyBjcmVhdGVkKQo="
+                        }
+                      ],
                       "retry": 0,
-                      "startTime": "2026-06-26T20:26:10.817Z",
+                      "startTime": "2026-06-27T13:06:18.971Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -107,13 +124,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "505b63760b638811c7bd-cedf7b9b23f0d08b6bf6",
-              "file": "admin-i18n.spec.ts",
-              "line": 15,
+              "id": "172fd161706217ab52df-491550dde6ad3ad1e9eb",
+              "file": "technician-admin-workflow.spec.ts",
+              "line": 33,
               "column": 7
             },
             {
-              "title": "toggle English: LTR labels without reload",
+              "title": "Admin: approve pending technician from UI",
               "ok": true,
               "tags": [],
               "tests": [
@@ -128,12 +145,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 6669,
+                      "duration": 13055,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-26T20:26:23.259Z",
+                      "startTime": "2026-06-27T13:06:31.679Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -141,13 +158,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "505b63760b638811c7bd-f3573c5eeb9d41911005",
-              "file": "admin-i18n.spec.ts",
-              "line": 34,
+              "id": "172fd161706217ab52df-dbe79c937e9da7a8b275",
+              "file": "technician-admin-workflow.spec.ts",
+              "line": 55,
               "column": 7
             },
             {
-              "title": "locale preference persists after refresh",
+              "title": "Technician: receives approval notification (API + page)",
               "ok": true,
               "tags": [],
               "tests": [
@@ -162,12 +179,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 9283,
+                      "duration": 14693,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-26T20:26:29.950Z",
+                      "startTime": "2026-06-27T13:06:44.755Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -175,13 +192,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "505b63760b638811c7bd-10689b7ec54d4d7aeb04",
-              "file": "admin-i18n.spec.ts",
-              "line": 48,
+              "id": "172fd161706217ab52df-374e05905efd3abd5fa1",
+              "file": "technician-admin-workflow.spec.ts",
+              "line": 98,
               "column": 7
             },
             {
-              "title": "mobile viewport: sidebar and toggle work",
+              "title": "Technician: toggle available for work (no redirect loop)",
               "ok": true,
               "tags": [],
               "tests": [
@@ -196,12 +213,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 9482,
+                      "duration": 19801,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-26T20:26:39.252Z",
+                      "startTime": "2026-06-27T13:06:59.468Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -209,13 +226,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "505b63760b638811c7bd-9507a1437e0b4efb00af",
-              "file": "admin-i18n.spec.ts",
-              "line": 63,
+              "id": "172fd161706217ab52df-7603885368fe0590c36f",
+              "file": "technician-admin-workflow.spec.ts",
+              "line": 150,
               "column": 7
             },
             {
-              "title": "leaving admin restores public ar/rtl",
+              "title": "Customer: verified technician appears in browse",
               "ok": true,
               "tags": [],
               "tests": [
@@ -230,12 +247,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 7935,
+                      "duration": 9319,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-26T20:26:48.757Z",
+                      "startTime": "2026-06-27T13:07:19.298Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -243,9 +260,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "505b63760b638811c7bd-0735b2e4c381632075d6",
-              "file": "admin-i18n.spec.ts",
-              "line": 86,
+              "id": "172fd161706217ab52df-0bec3056aa9de377c356",
+              "file": "technician-admin-workflow.spec.ts",
+              "line": 206,
               "column": 7
             }
           ]
@@ -255,8 +272,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-26T20:25:56.627Z",
-    "duration": 60348.070999999996,
+    "startTime": "2026-06-27T13:06:00.368Z",
+    "duration": 88375.558,
     "expected": 5,
     "skipped": 0,
     "unexpected": 0,

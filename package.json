@@ -9,6 +9,7 @@
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "seed:e2e": "tsx --env-file=.env.local scripts/seed-e2e-users.ts",
+    "cleanup:e2e": "tsx --env-file=.env.local scripts/run-cleanup-non-admin.ts",
     "verify:e2e-db": "tsx --env-file=.env.local scripts/verify-e2e-db.ts",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed"

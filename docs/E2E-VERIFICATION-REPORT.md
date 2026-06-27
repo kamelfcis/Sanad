@@ -26,7 +26,7 @@
     | Role | Identifier | Password |
     |------|------------|----------|
     | Customer | `test-customer@sanad.app` | `TestCustomer2025!` |
-    | Technician | phone `01099998888` → `tech+01099998888@sanad.app` | `TestTech2025!` |
+    | Technician | phone `01111734655` → `tech+01111734655@sanad.app` | `TestTech2025!` |
     | Admin | `admin@sanad.app` | `SanadAdmin2025!` |
 
     Seeded via `npm run seed:e2e` → `scripts/seed-e2e-users.ts` (service role). IDs in `e2e/test-users.json`.
@@ -84,8 +84,38 @@
     ## Re-run Checklist
 
     ```bash
-    npm run dev                    # localhost:3000
+    npm run dev                    # localhost:3000 (or -p 3002 if 3000 busy)
+    npm run cleanup:e2e            # wipe non-admin users + transactional data
     npm run seed:e2e               # optional — global-setup also seeds
+    npm run test:e2e -- e2e/technician-admin-workflow.spec.ts
     npm run test:e2e -- e2e/full-workflow.spec.ts
     npm run verify:e2e-db          # optional DB cross-check
     ```
+
+    ---
+
+    ## Technician Admin Workflow (2026-06-27)
+
+    **Spec:** `e2e/technician-admin-workflow.spec.ts` — **5/5 PASS** on `http://localhost:3002`
+
+    | Step | Result |
+    |------|--------|
+    | Pending technician login (complete profile, no `complete=1` redirect) | **PASS** |
+    | Admin approves technician via `/admin/technicians/{id}` UI | **PASS** |
+    | Technician receives `technician_approved` notification | **PASS** |
+    | Technician toggles availability (no redirect loop) | **PASS** |
+    | Customer browse lists approved technician | **PASS** |
+
+    **Test accounts (after cleanup + seed):**
+
+    | Role | Identifier | Password |
+    |------|------------|----------|
+    | Customer | `test-customer@sanad.app` | `TestCustomer2025!` |
+    | Technician | phone `01111734655` → `tech+01111734655@sanad.app` | `TestTech2025!` |
+    | Admin | `admin@sanad.app` | `SanadAdmin2025!` |
+
+    **Cleanup (2026-06-27):** Removed 4 auth users, 2 technician profiles, 6 skills, 9 audit logs, 2 notifications. Preserved admin + catalog (11 categories, 48 services, 3 hero slides). Report: `e2e/cleanup-report.json`.
+
+    **Fixes this session:** availability switch sync (`useEffect` on profile load), E2E helper strict-mode for Jobs heading, direct admin detail URL in approval test, `scripts/run-cleanup-non-admin.ts` + `scripts/set-e2e-tech-pending.ts`.
+
+    **Screenshots:** `docs/e2e-screenshots/tech-01`–`tech-05`

@@ -67,7 +67,7 @@ async function waitForStableContent(page: Page) {
   }
 
   if (path.startsWith('/technician/jobs')) {
-    await page.getByRole('heading', { name: 'Jobs' }).waitFor({ state: 'visible', timeout: 90_000 });
+    await page.getByRole('heading', { name: 'Jobs', exact: true }).waitFor({ state: 'visible', timeout: 90_000 });
     return;
   }
 
