@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
 
 interface TechProfile {
   id: string;
@@ -54,17 +53,13 @@ interface Booking {
 }
 
 async function fetchProfile(): Promise<TechProfile | null> {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data } = await supabase
-    .from('technician_profiles')
-    .select('*')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  return data;
+  const res = await fetch('/api/technician/profile');
+  if (res.status === 401) return null;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? 'Failed to load profile');
+  }
+  return res.json();
 }
 
 async function updateProfile(data: Partial<TechProfile & { phone?: string }>) {
@@ -81,12 +76,14 @@ async function updateProfile(data: Partial<TechProfile & { phone?: string }>) {
 }
 
 async function fetchSkills(): Promise<TechSkill[]> {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from('technician_skills')
-    .select('*, services(name_ar, name_en, slug, price, price_type)')
-    .eq('is_active', true);
-  return data ?? [];
+  const res = await fetch('/api/technician/skills');
+  if (res.status === 401) return [];
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? 'Failed to load skills');
+  }
+  const data: TechSkill[] = await res.json();
+  return data.filter((skill) => skill.is_active);
 }
 
 async function updateSkills(skills: { service_id: string; price_override?: number | null }[]) {

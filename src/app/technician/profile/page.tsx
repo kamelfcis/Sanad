@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, User, Star, CheckCircle, Clock, ShieldCheck } from 'lucide-react';
+import { Loader2, User, Star, CheckCircle, Clock, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 const profileSchema = z.object({
@@ -33,7 +33,7 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function TechnicianProfilePage() {
-  const { data: techProfile, isLoading } = useTechnicianProfile();
+  const { data: techProfile, isLoading, isError, error, refetch } = useTechnicianProfile();
   const { data: techSkills } = useTechnicianSkills();
   const { data: reviews } = useTechnicianReviews(techProfile?.id ?? '');
   const updateProfile = useUpdateTechnicianProfile();
@@ -108,6 +108,21 @@ export default function TechnicianProfilePage() {
           </div>
           <Skeleton className="h-48 w-full rounded-xl" />
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="container flex flex-col items-center gap-4 py-16 text-center">
+        <AlertCircle className="h-12 w-12 text-destructive/70" />
+        <div>
+          <h1 className="text-xl font-semibold">Could not load profile</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {error instanceof Error ? error.message : 'Something went wrong. Please try again.'}
+          </p>
+        </div>
+        <Button onClick={() => void refetch()}>Retry</Button>
       </div>
     );
   }
