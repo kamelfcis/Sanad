@@ -66,13 +66,18 @@ test.describe.serial('Technician admin approval + notifications', () => {
     const approveBtn = page.getByRole('button', { name: /Approve|موافقة/i });
     await expect(approveBtn).toBeEnabled({ timeout: 30_000 });
 
+    await approveBtn.click();
+
+    const dialog = page.getByTestId('admin-status-confirm-dialog');
+    await expect(dialog).toBeVisible({ timeout: 10_000 });
+
     const patchPromise = page.waitForResponse(
       (r) =>
         r.url().includes(`/api/admin/technicians/${users.technician.id}/status`) &&
         r.request().method() === 'PATCH',
       { timeout: 30_000 },
     );
-    await approveBtn.click();
+    await page.getByTestId('admin-status-confirm-btn').click();
     const patchResp = await patchPromise;
     expect(patchResp.status()).toBeLessThan(400);
 

@@ -23,7 +23,10 @@ type NotificationsChannelEntry = {
   channel: RealtimeChannel;
   refCount: number;
   seenIds: Set<string>;
-  callbacks: { invalidate: () => void };
+  callbacks: {
+    invalidate: () => void;
+    onNotification?: (notification: Notification) => void;
+  };
 };
 
 const notificationsChannels = new Map<string, NotificationsChannelEntry>();
@@ -32,12 +35,13 @@ function acquireNotificationsChannel(
   supabase: SupabaseClient,
   userId: string,
   invalidate: () => void,
+  onNotification?: (notification: Notification) => void,
 ): () => void {
   let entry = notificationsChannels.get(userId);
 
   if (!entry) {
     const seenIds = new Set<string>();
-    const callbacks = { invalidate };
+    const callbacks = { invalidate, onNotification };
 
     const channel = supabase
       .channel(`notifications:${userId}`)
@@ -53,6 +57,7 @@ function acquireNotificationsChannel(
           const row = payload.new as Notification;
           if (!row?.id || seenIds.has(row.id)) return;
           seenIds.add(row.id);
+          callbacks.onNotification?.(row);
           callbacks.invalidate();
         },
       )
@@ -74,6 +79,7 @@ function acquireNotificationsChannel(
     notificationsChannels.set(userId, entry);
   } else {
     entry.callbacks.invalidate = invalidate;
+    entry.callbacks.onNotification = onNotification;
   }
 
   entry.refCount += 1;
@@ -231,6 +237,32 @@ export function useNotificationsRealtime(enabled = true) {
     const supabase = createClient();
     return acquireNotificationsChannel(supabase, profile.id, invalidate);
   }, [enabled, profile?.id, invalidate]);
+}
+
+/** Subscribe to realtime INSERT events with a callback (toast, sound, etc.) */
+export function useNotificationPushListener(
+  onNotification: (notification: Notification) => void,
+  enabled = true,
+) {
+  const { profile } = useAuthStore();
+  const qc = useQueryClient();
+
+  const invalidate = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ['notifications'] });
+    qc.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+  }, [qc]);
+
+  const stableCallback = useCallback(
+    (notification: Notification) => onNotification(notification),
+    [onNotification],
+  );
+
+  useEffect(() => {
+    if (!enabled || !profile?.id) return;
+
+    const supabase = createClient();
+    return acquireNotificationsChannel(supabase, profile.id, invalidate, stableCallback);
+  }, [enabled, profile?.id, invalidate, stableCallback]);
 }
 
 export function getNotificationLink(notification: Notification, role?: string): string {

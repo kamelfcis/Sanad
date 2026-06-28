@@ -6,6 +6,7 @@ import type {
   NotificationListResponse,
   NotificationType,
 } from '@/types/notifications';
+import { fanOutWebPush } from '@/lib/push/web-push';
 
 export interface CreateNotificationInput {
   userId: string;
@@ -56,7 +57,38 @@ export async function createNotification(
     return null;
   }
 
-  return data as Notification;
+  const notification = data as Notification;
+
+  void fanOutWebPush(input.userId, {
+    title: input.title,
+    message: input.message,
+    notificationId: notification.id,
+    url: buildPushUrl(input.entityType, input.entityId, input.metadata),
+  });
+
+  return notification;
+}
+
+function buildPushUrl(
+  entityType?: NotificationEntityType,
+  entityId?: string,
+  metadata?: Record<string, unknown>,
+): string {
+  switch (entityType) {
+    case 'booking':
+      return entityId ? `/customer/bookings/${entityId}` : '/notifications';
+    case 'chat':
+      return '/customer/chat';
+    case 'technician':
+      return '/admin/technicians';
+    case 'payment':
+      if (typeof metadata?.bookingId === 'string') {
+        return `/customer/bookings/${metadata.bookingId}/payment`;
+      }
+      return '/customer/bookings';
+    default:
+      return '/notifications';
+  }
 }
 
 export async function createNotifications(

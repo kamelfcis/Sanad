@@ -190,10 +190,55 @@
       "joined": "Joined",
       "bio": "Bio",
       "noBio": "No bio",
+      "applicationDetails": "Application Details",
+      "nationalId": "National ID",
+      "governorate": "Governorate",
+      "area": "Area",
+      "workingHours": "Working Hours",
+      "startingPrice": "Starting Price",
+      "skills": "Skills",
+      "specialty": "Specialty",
+      "noSkills": "No skills listed",
+      "documents": "Documents",
+      "profilePhoto": "Profile Photo",
+      "idCard": "ID Card",
+      "verificationDoc": "Verification Document",
+      "viewDocument": "View Document",
+      "noDocuments": "No documents uploaded",
+      "performance": "Performance",
       "recentBookings": "Recent Bookings ({{count}})",
       "reviews": "Reviews ({{count}})",
       "anonymous": "Anonymous",
-      "booking": "Booking"
+      "booking": "Booking",
+      "confirm": {
+        "cancel": "Cancel",
+        "reasonLabel": "Reason",
+        "reasonPlaceholder": "Enter a reason for this action…",
+        "approve": {
+          "title": "Approve technician?",
+          "description": "Approve {{name}} and grant verified status on the platform.",
+          "confirm": "Approve",
+          "success": "Technician approved"
+        },
+        "reject": {
+          "title": "Reject application?",
+          "description": "Reject {{name}}'s technician application. They will be notified.",
+          "confirm": "Reject",
+          "success": "Application rejected"
+        },
+        "suspend": {
+          "title": "Suspend technician?",
+          "description": "Suspend {{name}}. They will not receive new jobs until reactivated.",
+          "confirm": "Suspend",
+          "success": "Technician suspended"
+        },
+        "reactivate": {
+          "title": "Reactivate technician?",
+          "description": "Restore {{name}} to verified status and allow new jobs.",
+          "confirm": "Reactivate",
+          "success": "Technician reactivated"
+        }
+      }
     },
     "status": {
       "verified": "Verified",

@@ -5,6 +5,7 @@ import { AuthBootstrap } from '@/components/shared/auth-bootstrap';
 import { AuthGuard } from '@/components/shared/auth-guard';
 import { Header } from '@/components/shared/header';
 import { DashboardSessionManager } from '@/components/shared/dashboard-session-manager';
+import { DashboardNotificationProvider } from '@/components/layout/dashboard-notification-provider';
 
 export const metadata: Metadata = pageMetadata(
   'لوحة الفني',
@@ -23,11 +24,13 @@ export default async function TechnicianLayout({ children }: { children: React.R
   return (
     <AuthBootstrap initialUser={user} initialProfile={profile}>
       <AuthGuard allowedRoles={['technician']}>
-        <DashboardSessionManager />
-        <div className="flex min-h-screen flex-col">
-          <Header navItems={technicianNavItems} />
-          <main className="flex-1">{children}</main>
-        </div>
+        <DashboardNotificationProvider>
+          <DashboardSessionManager />
+          <div className="flex min-h-screen flex-col">
+            <Header navItems={technicianNavItems} />
+            <main className="flex-1">{children}</main>
+          </div>
+        </DashboardNotificationProvider>
       </AuthGuard>
     </AuthBootstrap>
   );

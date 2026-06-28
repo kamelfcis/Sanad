@@ -2,6 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAdminTechnician, useAdminUpdateTechnicianStatus } from '@/hooks/use-admin';
@@ -10,10 +11,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, CheckCircle, Ban, RotateCcw, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Ban, RotateCcw, XCircle } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { BookingStatus } from '@/components/shared/booking-status';
 import { cn } from '@/lib/utils/cn';
+import { OptimizedImage } from '@/components/shared/optimized-image';
+import {
+  AdminEntityCardInfoLtrValue,
+} from '@/components/admin/admin-list-chrome';
+import { TechnicianApplicationGallery } from '@/components/admin/technician-application-gallery';
+import {
+  TechnicianApplicationDetailsSection,
+  TechnicianPerformanceSection,
+  TechnicianSkillsSection,
+  collectApplicationDocuments,
+} from '@/components/admin/technician-review-sections';
+import {
+  AdminStatusConfirmDialog,
+  type TechnicianStatusAction,
+} from '@/components/admin/admin-status-confirm-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const statusColors: Record<string, string> = {
   verified: 'bg-green-100 text-green-700',
@@ -24,11 +41,14 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminTechnicianDetailPage() {
-  const { t, formatDate, dir } = useAdminT();
+  const { t, formatDate, formatCurrency, dir, locale } = useAdminT();
+  const { toast } = useToast();
   const params = useParams();
   const id = params.id as string;
   const { data: tech, isLoading, error } = useAdminTechnician(id);
   const updateStatus = useAdminUpdateTechnicianStatus();
+  const [pendingAction, setPendingAction] = useState<TechnicianStatusAction | null>(null);
+
   const backIconClass = dir === 'ltr' ? 'mr-1' : 'ml-1';
   const actionIconClass = dir === 'ltr' ? 'mr-1' : 'ml-1';
 
@@ -42,9 +62,10 @@ export default function AdminTechnicianDetailPage() {
     return (
       <div className="p-6">
         <Skeleton className="mb-4 h-8 w-48" />
-        <div className="mx-auto max-w-2xl space-y-4">
+        <div className="mx-auto max-w-3xl space-y-4">
+          <Skeleton className="h-40 w-full rounded-xl" />
           <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-xl" />
         </div>
       </div>
     );
@@ -59,12 +80,96 @@ export default function AdminTechnicianDetailPage() {
     );
   }
 
-  const actions: { label: string; action: string; icon: React.ElementType; color: string; disabled: boolean }[] = [
-    { label: t('technicians.detail.approve'), action: 'approve', icon: CheckCircle, color: 'bg-green-600 hover:bg-green-700', disabled: tech.verification_status === 'verified' },
-    { label: t('technicians.detail.reject'), action: 'reject', icon: XCircle, color: 'bg-red-600 hover:bg-red-700', disabled: tech.verification_status === 'rejected' },
-    { label: t('technicians.detail.suspend'), action: 'suspend', icon: Ban, color: 'bg-gray-600 hover:bg-gray-700', disabled: tech.verification_status === 'suspended' },
-    { label: t('technicians.detail.reactivate'), action: 'reactivate', icon: RotateCcw, color: 'bg-blue-600 hover:bg-blue-700', disabled: tech.verification_status === 'verified' },
+  const headerPhoto = tech.profile_photo_url ?? tech.avatar_url;
+  const documents = collectApplicationDocuments(tech, {
+    profilePhoto: t('technicians.detail.profilePhoto'),
+    idCard: t('technicians.detail.idCard'),
+    verificationDoc: t('technicians.detail.verificationDoc'),
+  });
+
+  const actions: {
+    label: string;
+    action: TechnicianStatusAction;
+    icon: React.ElementType;
+    color: string;
+    disabled: boolean;
+    requiresReason: boolean;
+  }[] = [
+    {
+      label: t('technicians.detail.approve'),
+      action: 'approve',
+      icon: CheckCircle,
+      color: 'bg-green-600 hover:bg-green-700',
+      disabled: tech.verification_status === 'verified',
+      requiresReason: false,
+    },
+    {
+      label: t('technicians.detail.reject'),
+      action: 'reject',
+      icon: XCircle,
+      color: 'bg-red-600 hover:bg-red-700',
+      disabled: tech.verification_status === 'rejected',
+      requiresReason: true,
+    },
+    {
+      label: t('technicians.detail.suspend'),
+      action: 'suspend',
+      icon: Ban,
+      color: 'bg-gray-600 hover:bg-gray-700',
+      disabled: tech.verification_status === 'suspended',
+      requiresReason: true,
+    },
+    {
+      label: t('technicians.detail.reactivate'),
+      action: 'reactivate',
+      icon: RotateCcw,
+      color: 'bg-blue-600 hover:bg-blue-700',
+      disabled: tech.verification_status === 'verified',
+      requiresReason: false,
+    },
   ];
+
+  const pendingMeta = actions.find((a) => a.action === pendingAction);
+
+  const confirmLabels = pendingAction
+    ? {
+        title: t(`technicians.detail.confirm.${pendingAction}.title`),
+        description: t(`technicians.detail.confirm.${pendingAction}.description`, {
+          name: tech.full_name ?? t('technicians.detail.unnamed'),
+        }),
+        reasonLabel: t('technicians.detail.confirm.reasonLabel'),
+        reasonPlaceholder: t('technicians.detail.confirm.reasonPlaceholder'),
+        confirm: t(`technicians.detail.confirm.${pendingAction}.confirm`),
+        cancel: t('technicians.detail.confirm.cancel'),
+      }
+    : {
+        title: '',
+        description: '',
+        reasonLabel: '',
+        reasonPlaceholder: '',
+        confirm: '',
+        cancel: t('technicians.detail.confirm.cancel'),
+      };
+
+  const handleConfirm = (reason?: string) => {
+    if (!pendingAction) return;
+    updateStatus.mutate(
+      { technicianId: id, action: pendingAction, reason },
+      {
+        onSuccess: () => {
+          toast({ title: t(`technicians.detail.confirm.${pendingAction}.success`) });
+          setPendingAction(null);
+        },
+        onError: (err) => {
+          toast({
+            title: t('common.error'),
+            description: err.message,
+            variant: 'destructive',
+          });
+        },
+      },
+    );
+  };
 
   return (
     <div className="p-6">
@@ -74,24 +179,38 @@ export default function AdminTechnicianDetailPage() {
         </Link>
       </Button>
 
-      <div className="mx-auto max-w-2xl space-y-6">
-        <div className="flex items-start gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <User className="h-8 w-8 text-primary" />
+      <div className="mx-auto max-w-3xl space-y-6">
+        <div className="flex items-start gap-4 rounded-2xl border border-[#FF6B00]/15 bg-white p-5 shadow-sm">
+          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-[#FF6B00]/20 bg-[#FF6B00]/5">
+            {headerPhoto ? (
+              <OptimizedImage src={headerPhoto} alt={tech.full_name ?? ''} fill sizes="80px" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-[#FF6B00]">
+                {(tech.full_name ?? '?').charAt(0)}
+              </div>
+            )}
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-bold">{tech.full_name ?? t('technicians.detail.unnamed')}</h1>
               <Badge variant="outline" className={statusColors[tech.verification_status]}>
                 {statusLabel(tech.verification_status)}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{tech.email}</p>
-            <p className="text-sm text-muted-foreground">{tech.phone ?? t('technicians.detail.noPhone')}</p>
+            <AdminEntityCardInfoLtrValue className="mt-1 text-sm text-muted-foreground">
+              {tech.email}
+            </AdminEntityCardInfoLtrValue>
+            <p className="text-sm text-muted-foreground">
+              {tech.phone ? (
+                <AdminEntityCardInfoLtrValue>{tech.phone}</AdminEntityCardInfoLtrValue>
+              ) : (
+                t('technicians.detail.noPhone')
+              )}
+            </p>
           </div>
         </div>
 
-        <Card>
+        <Card className="border-[#FF6B00]/10">
           <CardHeader><CardTitle className="text-sm font-medium">{t('technicians.detail.statusActions')}</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-wrap gap-2">
@@ -101,14 +220,7 @@ export default function AdminTechnicianDetailPage() {
                   size="sm"
                   className={a.color}
                   disabled={a.disabled || updateStatus.isPending}
-                  onClick={() => {
-                    if (a.action === 'reject' || a.action === 'suspend') {
-                      const r = prompt(t('technicians.detail.reasonPrompt', { action: a.label }));
-                      if (r) updateStatus.mutate({ technicianId: id, action: a.action, reason: r });
-                    } else {
-                      updateStatus.mutate({ technicianId: id, action: a.action });
-                    }
-                  }}
+                  onClick={() => setPendingAction(a.action)}
                 >
                   <a.icon className={cn('h-4 w-4', actionIconClass)} /> {a.label}
                 </Button>
@@ -118,41 +230,52 @@ export default function AdminTechnicianDetailPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-sm font-medium">{t('technicians.detail.profile')}</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-muted-foreground">{t('technicians.detail.yearsExperience')}</p>
-                <p className="text-sm font-medium">{tech.years_experience ?? t('common.dash')}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{t('technicians.detail.completedJobs')}</p>
-                <p className="text-sm font-medium">{tech.completed_jobs}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{t('technicians.detail.rating')}</p>
-                <p className="text-sm font-medium">
-                  {tech.average_rating ? `${Number(tech.average_rating).toFixed(1)}★ (${tech.total_ratings})` : t('common.dash')}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{t('technicians.detail.available')}</p>
-                <p className="text-sm font-medium">{tech.is_available ? t('common.yes') : t('common.no')}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{t('technicians.detail.maxDistance')}</p>
-                <p className="text-sm font-medium">{tech.max_distance_km ? `${tech.max_distance_km} km` : t('common.dash')}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{t('technicians.detail.joined')}</p>
-                <p className="text-sm font-medium">{formatDate(tech.created_at)}</p>
-              </div>
-            </div>
-            <Separator />
-            <div>
-              <p className="text-xs text-muted-foreground">{t('technicians.detail.bio')}</p>
-              <p className="mt-1 text-sm" dir="auto">{tech.bio ?? t('technicians.detail.noBio')}</p>
-            </div>
+          <CardHeader><CardTitle className="text-sm font-medium">{t('technicians.detail.applicationDetails')}</CardTitle></CardHeader>
+          <CardContent>
+            <TechnicianApplicationDetailsSection
+              tech={tech}
+              t={t}
+              formatDate={formatDate}
+              formatCurrency={formatCurrency}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-sm font-medium">{t('technicians.detail.skills')}</CardTitle></CardHeader>
+          <CardContent>
+            <TechnicianSkillsSection
+              tech={tech}
+              t={t}
+              locale={locale}
+              formatDate={formatDate}
+              formatCurrency={formatCurrency}
+            />
+          </CardContent>
+        </Card>
+
+        <Card data-testid="technician-documents-section">
+          <CardHeader><CardTitle className="text-sm font-medium">{t('technicians.detail.documents')}</CardTitle></CardHeader>
+          <CardContent>
+            <TechnicianApplicationGallery
+              documents={documents}
+              viewDocumentLabel={t('technicians.detail.viewDocument')}
+              emptyLabel={t('technicians.detail.noDocuments')}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-sm font-medium">{t('technicians.detail.bio')}</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm" dir="auto">{tech.bio ?? t('technicians.detail.noBio')}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-sm font-medium">{t('technicians.detail.performance')}</CardTitle></CardHeader>
+          <CardContent>
+            <TechnicianPerformanceSection tech={tech} t={t} />
           </CardContent>
         </Card>
 
@@ -205,6 +328,17 @@ export default function AdminTechnicianDetailPage() {
           </Card>
         )}
       </div>
+
+      <AdminStatusConfirmDialog
+        open={!!pendingAction}
+        action={pendingAction}
+        technicianName={tech.full_name ?? t('technicians.detail.unnamed')}
+        requiresReason={pendingMeta?.requiresReason}
+        isPending={updateStatus.isPending}
+        labels={confirmLabels}
+        onConfirm={handleConfirm}
+        onCancel={() => setPendingAction(null)}
+      />
     </div>
   );
 }

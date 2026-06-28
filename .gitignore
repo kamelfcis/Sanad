@@ -52,5 +52,10 @@ next-env.d.ts
 
 e2e/test-users.json
 
+e2e/test-results.json
+e2e/cleanup-report.json
+e2e/evidence.json
+e2e/run-state.json
+
 
 supabase/.temp/

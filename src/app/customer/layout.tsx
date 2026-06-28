@@ -5,6 +5,7 @@ import { AuthBootstrap } from '@/components/shared/auth-bootstrap';
 import { AuthGuard } from '@/components/shared/auth-guard';
 import { Header } from '@/components/shared/header';
 import { DashboardSessionManager } from '@/components/shared/dashboard-session-manager';
+import { DashboardNotificationProvider } from '@/components/layout/dashboard-notification-provider';
 
 export const metadata: Metadata = pageMetadata(
   'لوحة العميل',
@@ -23,11 +24,13 @@ export default async function CustomerLayout({ children }: { children: React.Rea
   return (
     <AuthBootstrap initialUser={user} initialProfile={profile}>
       <AuthGuard allowedRoles={['customer']}>
-        <DashboardSessionManager />
-        <div className="flex min-h-screen flex-col">
-          <Header navItems={customerNavItems} />
-          <main className="flex-1">{children}</main>
-        </div>
+        <DashboardNotificationProvider>
+          <DashboardSessionManager />
+          <div className="flex min-h-screen flex-col">
+            <Header navItems={customerNavItems} />
+            <main className="flex-1">{children}</main>
+          </div>
+        </DashboardNotificationProvider>
       </AuthGuard>
     </AuthBootstrap>
   );

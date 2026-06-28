@@ -190,10 +190,55 @@
       "joined": "تاريخ الانضمام",
       "bio": "نبذة",
       "noBio": "لا توجد نبذة",
+      "applicationDetails": "تفاصيل الطلب",
+      "nationalId": "الرقم القومي",
+      "governorate": "المحافظة",
+      "area": "المنطقة",
+      "workingHours": "ساعات العمل",
+      "startingPrice": "سعر البداية",
+      "skills": "المهارات",
+      "specialty": "التخصص",
+      "noSkills": "لا توجد مهارات",
+      "documents": "المستندات",
+      "profilePhoto": "صورة الملف",
+      "idCard": "بطاقة الهوية",
+      "verificationDoc": "مستند التحقق",
+      "viewDocument": "عرض المستند",
+      "noDocuments": "لم يتم رفع مستندات",
+      "performance": "الأداء",
       "recentBookings": "أحدث الحجوزات ({{count}})",
       "reviews": "التقييمات ({{count}})",
       "anonymous": "مجهول",
-      "booking": "حجز"
+      "booking": "حجز",
+      "confirm": {
+        "cancel": "إلغاء",
+        "reasonLabel": "السبب",
+        "reasonPlaceholder": "أدخل سبب هذا الإجراء…",
+        "approve": {
+          "title": "الموافقة على الفني؟",
+          "description": "الموافقة على {{name}} ومنحه حالة موثّق على المنصة.",
+          "confirm": "موافقة",
+          "success": "تمت الموافقة على الفني"
+        },
+        "reject": {
+          "title": "رفض الطلب؟",
+          "description": "رفض طلب {{name}} كفني. سيتم إشعاره.",
+          "confirm": "رفض",
+          "success": "تم رفض الطلب"
+        },
+        "suspend": {
+          "title": "تعليق الفني؟",
+          "description": "تعليق {{name}}. لن يتلقى وظائف جديدة حتى إعادة التفعيل.",
+          "confirm": "تعليق",
+          "success": "تم تعليق الفني"
+        },
+        "reactivate": {
+          "title": "إعادة تفعيل الفني؟",
+          "description": "استعادة {{name}} إلى حالة موثّق والسماح بالوظائف الجديدة.",
+          "confirm": "إعادة تفعيل",
+          "success": "تمت إعادة تفعيل الفني"
+        }
+      }
     },
     "status": {
       "verified": "موثّق",

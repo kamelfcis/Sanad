@@ -149,6 +149,22 @@ export interface AdminTechnicianListItem {
   skills_count?: number;
 }
 
+export interface AdminTechnicianSkill {
+  price_override: number | null;
+  is_active: boolean;
+  service: {
+    id: string;
+    name_ar: string;
+    name_en: string;
+    slug: string;
+    category: {
+      name_ar: string;
+      name_en: string;
+      slug: string;
+    } | null;
+  } | null;
+}
+
 export interface AdminTechnicianDetail {
   id: string;
   full_name: string | null;
@@ -157,6 +173,14 @@ export interface AdminTechnicianDetail {
   avatar_url: string | null;
   bio: string | null;
   years_experience: number | null;
+  national_id: string | null;
+  governorate: string | null;
+  area: string | null;
+  starting_price: number | null;
+  working_hours: string | null;
+  profile_photo_url: string | null;
+  id_card_photo_url: string | null;
+  verification_docs: string[] | null;
   verification_status: string;
   is_available: boolean;
   max_distance_km: number | null;
@@ -164,6 +188,7 @@ export interface AdminTechnicianDetail {
   average_rating: number;
   total_ratings: number;
   created_at: string;
+  skills: AdminTechnicianSkill[];
   bookings: Record<string, unknown>[];
   reviews: Record<string, unknown>[];
 }

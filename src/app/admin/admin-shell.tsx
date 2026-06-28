@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DashboardSessionManager } from '@/components/shared/dashboard-session-manager';
+import { NotificationRealtimeProvider } from '@/components/notifications/notification-realtime-provider';
 
 type NavItem = {
   label: string;
@@ -304,7 +305,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <AdminI18nProvider>
-      <AdminLayoutContent>{children}</AdminLayoutContent>
+      <NotificationRealtimeProvider>
+        <AdminLayoutContent>{children}</AdminLayoutContent>
+      </NotificationRealtimeProvider>
     </AdminI18nProvider>
   );
 }
