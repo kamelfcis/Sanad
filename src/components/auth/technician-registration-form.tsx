@@ -18,6 +18,7 @@ import {
 } from '@/lib/constants/technician-registration';
 import { TechnicianRegisterHero } from '@/components/auth/technician-register-layout';
 import { PhotoUploadZone } from '@/components/auth/photo-upload-zone';
+import { PolicyAgreement } from '@/components/auth/policy-agreement';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -48,6 +49,8 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [idCardPhoto, setIdCardPhoto] = useState<File | null>(null);
   const [photoErrors, setPhotoErrors] = useState<{ profile?: string; idCard?: string }>({});
+  const [agreed, setAgreed] = useState(false);
+  const [agreeError, setAgreeError] = useState<string | undefined>();
   const router = useRouter();
   const supabase = createClient();
   const { profile, setUser, setProfile } = useAuthStore();
@@ -82,6 +85,10 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
   }, [isCompleteMode, profile?.full_name, reset]);
 
   const handleGoogleSignup = async () => {
+    if (!agreed) {
+      setAgreeError('يجب الموافقة على حدود المسؤولية للمتابعة');
+      return;
+    }
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -97,6 +104,11 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
     if (!idCardPhoto) nextPhotoErrors.idCard = 'صورة البطاقة مطلوبة';
     setPhotoErrors(nextPhotoErrors);
     if (Object.keys(nextPhotoErrors).length > 0) return;
+
+    if (!agreed) {
+      setAgreeError('يجب الموافقة على حدود المسؤولية للمتابعة');
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -196,6 +208,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
             variant="outline"
             className="mb-6 w-full border-border text-text-primary hover:bg-surface"
             onClick={handleGoogleSignup}
+            disabled={!agreed}
           >
             <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -436,9 +449,18 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
           {errors.bio && <p className="text-xs text-destructive">{errors.bio.message}</p>}
         </div>
 
+        <PolicyAgreement
+          checked={agreed}
+          onCheckedChange={(value) => {
+            setAgreed(value);
+            if (value) setAgreeError(undefined);
+          }}
+          error={agreeError}
+        />
+
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !agreed}
           className="w-full py-6 text-base font-semibold text-white shadow-sm hover:shadow-md hover:brightness-105"
           style={{ background: gradients.primary }}
         >

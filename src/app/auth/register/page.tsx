@@ -13,12 +13,15 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
 import { SplitLayout } from '@/components/auth/split-layout';
+import { PolicyAgreement } from '@/components/auth/policy-agreement';
 import { PageLoading } from '@/components/shared/page-loading';
 import { Loader2, ArrowLeft, UserCheck, Wrench as ToolIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [agreeError, setAgreeError] = useState<string | undefined>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultRole = searchParams.get('role') === 'technician' ? 'technician' : 'customer';
@@ -38,6 +41,10 @@ function RegisterForm() {
   const selectedRole = watch('role');
 
   const handleGoogleSignup = async () => {
+    if (!agreed) {
+      setAgreeError('يجب الموافقة على حدود المسؤولية للمتابعة');
+      return;
+    }
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/api/auth/callback?role=${selectedRole}` },
@@ -45,6 +52,10 @@ function RegisterForm() {
   };
 
   const onEmailSignup = async (data: RegisterInput) => {
+    if (!agreed) {
+      setAgreeError('يجب الموافقة على حدود المسؤولية للمتابعة');
+      return;
+    }
     setIsSubmitting(true);
     const { data: authData, error } = await supabase.auth.signUp({
       email: data.email, password: data.password,
@@ -92,7 +103,7 @@ function RegisterForm() {
           {errors.role && <p className="col-span-2 text-center text-xs text-destructive">{errors.role.message}</p>}
         </div>
 
-        <Button variant="outline" className="w-full border-border text-text-primary hover:bg-surface" onClick={handleGoogleSignup}>
+        <Button variant="outline" className="w-full border-border text-text-primary hover:bg-surface" onClick={handleGoogleSignup} disabled={!agreed}>
           <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -133,7 +144,15 @@ function RegisterForm() {
               className="border-border bg-card text-text-primary placeholder:text-text-muted focus:border-primary" {...register('confirmPassword')} />
             {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
           </div>
-          <Button type="submit" className="w-full bg-gradient-to-br from-primary to-accent text-white shadow-sm hover:shadow-md hover:brightness-105" disabled={isSubmitting}>
+          <PolicyAgreement
+            checked={agreed}
+            onCheckedChange={(value) => {
+              setAgreed(value);
+              if (value) setAgreeError(undefined);
+            }}
+            error={agreeError}
+          />
+          <Button type="submit" className="w-full bg-gradient-to-br from-primary to-accent text-white shadow-sm hover:shadow-md hover:brightness-105" disabled={isSubmitting || !agreed}>
             {isSubmitting && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
             إنشاء حساب
           </Button>
