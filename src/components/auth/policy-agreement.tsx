@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ScaleIcon, ShieldCheckIcon } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
@@ -46,21 +47,37 @@ export function PolicyAgreement({ checked, onCheckedChange, error }: PolicyAgree
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent dir="rtl" className="text-right">
           <DialogHeader>
-            <DialogTitle className="text-right">{LIABILITY_POLICY_TITLE}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2.5 text-right text-lg font-bold">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-white shadow-sm">
+                <ScaleIcon className="h-5 w-5" />
+              </span>
+              {LIABILITY_POLICY_TITLE}
+            </DialogTitle>
           </DialogHeader>
-          <div className="max-h-[60vh] space-y-4 overflow-y-auto pl-1 text-sm leading-relaxed text-text-secondary">
+          <ul className="max-h-[60vh] space-y-3 overflow-y-auto pl-1">
             {LIABILITY_POLICY_PARAGRAPHS.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
+              <li
+                key={index}
+                className="flex items-start gap-3 rounded-xl border border-primary/10 bg-gradient-to-br from-primary/[0.06] to-transparent p-3.5 shadow-sm"
+              >
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-bold text-white shadow-sm">
+                  {index + 1}
+                </span>
+                <p className="text-sm font-semibold leading-relaxed text-text-primary">
+                  {paragraph}
+                </p>
+              </li>
             ))}
-          </div>
+          </ul>
           <Button
             type="button"
-            className="w-full bg-gradient-to-br from-primary to-accent text-white shadow-sm hover:shadow-md hover:brightness-105"
+            className="w-full gap-2 bg-gradient-to-br from-primary to-accent text-white shadow-sm hover:shadow-md hover:brightness-105"
             onClick={() => {
               onCheckedChange(true);
               setOpen(false);
             }}
           >
+            <ShieldCheckIcon className="h-4 w-4" />
             قرأت وأوافق
           </Button>
         </DialogContent>
