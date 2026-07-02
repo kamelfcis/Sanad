@@ -180,6 +180,7 @@ export interface AdminTechnicianDetail {
   working_hours: string | null;
   profile_photo_url: string | null;
   id_card_photo_url: string | null;
+  id_card_back_photo_url: string | null;
   verification_docs: string[] | null;
   verification_status: string;
   is_available: boolean;

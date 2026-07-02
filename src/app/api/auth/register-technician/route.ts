@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
 
   const profilePhoto = formData.get('profilePhoto');
   const idCardPhoto = formData.get('idCardPhoto');
+  const idCardBackPhoto = formData.get('idCardBackPhoto');
 
   const profilePhotoError = validateImageFile(
     profilePhoto instanceof File ? profilePhoto : null,
@@ -67,10 +68,18 @@ export async function POST(request: NextRequest) {
 
   const idCardPhotoError = validateImageFile(
     idCardPhoto instanceof File ? idCardPhoto : null,
-    'صورة البطاقة',
+    'صورة وش البطاقة',
   );
   if (idCardPhotoError) {
     return NextResponse.json({ error: idCardPhotoError }, { status: 400 });
+  }
+
+  const idCardBackPhotoError = validateImageFile(
+    idCardBackPhoto instanceof File ? idCardBackPhoto : null,
+    'صورة ضهر البطاقة',
+  );
+  if (idCardBackPhotoError) {
+    return NextResponse.json({ error: idCardBackPhotoError }, { status: 400 });
   }
 
   const data = parsed.data;
@@ -119,8 +128,13 @@ export async function POST(request: NextRequest) {
     idCardPhoto as File,
     (idCardPhoto as File).type,
   );
+  const idCardBackPhotoUrl = await uploadFileForUser(
+    userId,
+    idCardBackPhoto as File,
+    (idCardBackPhoto as File).type,
+  );
 
-  if (!profilePhotoUrl || !idCardPhotoUrl) {
+  if (!profilePhotoUrl || !idCardPhotoUrl || !idCardBackPhotoUrl) {
     await supabase.auth.admin.deleteUser(userId);
     return NextResponse.json({ error: 'فشل رفع الصور. حاول مرة أخرى.' }, { status: 500 });
   }
@@ -143,6 +157,7 @@ export async function POST(request: NextRequest) {
     },
     profilePhotoUrl,
     idCardPhotoUrl,
+    idCardBackPhotoUrl,
   );
 
   if (result.error) {

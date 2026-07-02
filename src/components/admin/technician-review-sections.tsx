@@ -131,7 +131,12 @@ export function TechnicianPerformanceSection({
 
 export function collectApplicationDocuments(
   tech: AdminTechnicianDetail,
-  labels: { profilePhoto: string; idCard: string; verificationDoc: string },
+  labels: {
+    profilePhoto: string;
+    idCard: string;
+    idCardBack: string;
+    verificationDoc: string;
+  },
 ): { url: string; label: string }[] {
   const docs: { url: string; label: string }[] = [];
   const seen = new Set<string>();
@@ -144,6 +149,7 @@ export function collectApplicationDocuments(
 
   add(tech.profile_photo_url, labels.profilePhoto);
   add(tech.id_card_photo_url, labels.idCard);
+  add(tech.id_card_back_photo_url, labels.idCardBack);
   add(tech.avatar_url, labels.profilePhoto);
 
   tech.verification_docs?.forEach((url, i) => {

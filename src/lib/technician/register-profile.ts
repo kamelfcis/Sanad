@@ -49,6 +49,7 @@ export async function upsertTechnicianRegistration(
   data: TechnicianRegistrationData,
   profilePhotoUrl: string,
   idCardPhotoUrl: string,
+  idCardBackPhotoUrl: string,
   options?: { notifyAdmin?: boolean },
 ): Promise<{ error?: string }> {
   const { error: profileError } = await supabase.from('profiles').upsert(
@@ -76,8 +77,9 @@ export async function upsertTechnicianRegistration(
     working_hours: data.workingHours,
     profile_photo_url: profilePhotoUrl,
     id_card_photo_url: idCardPhotoUrl,
+    id_card_back_photo_url: idCardBackPhotoUrl,
     id_document_url: idCardPhotoUrl,
-    verification_docs: [idCardPhotoUrl],
+    verification_docs: [idCardPhotoUrl, idCardBackPhotoUrl],
     verification_status: 'pending',
     is_available: false,
   });

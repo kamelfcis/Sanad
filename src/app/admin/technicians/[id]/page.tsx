@@ -84,6 +84,7 @@ export default function AdminTechnicianDetailPage() {
   const documents = collectApplicationDocuments(tech, {
     profilePhoto: t('technicians.detail.profilePhoto'),
     idCard: t('technicians.detail.idCard'),
+    idCardBack: t('technicians.detail.idCardBack'),
     verificationDoc: t('technicians.detail.verificationDoc'),
   });
 

@@ -48,7 +48,12 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [idCardPhoto, setIdCardPhoto] = useState<File | null>(null);
-  const [photoErrors, setPhotoErrors] = useState<{ profile?: string; idCard?: string }>({});
+  const [idCardBackPhoto, setIdCardBackPhoto] = useState<File | null>(null);
+  const [photoErrors, setPhotoErrors] = useState<{
+    profile?: string;
+    idCard?: string;
+    idCardBack?: string;
+  }>({});
   const [agreed, setAgreed] = useState(false);
   const [agreeError, setAgreeError] = useState<string | undefined>();
   const router = useRouter();
@@ -99,9 +104,10 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
   };
 
   const onSubmit = async (data: TechnicianRegisterInput | TechnicianCompleteInput) => {
-    const nextPhotoErrors: { profile?: string; idCard?: string } = {};
+    const nextPhotoErrors: { profile?: string; idCard?: string; idCardBack?: string } = {};
     if (!profilePhoto) nextPhotoErrors.profile = 'صورة شخصية مطلوبة';
-    if (!idCardPhoto) nextPhotoErrors.idCard = 'صورة البطاقة مطلوبة';
+    if (!idCardPhoto) nextPhotoErrors.idCard = 'صورة وش البطاقة مطلوبة';
+    if (!idCardBackPhoto) nextPhotoErrors.idCardBack = 'صورة ضهر البطاقة مطلوبة';
     setPhotoErrors(nextPhotoErrors);
     if (Object.keys(nextPhotoErrors).length > 0) return;
 
@@ -125,6 +131,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
     formData.append('bio', data.bio);
     formData.append('profilePhoto', profilePhoto!);
     formData.append('idCardPhoto', idCardPhoto!);
+    formData.append('idCardBackPhoto', idCardBackPhoto!);
 
     const endpoint = isCompleteMode
       ? '/api/auth/complete-technician-registration'
@@ -309,8 +316,8 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
         </div>
 
         <div>
-          <Label className="mb-2 block">صورة شخصية + صورة البطاقة</Label>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <Label className="mb-2 block">صورة شخصية + صورتي البطاقة</Label>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <PhotoUploadZone
               label="صورة شخصية"
               value={profilePhoto}
@@ -321,13 +328,22 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
               error={photoErrors.profile}
             />
             <PhotoUploadZone
-              label="صورة البطاقة"
+              label="وش البطاقة"
               value={idCardPhoto}
               onChange={(file) => {
                 setIdCardPhoto(file);
                 if (file) setPhotoErrors((prev) => ({ ...prev, idCard: undefined }));
               }}
               error={photoErrors.idCard}
+            />
+            <PhotoUploadZone
+              label="ضهر البطاقة"
+              value={idCardBackPhoto}
+              onChange={(file) => {
+                setIdCardBackPhoto(file);
+                if (file) setPhotoErrors((prev) => ({ ...prev, idCardBack: undefined }));
+              }}
+              error={photoErrors.idCardBack}
             />
           </div>
         </div>
