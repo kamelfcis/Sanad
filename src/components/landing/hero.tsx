@@ -22,7 +22,6 @@ import { getCategoryIcon } from '@/lib/icons/category-icons';
 import { cn } from '@/lib/utils/cn';
 
 const features = [
-  { icon: Users, label: 'فنيون معتمدون', color: colors.primary },
   { icon: Shield, label: 'ضمان الجودة', color: colors.success },
   { icon: Zap, label: 'استجابة سريعة', color: colors.warning },
   { icon: Headphones, label: 'دعم 24/7', color: '#8B5CF6' },

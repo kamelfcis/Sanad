@@ -1,10 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { BadgeCheck, Shield, Zap, Star } from 'lucide-react';
+import { Shield, Zap, Star } from 'lucide-react';
 
 const trustItems = [
-  { icon: BadgeCheck, title: 'فنيون معتمدون', description: 'جميع الفنيين موثوقون وتم التحقق منهم' },
   { icon: Shield, title: 'منصة آمنة', description: 'معلوماتك محمية بأعلى معايير الأمان' },
   { icon: Zap, title: 'استجابة سريعة', description: 'يصل الفني إليك في أقل من ساعة' },
   { icon: Star, title: 'رضا العميل', description: 'نسبة رضا تتجاوز ٩٥٪ من عملائنا' },
