@@ -99,22 +99,33 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
     try {
       const booking = await createBooking.mutateAsync(data);
 
-      if (booking) {
+      if (booking?.id) {
         toast({
           title: 'تم إرسال الطلب',
-          description: defaultTechnicianId
-            ? 'تم إرسال طلبك للصنايعي المختار.'
-            : 'تم إرسال طلب الخدمة وسيتم مطابقتك مع صنايعي مناسب.',
+          description: booking.needs_manual_assignment
+            ? 'تم استلام طلبك. سيراجع الفريق التعيين قريباً.'
+            : defaultTechnicianId
+              ? 'تم إرسال طلبك للصنايعي المختار.'
+              : 'تم إرسال طلب الخدمة وسيتم مطابقتك مع صنايعي مناسب.',
         });
         router.push(`/customer/bookings/${booking.id}`);
-        router.refresh();
       }
     } catch (error) {
+      const bookingId =
+        error instanceof Error && 'bookingId' in error
+          ? (error as Error & { bookingId?: string }).bookingId
+          : undefined;
+
       toast({
         title: 'تعذّر إرسال الطلب',
         description: error instanceof Error ? error.message : 'حدث خطأ غير متوقع',
         variant: 'destructive',
       });
+
+      // Booking row may already exist even if a later step failed.
+      if (bookingId) {
+        router.push(`/customer/bookings/${bookingId}`);
+      }
     }
   };
 

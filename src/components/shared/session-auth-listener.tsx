@@ -12,6 +12,16 @@ import {
 import { useAuthStore } from '@/store/auth-store';
 
 /**
+ * Defer work that touches the Supabase client so we never await auth/DB calls
+ * inside onAuthStateChange (that deadlocks the browser client lock).
+ */
+function deferAuthWork(work: () => void | Promise<void>) {
+  setTimeout(() => {
+    void work();
+  }, 0);
+}
+
+/**
  * Listens for auth state changes — handles silent token refresh and
  * session expiry without flashing error UI.
  */
@@ -29,7 +39,7 @@ export function SessionAuthListener() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'TOKEN_REFRESHED' && session?.user) {
         setUser(session.user);
         return;
@@ -38,14 +48,16 @@ export function SessionAuthListener() {
       if (event === 'SIGNED_IN' && session?.user) {
         resetVoluntaryLogoutFlag();
         setUser(session.user);
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        setProfile(profileData ?? null);
-        setLoading(false);
-        setSessionResolved(true);
+        deferAuthWork(async () => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          setProfile(profileData ?? null);
+          setLoading(false);
+          setSessionResolved(true);
+        });
         return;
       }
 
@@ -56,7 +68,7 @@ export function SessionAuthListener() {
           return;
         }
 
-        await handleSessionExpired();
+        deferAuthWork(() => handleSessionExpired());
       }
     });
 

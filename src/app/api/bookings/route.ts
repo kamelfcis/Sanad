@@ -144,14 +144,20 @@ export async function POST(request: NextRequest) {
         });
         // Roll the booking back to an unassigned state and alert admins so it is
         // not left as a "matched" booking with no assignment row.
-        await writeClient
+        // Still return 201 so the customer can open their pending booking.
+        const { data: rolledBack } = await writeClient
           .from('bookings')
           .update({ status: 'pending', technician_id: null })
-          .eq('id', booking.id);
+          .eq('id', booking.id)
+          .select('*, services(name_ar, name_en, slug)')
+          .single();
         await notifyAdminsBookingNeedsAssignment({ bookingId: booking.id });
         return NextResponse.json(
-          { error: assignError.message, booking_id: booking.id, needs_manual_assignment: true },
-          { status: 500 },
+          {
+            ...(rolledBack ?? { ...booking, status: 'pending', technician_id: null }),
+            needs_manual_assignment: true,
+          },
+          { status: 201 },
         );
       }
 

@@ -1,10 +1,9 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
 import type { CreateBookingInput } from '@/lib/validations/booking';
 
-interface Booking {
+export interface Booking {
   id: string;
   customer_id: string;
   service_id: string;
@@ -24,47 +23,53 @@ interface Booking {
     slug: string;
   } | null;
   booking_images?: { image_url: string }[];
+  needs_manual_assignment?: boolean;
 }
 
 async function fetchBookings(status?: string): Promise<Booking[]> {
-  const supabase = createClient();
-  let query = supabase
-    .from('bookings')
-    .select('*, services(name_ar, name_en, slug)')
-    .order('created_at', { ascending: false });
+  const params = new URLSearchParams({ limit: '100', offset: '0' });
+  if (status) params.set('status', status);
 
-  if (status) query = query.eq('status', status);
-
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  const res = await fetch(`/api/bookings?${params.toString()}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? 'Failed to fetch bookings');
+  }
+  return res.json();
 }
 
 async function fetchBooking(id: string): Promise<Booking> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*, services(*), booking_images(image_url)')
-    .eq('id', id)
-    .single();
-
-  if (error) throw new Error(error.message);
-  return data;
+  const res = await fetch(`/api/bookings/${id}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    if (res.status === 404 || res.status === 403) {
+      throw new Error(err.error ?? 'Booking not found');
+    }
+    throw new Error(err.error ?? 'Failed to fetch booking');
+  }
+  return res.json();
 }
 
-async function createBooking(input: CreateBookingInput) {
+async function createBooking(input: CreateBookingInput): Promise<Booking> {
   const res = await fetch('/api/bookings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
 
+  const body = await res.json().catch(() => ({}));
+
   if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error ?? 'Failed to create booking');
+    // Assignment can fail after the row exists — surface booking_id for recovery UX.
+    const message = body.error ?? 'Failed to create booking';
+    const error = new Error(message) as Error & { bookingId?: string };
+    if (typeof body.booking_id === 'string') {
+      error.bookingId = body.booking_id;
+    }
+    throw error;
   }
 
-  return res.json();
+  return body as Booking;
 }
 
 export function useBookings(status?: string) {
@@ -79,6 +84,7 @@ export function useBooking(id: string) {
     queryKey: ['booking', id],
     queryFn: () => fetchBooking(id),
     enabled: !!id,
+    retry: 1,
   });
 }
 
@@ -87,8 +93,12 @@ export function useCreateBooking() {
 
   return useMutation({
     mutationFn: createBooking,
-    onSuccess: () => {
+    onSuccess: (booking) => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      if (booking?.id) {
+        // Seed detail cache so the post-create redirect never flashes an empty fetch.
+        queryClient.setQueryData(['booking', booking.id], booking);
+      }
     },
   });
 }

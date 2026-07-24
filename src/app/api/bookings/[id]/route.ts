@@ -26,15 +26,19 @@ export async function GET(
     .select(
       `
       *,
-      services(*, service_categories(name_ar, name_en)),
-      booking_images(*)
+      services(name_ar, name_en, slug),
+      booking_images(image_url)
     `,
     )
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data) {
+    return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
   }
 
   if (data.customer_id !== auth.user.id && data.technician_id !== auth.user.id) {

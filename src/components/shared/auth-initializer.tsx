@@ -12,6 +12,16 @@ async function fetchProfile(userId: string) {
   return data ?? null;
 }
 
+/**
+ * Defer work that touches the Supabase client so we never await auth/DB calls
+ * inside onAuthStateChange (that deadlocks the browser client lock).
+ */
+function deferAuthWork(work: () => void | Promise<void>) {
+  setTimeout(() => {
+    void work();
+  }, 0);
+}
+
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const { setUser, setProfile, setLoading, setSessionResolved } = useAuthStore();
 
@@ -26,37 +36,41 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
     let mounted = true;
 
-    const applySession = async (session: Session | null) => {
+    const applySession = (session: Session | null) => {
       setUser(session?.user ?? null);
 
-      if (session?.user) {
-        const profile = await fetchProfile(session.user.id);
-        if (mounted) setProfile(profile);
-      } else {
-        setProfile(null);
-        resetVoluntaryLogoutFlag();
-      }
+      deferAuthWork(async () => {
+        if (!mounted) return;
 
-      if (mounted) {
-        setLoading(false);
-        setSessionResolved(true);
-      }
+        if (session?.user) {
+          const profile = await fetchProfile(session.user.id);
+          if (mounted) setProfile(profile);
+        } else {
+          setProfile(null);
+          resetVoluntaryLogoutFlag();
+        }
+
+        if (mounted) {
+          setLoading(false);
+          setSessionResolved(true);
+        }
+      });
     };
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
       // INITIAL_SESSION is the sole hydration path — do not call getSession() in parallel
       // (that deadlocks with this listener in @supabase/ssr browser clients).
       if (event === 'INITIAL_SESSION') {
-        await applySession(session);
+        applySession(session);
         return;
       }
 
       if (event === 'SIGNED_IN') {
-        await applySession(session);
+        applySession(session);
         return;
       }
 

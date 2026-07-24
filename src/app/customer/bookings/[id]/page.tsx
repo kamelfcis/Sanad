@@ -7,6 +7,7 @@ import { useBookingReview } from '@/hooks/use-reviews';
 import { useBookingPayment } from '@/hooks/use-payments';
 import { BookingStatus } from '@/components/shared/booking-status';
 import { PaymentStatusBadge } from '@/components/payments/payment-status-badge';
+import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,28 +16,63 @@ import { ArrowLeft, Calendar, MapPin, Wrench, Clock, MessageCircle, Star, Bankno
 import { format } from 'date-fns';
 import { LocationMap } from '@/components/maps/location-map';
 
+function BookingDetailSkeleton() {
+  return (
+    <div className="container py-8" aria-busy aria-label="Loading">
+      <Skeleton className="mb-4 h-8 w-48" />
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
 export default function BookingDetailPage() {
   const params = useParams();
-  const id = params.id as string;
-  const { data: booking, isLoading, error } = useBooking(id);
+  const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
+  const { data: booking, isLoading, isError, error, refetch, isFetching } = useBooking(id);
   const { data: paymentData } = useBookingPayment(id);
   const { data: existingReview, isLoading: reviewLoading } = useBookingReview(
     booking?.status === 'completed' ? id : '',
   );
 
-  if (isLoading) {
+  if (!id) {
     return (
-      <div className="container py-8">
-        <Skeleton className="mb-4 h-8 w-48" />
-        <div className="space-y-4">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-24 w-full rounded-xl" />
+      <div className="container py-16 text-center">
+        <h1 className="mb-2 text-2xl font-bold">Booking not found</h1>
+        <p className="mb-6 text-muted-foreground">Missing booking id.</p>
+        <Button asChild>
+          <Link href="/customer/bookings">Back to bookings</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <BookingDetailSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <div className="container py-16">
+        <ErrorState
+          title="تعذّر تحميل الحجز"
+          description={error instanceof Error ? error.message : 'حدث خطأ أثناء تحميل تفاصيل الحجز.'}
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+        <div className="mt-6 text-center">
+          <Button asChild variant="outline">
+            <Link href="/customer/bookings">Back to bookings</Link>
+          </Button>
         </div>
       </div>
     );
   }
 
-  if (error || !booking) {
+  if (!booking) {
     return (
       <div className="container py-16 text-center">
         <h1 className="mb-2 text-2xl font-bold">Booking not found</h1>
@@ -67,6 +103,9 @@ export default function BookingDetailPage() {
               {booking.services?.name_ar ?? 'Service Request'}
             </h1>
             <BookingStatus status={booking.status} />
+            {isFetching && (
+              <span className="text-xs text-muted-foreground">Updating…</span>
+            )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             Created {format(new Date(booking.created_at), 'MMMM d, yyyy \'at\' h:mm a')}

@@ -15,25 +15,33 @@ export default function ReviewPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const { data: booking, isLoading, error } = useBooking(id);
+  const { data: booking, isLoading, isError, refetch } = useBooking(id);
   const createReview = useCreateReview();
 
   if (isLoading) {
     return (
-      <div className="container py-8">
+      <div className="container py-8" aria-busy aria-label="Loading">
         <Skeleton className="mb-4 h-8 w-48" />
         <Skeleton className="mx-auto h-96 w-full max-w-lg rounded-xl" />
       </div>
     );
   }
 
-  if (error || !booking) {
+  if (isError || !booking) {
     return (
       <div className="container py-16 text-center">
         <h1 className="mb-2 text-2xl font-bold">Booking not found</h1>
-        <Button asChild>
-          <Link href="/customer/bookings">Back to bookings</Link>
-        </Button>
+        <p className="mb-6 text-sm text-muted-foreground">
+          This booking doesn&apos;t exist or you don&apos;t have access to it.
+        </p>
+        <div className="flex justify-center gap-3">
+          <Button variant="outline" onClick={() => void refetch()}>
+            Retry
+          </Button>
+          <Button asChild>
+            <Link href="/customer/bookings">Back to bookings</Link>
+          </Button>
+        </div>
       </div>
     );
   }
