@@ -190,7 +190,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-white p-6 shadow-sm md:p-8">
+    <div className="rounded-2xl border border-border bg-white dark:bg-card p-6 shadow-sm md:p-8">
       <TechnicianRegisterHero completeMode={isCompleteMode} />
 
       <form

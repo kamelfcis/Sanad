@@ -191,7 +191,7 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
             id="instapay-name"
             value={instapayName}
             onChange={(e) => setInstapayName(e.target.value)}
-            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
           />
         </div>
         <div className="space-y-2">
@@ -200,7 +200,7 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
             id="instapay-number"
             value={instapayNumber}
             onChange={(e) => setInstapayNumber(e.target.value)}
-            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
             dir="ltr"
           />
         </div>
@@ -210,7 +210,7 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
             id="vodafone-number"
             value={vodafoneNumber}
             onChange={(e) => setVodafoneNumber(e.target.value)}
-            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
             dir="ltr"
           />
         </div>
@@ -222,7 +222,7 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
             onChange={(e) => setInstructions(e.target.value)}
             rows={4}
             dir="auto"
-            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
           />
         </div>
       </div>
@@ -335,7 +335,7 @@ function GeneralSettingsForm() {
             id="name"
             value={platformName}
             onChange={(e) => setPlatformName(e.target.value)}
-            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
           />
         </div>
         <div className="space-y-2">
@@ -345,7 +345,7 @@ function GeneralSettingsForm() {
             type="email"
             value={supportEmail}
             onChange={(e) => setSupportEmail(e.target.value)}
-            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
             dir="ltr"
           />
         </div>

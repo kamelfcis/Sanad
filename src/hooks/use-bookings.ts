@@ -15,6 +15,7 @@ export interface Booking {
   location_lng: number | null;
   preferred_time: string | null;
   price_quote: number | null;
+  cancellation_reason: string | null;
   created_at: string;
   updated_at: string;
   services: {
@@ -99,6 +100,34 @@ export function useCreateBooking() {
         // Seed detail cache so the post-create redirect never flashes an empty fetch.
         queryClient.setQueryData(['booking', booking.id], booking);
       }
+    },
+  });
+}
+
+async function cancelBooking(id: string, reason?: string): Promise<Booking> {
+  const res = await fetch(`/api/bookings/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'cancelled', ...(reason ? { reason } : {}) }),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(body.error ?? 'Failed to cancel booking');
+  }
+  return body as Booking;
+}
+
+export function useCancelBooking() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      cancelBooking(id, reason),
+    onSuccess: (booking) => {
+      queryClient.setQueryData(['booking', booking.id], booking);
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['booking', booking.id] });
     },
   });
 }

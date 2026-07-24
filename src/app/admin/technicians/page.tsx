@@ -104,12 +104,12 @@ function TechnicianCard({
 
       <AdminEntityCardInfoBox className="mt-4">
         <AdminEntityCardInfoRow label={t('tables.email')} fullWidth>
-          <AdminEntityCardInfoLtrValue className="text-[#64748B]">
+          <AdminEntityCardInfoLtrValue className="text-[#64748B] dark:text-muted-foreground">
             {tech.email ?? t('common.dash')}
           </AdminEntityCardInfoLtrValue>
         </AdminEntityCardInfoRow>
         <AdminEntityCardInfoRow label={t('tables.phone')} fullWidth>
-          <AdminEntityCardInfoLtrValue className="text-[#64748B]">
+          <AdminEntityCardInfoLtrValue className="text-[#64748B] dark:text-muted-foreground">
             {tech.phone ?? t('common.dash')}
           </AdminEntityCardInfoLtrValue>
         </AdminEntityCardInfoRow>
@@ -117,7 +117,7 @@ function TechnicianCard({
           <span className="font-semibold tabular-nums">{tech.completed_jobs ?? 0}</span>
         </AdminEntityCardInfoRow>
         <AdminEntityCardInfoRow label={t('tables.rating')}>
-          <span className="text-[#64748B]">
+          <span className="text-[#64748B] dark:text-muted-foreground">
             {tech.average_rating
               ? `${Number(tech.average_rating).toFixed(1)}★`
               : t('common.dash')}
@@ -208,10 +208,10 @@ export default function AdminTechniciansPage() {
           <AdminPremiumTableBody>
             {data?.technicians.map((tech) => (
               <AdminPremiumTableRow key={tech.id}>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A]">
+                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
                   {tech.full_name ?? t('customers.unnamed')}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]" dir="ltr">
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground" dir="ltr">
                   {tech.email ?? t('common.dash')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
@@ -220,15 +220,15 @@ export default function AdminTechniciansPage() {
                     label={statusLabel(tech.verification_status)}
                   />
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="font-medium tabular-nums text-[#0F172A]">
+                <AdminPremiumTableCell className="font-medium tabular-nums text-[#0F172A] dark:text-foreground">
                   {tech.completed_jobs ?? 0}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
                   {tech.average_rating
                     ? `${Number(tech.average_rating).toFixed(1)}★`
                     : t('common.dash')}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
                   {tech.created_at ? formatDate(tech.created_at) : t('common.dash')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>

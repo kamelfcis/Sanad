@@ -9,6 +9,22 @@ export const updateBookingStatusSchema = z.object({
   status: bookingStatusSchema,
 });
 
+/** Statuses from which a customer may cancel their own booking. */
+export const CUSTOMER_CANCELLABLE_STATUSES = ['pending', 'matched', 'accepted'] as const;
+export type CustomerCancellableStatus = (typeof CUSTOMER_CANCELLABLE_STATUSES)[number];
+
+export function isCustomerCancellableStatus(
+  status: string,
+): status is CustomerCancellableStatus {
+  return (CUSTOMER_CANCELLABLE_STATUSES as readonly string[]).includes(status);
+}
+
+/** Customer booking cancel via PATCH /api/bookings/[id] */
+export const cancelBookingSchema = z.object({
+  status: z.literal('cancelled'),
+  reason: z.string().trim().max(500).optional(),
+});
+
 export const createBookingSchema = z.object({
   service_id: z.string().uuid('Invalid service selected'),
   description: z
@@ -36,6 +52,16 @@ export const BOOKING_STATUS_LABELS: Record<string, string> = {
   completed: 'Completed',
   cancelled: 'Cancelled',
   disputed: 'Disputed',
+};
+
+export const BOOKING_STATUS_LABELS_AR: Record<string, string> = {
+  pending: 'قيد الانتظار',
+  matched: 'تم التطابق',
+  accepted: 'مقبول',
+  in_progress: 'جاري التنفيذ',
+  completed: 'مكتمل',
+  cancelled: 'ملغي',
+  disputed: 'متنازع عليه',
 };
 
 export const BOOKING_STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning'> = {

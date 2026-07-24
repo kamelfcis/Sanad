@@ -73,7 +73,7 @@ function ServicePriceDisplay({
   return (
     <>
       {service.price ? formatCurrency(Number(service.price)) : t('common.dash')}
-      <span className="ms-1 text-xs text-[#64748B]">/{priceTypeLabel(service.price_type)}</span>
+      <span className="ms-1 text-xs text-[#64748B] dark:text-muted-foreground">/{priceTypeLabel(service.price_type)}</span>
     </>
   );
 }
@@ -535,14 +535,14 @@ export default function AdminServicesPage() {
           <AdminPremiumTableBody>
             {services?.map((s: any) => (
               <AdminPremiumTableRow key={s.id}>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A]" dir="auto">
+                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground" dir="auto">
                   {s.name_ar}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]">{s.name_en}</AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]">
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground">{s.name_en}</AdminPremiumTableCell>
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground">
                   {s.service_categories?.name_en ?? t('common.dash')}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#0F172A]">
+                <AdminPremiumTableCell className="text-[#0F172A] dark:text-foreground">
                   <ServicePriceDisplay service={s} priceTypeLabel={priceTypeLabel} t={t} formatCurrency={formatCurrency} />
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>

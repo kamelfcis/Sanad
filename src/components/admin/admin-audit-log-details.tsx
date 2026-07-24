@@ -49,7 +49,7 @@ function StatusBadge({ status, label }: { status: string; label: string }) {
 function MetadataRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="grid gap-1 rounded-lg bg-white/80 px-3 py-2 sm:grid-cols-[minmax(7rem,auto)_1fr] sm:items-baseline sm:gap-x-4">
-      <dt className="text-xs font-medium uppercase tracking-wide text-[#94A3B8]">{label}</dt>
+      <dt className="text-xs font-medium uppercase tracking-wide text-[#94A3B8] dark:text-muted-foreground">{label}</dt>
       <dd className="min-w-0 text-sm">{value}</dd>
     </div>
   );
@@ -91,7 +91,7 @@ export function AdminAuditLogDetails({ metadata, entityType, action }: AdminAudi
 
   const formatValue = (key: string, value: MetadataValue): React.ReactNode => {
     if (value === null || value === undefined) {
-      return <span className="text-[#94A3B8]">{t('common.dash')}</span>;
+      return <span className="text-[#94A3B8] dark:text-muted-foreground">{t('common.dash')}</span>;
     }
 
     if (typeof value === 'boolean') {
@@ -116,7 +116,7 @@ export function AdminAuditLogDetails({ metadata, entityType, action }: AdminAudi
 
     if (key === 'amount' && typeof value === 'number') {
       return (
-        <span className="font-medium tabular-nums text-[#0F172A]" dir="ltr">
+        <span className="font-medium tabular-nums text-[#0F172A] dark:text-foreground" dir="ltr">
           {value.toLocaleString()}
         </span>
       );
@@ -125,7 +125,7 @@ export function AdminAuditLogDetails({ metadata, entityType, action }: AdminAudi
     if (key.endsWith('_id') || key === 'slug') {
       return (
         <code
-          className="inline-block max-w-full truncate rounded-md bg-[#F1F5F9] px-2 py-0.5 text-xs font-mono text-[#64748B]"
+          className="inline-block max-w-full truncate rounded-md bg-[#F1F5F9] dark:bg-muted px-2 py-0.5 text-xs font-mono text-[#64748B] dark:text-muted-foreground"
           dir="ltr"
         >
           {String(value)}
@@ -136,13 +136,13 @@ export function AdminAuditLogDetails({ metadata, entityType, action }: AdminAudi
     if (Array.isArray(value)) {
       if (key === 'ordered_ids') {
         return (
-          <span className="text-[#64748B]">
+          <span className="text-[#64748B] dark:text-muted-foreground">
             {t('auditLogs.meta.itemsCount', { count: value.length })}
           </span>
         );
       }
       return (
-        <span className="break-all text-[#64748B]" dir="ltr">
+        <span className="break-all text-[#64748B] dark:text-muted-foreground" dir="ltr">
           {value.join(', ')}
         </span>
       );
@@ -160,7 +160,7 @@ export function AdminAuditLogDetails({ metadata, entityType, action }: AdminAudi
       return translated !== actorKey ? translated : String(value);
     }
 
-    return <span className="break-words text-[#0F172A]">{String(value)}</span>;
+    return <span className="break-words text-[#0F172A] dark:text-foreground">{String(value)}</span>;
   };
 
   const rows: { key: string; label: string; value: React.ReactNode }[] = [];
@@ -193,10 +193,10 @@ export function AdminAuditLogDetails({ metadata, entityType, action }: AdminAudi
         {t('auditLogs.details')}
       </summary>
 
-      <div className="mt-2 rounded-xl border border-[#E2E8F0] bg-gradient-to-br from-[#FF6B00]/[0.04] to-white p-3 shadow-sm">
+      <div className="mt-2 rounded-xl border border-[#E2E8F0] dark:border-border bg-gradient-to-br from-[#FF6B00]/[0.04] to-white p-3 shadow-sm">
         {hasTransition ? (
           <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-[#E2E8F0]/80 pb-3">
-            <span className="text-xs font-medium text-[#64748B]">
+            <span className="text-xs font-medium text-[#64748B] dark:text-muted-foreground">
               {t('auditLogs.meta.statusChange')}
             </span>
             {metadata.from != null ? (
@@ -205,7 +205,7 @@ export function AdminAuditLogDetails({ metadata, entityType, action }: AdminAudi
                 label={translateStatus(String(metadata.from))}
               />
             ) : (
-              <span className="text-xs text-[#94A3B8]">{t('common.dash')}</span>
+              <span className="text-xs text-[#94A3B8] dark:text-muted-foreground">{t('common.dash')}</span>
             )}
             {isRtl ? (
               <ArrowLeft className="h-4 w-4 shrink-0 text-[#FF6B00]" aria-hidden />
@@ -218,7 +218,7 @@ export function AdminAuditLogDetails({ metadata, entityType, action }: AdminAudi
                 label={translateStatus(String(metadata.to))}
               />
             ) : (
-              <span className="text-xs text-[#94A3B8]">{t('common.dash')}</span>
+              <span className="text-xs text-[#94A3B8] dark:text-muted-foreground">{t('common.dash')}</span>
             )}
           </div>
         ) : null}
@@ -230,7 +230,7 @@ export function AdminAuditLogDetails({ metadata, entityType, action }: AdminAudi
             ))}
           </dl>
         ) : !hasTransition ? (
-          <p className="text-xs text-[#94A3B8]">{t('auditLogs.meta.noDetails')}</p>
+          <p className="text-xs text-[#94A3B8] dark:text-muted-foreground">{t('auditLogs.meta.noDetails')}</p>
         ) : null}
       </div>
     </details>

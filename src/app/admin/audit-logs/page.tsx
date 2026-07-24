@@ -158,7 +158,7 @@ export default function AdminAuditLogsPage() {
             totalPages={Math.ceil(data.total / data.limit)}
             total={data.total}
             onPageChange={setPage}
-            summaryClassName="text-[#64748B]"
+            summaryClassName="text-[#64748B] dark:text-muted-foreground"
           />
         ) : null
       }
@@ -184,18 +184,18 @@ export default function AdminAuditLogsPage() {
                     {actionLabel(log.action)}
                   </Badge>
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A]">
+                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
                   {log.admin?.full_name ?? log.admin_id.slice(0, 8)}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="capitalize text-[#64748B]">
+                <AdminPremiumTableCell className="capitalize text-[#64748B] dark:text-muted-foreground">
                   {entityLabel(log.entity_type)}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell dir="ltr">
-                  <code className="rounded-md bg-[#F1F5F9] px-1.5 py-0.5 text-xs font-mono text-[#64748B]">
+                  <code className="rounded-md bg-[#F1F5F9] dark:bg-muted px-1.5 py-0.5 text-xs font-mono text-[#64748B] dark:text-muted-foreground">
                     {log.entity_id.slice(0, 8)}…
                   </code>
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
                   {formatDateTime(log.created_at)}
                 </AdminPremiumTableCell>
               </AdminPremiumTableRow>

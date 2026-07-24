@@ -77,7 +77,7 @@ export function TechnicianSkillsSection({
   }
 
   return (
-    <ul className="divide-y divide-zinc-100 rounded-xl border border-zinc-200/80 bg-white">
+    <ul className="divide-y divide-zinc-100 rounded-xl border border-zinc-200/80 bg-white dark:bg-card">
       {activeSkills.map((skill, idx) => {
         const specialty = categoryName(skill, locale);
         const service = serviceName(skill, locale);

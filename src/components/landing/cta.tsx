@@ -21,7 +21,7 @@ export function CTASection() {
         </p>
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link href="/auth/register?role=customer"
-            className="group inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-[#FF6B00] shadow-sm transition-all hover:shadow-md"
+            className="group inline-flex items-center gap-2 rounded-xl bg-white dark:bg-card px-8 py-4 text-base font-semibold text-[#FF6B00] shadow-sm transition-all hover:shadow-md"
           >
             <UserPlus className="h-5 w-5" />
             اطلب خدمة

@@ -90,17 +90,17 @@ function BookingServiceDisplay({
 }) {
   return (
     <>
-      <p className="truncate font-medium text-[#0F172A]">
+      <p className="truncate font-medium text-[#0F172A] dark:text-foreground">
         {booking.services?.name_ar ?? t('common.unknown')}
       </p>
-      <p className="text-xs text-[#64748B]">{booking.services?.name_en}</p>
+      <p className="text-xs text-[#64748B] dark:text-muted-foreground">{booking.services?.name_en}</p>
     </>
   );
 }
 
 function BookingCustomerDisplay({ booking }: { booking: BookingRow }) {
   return (
-    <span className="text-[#64748B]">
+    <span className="text-[#64748B] dark:text-muted-foreground">
       {booking.customer?.full_name ?? `${booking.customer_id.slice(0, 8)}...`}
     </span>
   );
@@ -114,7 +114,7 @@ function BookingTechnicianDisplay({
   t: ReturnType<typeof useAdminT>['t'];
 }) {
   return (
-    <span className="text-[#64748B]">
+    <span className="text-[#64748B] dark:text-muted-foreground">
       {booking.technician?.full_name ??
         (booking.technician_id ? `${booking.technician_id.slice(0, 8)}...` : t('common.dash'))}
     </span>
@@ -264,7 +264,7 @@ export default function AdminBookingsPage() {
                 <AdminPremiumTableCell>
                   <BookingStatus status={b.status} context="admin" />
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
                   {formatDateTime(b.created_at)}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>

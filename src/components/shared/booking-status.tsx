@@ -3,6 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import {
   BOOKING_STATUS_LABELS,
+  BOOKING_STATUS_LABELS_AR,
   BOOKING_STATUS_VARIANTS,
 } from '@/lib/validations/booking';
 import { useAdminI18nOptional } from '@/lib/i18n/admin/use-admin-t';
@@ -17,7 +18,9 @@ export function BookingStatus({ status, context }: BookingStatusProps) {
   const label =
     context === 'admin' && adminI18n
       ? adminI18n.t(`bookingStatus.${status}`)
-      : (BOOKING_STATUS_LABELS[status] ?? status);
+      : context === 'admin'
+        ? (BOOKING_STATUS_LABELS[status] ?? status)
+        : (BOOKING_STATUS_LABELS_AR[status] ?? BOOKING_STATUS_LABELS[status] ?? status);
   const variant = BOOKING_STATUS_VARIANTS[status] ?? 'secondary';
 
   return <Badge variant={variant}>{label}</Badge>;

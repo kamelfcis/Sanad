@@ -183,7 +183,7 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
             'relative rounded-full',
             variant === 'light'
               ? 'text-text-secondary hover:bg-muted hover:text-text-primary'
-              : 'text-[#64748B] hover:text-[#0F172A]',
+              : 'text-[#64748B] dark:text-muted-foreground hover:text-[#0F172A]',
             className,
           )}
           aria-label={labels.aria}

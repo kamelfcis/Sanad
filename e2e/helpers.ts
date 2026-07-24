@@ -56,7 +56,7 @@ async function waitForStableContent(page: Page) {
 
   if (/^\/customer\/bookings\/[^/]+$/.test(path) && !path.endsWith('/new')) {
     await page
-      .getByText('Service Information')
+      .getByText(/معلومات الخدمة|Service Information/)
       .waitFor({ state: 'visible', timeout: 90_000 });
     return;
   }
@@ -67,7 +67,9 @@ async function waitForStableContent(page: Page) {
   }
 
   if (path.startsWith('/technician/jobs')) {
-    await page.getByRole('heading', { name: 'Jobs', exact: true }).waitFor({ state: 'visible', timeout: 90_000 });
+    await page
+      .getByRole('heading', { name: /Jobs|المهام|الطلبات/ })
+      .waitFor({ state: 'visible', timeout: 90_000 });
     return;
   }
 
@@ -294,6 +296,6 @@ export async function submitBookingForm(page: Page, description: string) {
     (url) => url.pathname === `/customer/bookings/${bookingId}`,
     { timeout: 30_000 },
   );
-  await page.getByText('Service Information').waitFor({ state: 'visible', timeout: 90_000 });
+  await page.getByText('معلومات الخدمة').waitFor({ state: 'visible', timeout: 90_000 });
   return bookingId;
 }

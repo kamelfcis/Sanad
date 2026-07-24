@@ -96,7 +96,7 @@ export function AdminSearchInput({
     <div className={cn('relative max-w-sm flex-1', className)}>
       <Search
         className={cn(
-          'absolute top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]',
+          'absolute top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8] dark:text-muted-foreground',
           isRtl ? 'right-3' : 'left-3',
         )}
       />
@@ -105,7 +105,7 @@ export function AdminSearchInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          'border-[#E2E8F0] bg-white shadow-sm focus-visible:ring-[#FF6B00]/30',
+          'border-[#E2E8F0] dark:border-border bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30',
           isRtl ? 'pr-9' : 'pl-9',
         )}
       />
@@ -133,7 +133,7 @@ export function AdminFilterPills({
             'shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
             value === f.value
               ? 'border-[#FF6B00] bg-[#FF6B00] text-white'
-              : 'border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#FF6B00]/50',
+              : 'border-[#E2E8F0] dark:border-border bg-white dark:bg-card text-[#64748B] dark:text-muted-foreground hover:border-[#FF6B00]/50',
           )}
         >
           {f.label}
@@ -144,7 +144,7 @@ export function AdminFilterPills({
 }
 
 export const adminFilterSelectClass =
-  'flex h-9 w-full rounded-md border border-[#E2E8F0] bg-white px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00]/30';
+  'flex h-9 w-full rounded-md border border-[#E2E8F0] dark:border-border bg-white dark:bg-card px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00]/30';
 
 export function AdminAdvancedFiltersPanel({
   title,
@@ -172,13 +172,13 @@ export function AdminAdvancedFiltersPanel({
   }, [hasActiveFilters]);
 
   return (
-    <div className="mb-6 overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
+    <div className="mb-6 overflow-hidden rounded-xl border border-[#E2E8F0] dark:border-border bg-white dark:bg-card shadow-sm">
       <div className="flex flex-wrap items-center gap-2 px-4 py-3">
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
           aria-expanded={open}
-          className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-[#0F172A] transition-colors hover:bg-[#F8FAFC]"
+          className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-[#0F172A] dark:text-foreground transition-colors hover:bg-[#F8FAFC]"
         >
           <SlidersHorizontal className="h-4 w-4 text-[#FF6B00]" aria-hidden />
           {title}
@@ -188,7 +188,7 @@ export function AdminAdvancedFiltersPanel({
             </span>
           ) : null}
           <ChevronDown
-            className={cn('h-4 w-4 text-[#64748B] transition-transform', open && 'rotate-180')}
+            className={cn('h-4 w-4 text-[#64748B] dark:text-muted-foreground transition-transform', open && 'rotate-180')}
             aria-hidden
           />
         </button>
@@ -198,14 +198,14 @@ export function AdminAdvancedFiltersPanel({
             variant="ghost"
             size="sm"
             onClick={onReset}
-            className="text-[#64748B] hover:text-[#FF6B00]"
+            className="text-[#64748B] dark:text-muted-foreground hover:text-[#FF6B00]"
           >
             {resetLabel}
           </Button>
         ) : null}
       </div>
       {open ? (
-        <div className="border-t border-[#E2E8F0] px-4 py-4">
+        <div className="border-t border-[#E2E8F0] dark:border-border px-4 py-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
         </div>
       ) : null}
@@ -224,7 +224,7 @@ export function AdminFilterField({
 }) {
   return (
     <div className="space-y-2">
-      <label htmlFor={htmlFor} className="text-xs font-medium text-[#64748B]">
+      <label htmlFor={htmlFor} className="text-xs font-medium text-[#64748B] dark:text-muted-foreground">
         {label}
       </label>
       {children}
@@ -242,13 +242,13 @@ export function AdminEmptyState({
   subtitle?: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-[#E2E8F0] bg-white py-16 text-center shadow-sm">
+    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-[#E2E8F0] dark:border-border bg-white dark:bg-card py-16 text-center shadow-sm">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FF6B00]/10">
         <Icon className="h-7 w-7 text-[#FF6B00]" />
       </div>
       <div>
-        <h2 className="text-lg font-semibold text-[#0F172A]">{title}</h2>
-        {subtitle ? <p className="mt-1 text-sm text-[#64748B]">{subtitle}</p> : null}
+        <h2 className="text-lg font-semibold text-[#0F172A] dark:text-foreground">{title}</h2>
+        {subtitle ? <p className="mt-1 text-sm text-[#64748B] dark:text-muted-foreground">{subtitle}</p> : null}
       </div>
     </div>
   );
@@ -272,7 +272,7 @@ export function AdminTableActionLink({
 }
 
 export const adminActionButtonClass =
-  'text-[#64748B] hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]';
+  'text-[#64748B] dark:text-muted-foreground hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]';
 
 export const adminActionButtonDestructiveClass =
   'text-destructive hover:bg-destructive/10 hover:text-destructive';
@@ -293,7 +293,7 @@ export function AdminListViewToggle({
       role="group"
       aria-label={t('view.toggleLabel')}
       className={cn(
-        'inline-flex rounded-xl border border-[#E2E8F0] bg-white p-1 shadow-sm',
+        'inline-flex rounded-xl border border-[#E2E8F0] dark:border-border bg-white dark:bg-card p-1 shadow-sm',
         className,
       )}
     >
@@ -307,7 +307,7 @@ export function AdminListViewToggle({
           'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
           value === 'table'
             ? 'bg-[#FF6B00] text-white shadow-sm'
-            : 'text-[#64748B] hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]',
+            : 'text-[#64748B] dark:text-muted-foreground hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]',
         )}
       >
         <LayoutList className="h-4 w-4" />
@@ -323,7 +323,7 @@ export function AdminListViewToggle({
           'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
           value === 'cards'
             ? 'bg-[#FF6B00] text-white shadow-sm'
-            : 'text-[#64748B] hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]',
+            : 'text-[#64748B] dark:text-muted-foreground hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]',
         )}
       >
         <LayoutGrid className="h-4 w-4" />
@@ -351,7 +351,7 @@ export function AdminEntityCard({
   return (
     <article
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-200/70 bg-white ps-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all hover:border-[#FF6B00]/25 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] sm:ps-7',
+        'group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-200/70 bg-white dark:bg-card ps-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all hover:border-[#FF6B00]/25 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] sm:ps-7',
         className,
       )}
     >
@@ -379,10 +379,10 @@ export function AdminEntityCardHeader({
       {avatar ? <div className="shrink-0">{avatar}</div> : null}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
-          <h3 className="text-base font-bold leading-snug tracking-tight text-[#0F172A]">{title}</h3>
+          <h3 className="text-base font-bold leading-snug tracking-tight text-[#0F172A] dark:text-foreground">{title}</h3>
           {badge ? <div className="shrink-0">{badge}</div> : null}
         </div>
-        {subtitle ? <p className="mt-0.5 text-sm text-[#64748B]">{subtitle}</p> : null}
+        {subtitle ? <p className="mt-0.5 text-sm text-[#64748B] dark:text-muted-foreground">{subtitle}</p> : null}
       </div>
     </header>
   );
@@ -438,7 +438,7 @@ export function AdminEntityCardInfoBox({
   return (
     <div
       className={cn(
-        'min-w-0 w-full rounded-xl border border-gray-100 bg-[#F8FAFC]/90 p-3.5 sm:p-4',
+        'min-w-0 w-full rounded-xl border border-gray-100 dark:border-border bg-[#F8FAFC]/90 p-3.5 sm:p-4',
         columns === 2
           ? 'grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2'
           : 'flex flex-col gap-3',
@@ -464,8 +464,8 @@ export function AdminEntityCardInfoRow({
 }) {
   return (
     <div className={cn('min-w-0 overflow-hidden', fullWidth && 'sm:col-span-2', className)}>
-      <p className="text-[11px] font-medium uppercase tracking-wide text-[#94A3B8]">{label}</p>
-      <div className="mt-1 min-w-0 overflow-hidden text-sm text-[#0F172A]">{children}</div>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-[#94A3B8] dark:text-muted-foreground">{label}</p>
+      <div className="mt-1 min-w-0 overflow-hidden text-sm text-[#0F172A] dark:text-foreground">{children}</div>
     </div>
   );
 }
@@ -507,7 +507,7 @@ export function AdminEntityCardMeta({
 }
 
 const adminEntityCardMetaPillVariants = {
-  muted: 'border-gray-100 bg-[#F1F5F9] text-[#64748B]',
+  muted: 'border-gray-100 dark:border-border bg-[#F1F5F9] dark:bg-muted text-[#64748B] dark:text-muted-foreground',
   orange: 'border-[#FF6B00]/30 bg-[#FF6B00]/5 text-[#FF6B00]',
   success: 'border-emerald-200/80 bg-emerald-50 text-emerald-700',
   warning: 'border-amber-200/80 bg-amber-50 text-amber-700',
@@ -546,7 +546,7 @@ export function AdminEntityCardTagPill({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full border border-[#FF6B00]/35 bg-white px-2.5 py-0.5 text-xs font-medium text-[#FF6B00]',
+        'inline-flex items-center rounded-full border border-[#FF6B00]/35 bg-white dark:bg-card px-2.5 py-0.5 text-xs font-medium text-[#FF6B00]',
         className,
       )}
     >
@@ -567,7 +567,7 @@ export function AdminEntityCardField({
 }) {
   return (
     <div className={cn('min-w-0', className)}>
-      <p className="text-xs font-medium uppercase tracking-wide text-[#94A3B8]">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-[#94A3B8] dark:text-muted-foreground">{label}</p>
       <div className="mt-0.5 text-sm">{children}</div>
     </div>
   );
@@ -583,7 +583,7 @@ export function AdminEntityCardActions({
   return (
     <footer
       className={cn(
-        'mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4',
+        'mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 dark:border-border pt-4',
         className,
       )}
     >
@@ -620,7 +620,7 @@ export function AdminEntityCardPrimaryAction({
   external?: boolean;
 }) {
   const classes = cn(
-    'inline-flex items-center gap-1.5 rounded-full border border-[#FF6B00]/40 bg-white px-4 py-1.5 text-sm font-medium text-[#FF6B00] shadow-sm transition-colors hover:border-[#FF6B00] hover:bg-[#FF6B00]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00]/30',
+    'inline-flex items-center gap-1.5 rounded-full border border-[#FF6B00]/40 bg-white dark:bg-card px-4 py-1.5 text-sm font-medium text-[#FF6B00] shadow-sm transition-colors hover:border-[#FF6B00] hover:bg-[#FF6B00]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B00]/30',
     className,
   );
 
@@ -665,7 +665,7 @@ const adminEntityCardIconButtonVariants = {
   destructive:
     'border-red-200/80 bg-red-50 text-red-600 hover:border-red-300 hover:bg-red-100 focus-visible:ring-red-300/50',
   neutral:
-    'border-gray-100 bg-[#F8FAFC] text-[#64748B] hover:border-[#FF6B00]/30 hover:bg-[#FF6B00]/5 hover:text-[#FF6B00] focus-visible:ring-[#FF6B00]/30',
+    'border-gray-100 dark:border-border bg-[#F8FAFC] dark:bg-muted text-[#64748B] dark:text-muted-foreground hover:border-[#FF6B00]/30 hover:bg-[#FF6B00]/5 hover:text-[#FF6B00] focus-visible:ring-[#FF6B00]/30',
 } as const;
 
 export function AdminEntityCardIconButton({

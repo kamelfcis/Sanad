@@ -24,14 +24,14 @@ export function Header({ navItems }: HeaderProps) {
   if (isLoading || !user) return null;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#E2E8F0] bg-white/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-[#E2E8F0] bg-white/80 backdrop-blur-xl dark:border-border dark:bg-[#0B1720]/80">
       <div className="container flex h-14 items-center">
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#FF6B00] to-[#FF8A34]">
             <Wrench className="h-4 w-4 text-white" />
           </div>
-          <span className="text-[#0F172A]">سند</span>
-          <span className="hidden text-xs text-[#94A3B8] sm:inline">Sanad</span>
+          <span className="text-[#0F172A] dark:text-foreground">سند</span>
+          <span className="hidden text-xs text-[#94A3B8] sm:inline dark:text-muted-foreground">Sanad</span>
         </Link>
 
         {navItems && navItems.length > 0 && (
@@ -43,8 +43,8 @@ export function Header({ navItems }: HeaderProps) {
                 className={cn(
                   'text-sm font-medium transition-colors hover:text-[#FF6B00]',
                   pathname === item.href || pathname.startsWith(item.href + '/')
-                    ? 'text-[#0F172A]'
-                    : 'text-[#64748B]',
+                    ? 'text-[#0F172A] dark:text-foreground'
+                    : 'text-[#64748B] dark:text-muted-foreground',
                 )}
               >
                 {item.label}

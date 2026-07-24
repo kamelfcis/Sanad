@@ -42,7 +42,7 @@ function CustomerNameDisplay({
   t: ReturnType<typeof useAdminT>['t'];
 }) {
   return (
-    <span className="font-medium text-[#0F172A]">
+    <span className="font-medium text-[#0F172A] dark:text-foreground">
       {customer.full_name ?? t('customers.unnamed')}
     </span>
   );
@@ -84,12 +84,12 @@ function CustomerCard({
 
       <AdminEntityCardInfoBox className="mt-4" columns={1}>
         <AdminEntityCardInfoRow label={t('tables.email')}>
-          <AdminEntityCardInfoLtrValue className="text-[#64748B]">
+          <AdminEntityCardInfoLtrValue className="text-[#64748B] dark:text-muted-foreground">
             {customer.email ?? t('common.dash')}
           </AdminEntityCardInfoLtrValue>
         </AdminEntityCardInfoRow>
         <AdminEntityCardInfoRow label={t('tables.phone')}>
-          <AdminEntityCardInfoLtrValue className="text-[#64748B]">
+          <AdminEntityCardInfoLtrValue className="text-[#64748B] dark:text-muted-foreground">
             {customer.phone ?? t('common.dash')}
           </AdminEntityCardInfoLtrValue>
         </AdminEntityCardInfoRow>
@@ -166,16 +166,16 @@ export default function AdminCustomersPage() {
                 <AdminPremiumTableCell>
                   <CustomerNameDisplay customer={c} t={t} />
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]" dir="ltr">
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground" dir="ltr">
                   {c.email ?? t('common.dash')}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]" dir="ltr">
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground" dir="ltr">
                   {c.phone ?? t('common.dash')}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="font-medium tabular-nums text-[#0F172A]">
+                <AdminPremiumTableCell className="font-medium tabular-nums text-[#0F172A] dark:text-foreground">
                   {c.booking_count}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
                   {c.created_at ? formatDate(c.created_at) : t('common.dash')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>

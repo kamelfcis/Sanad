@@ -1,6 +1,8 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
 import type { BrowseTechniciansResponse } from '@/types/technician-browse';
 import type { browseTechniciansSortSchema } from '@/lib/validations/technicians';
 import type { z } from 'zod';
@@ -53,6 +55,52 @@ export function useBrowseTechnicians(filters: BrowseTechniciansFilters) {
     queryFn: () => fetchBrowseTechnicians(filters),
     staleTime: 60_000,
   });
+}
+
+/**
+ * Subscribes to technician availability changes and patches every cached
+ * browse query in place, so a technician toggling on/off flips their card
+ * instantly without a refetch. Mount once alongside `useBrowseTechnicians`.
+ */
+export function useTechnicianAvailabilityRealtime(filters: BrowseTechniciansFilters) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel('technician-availability-browse')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'technician_profiles',
+        },
+        (payload) => {
+          const next = payload.new as { id?: string; is_available?: boolean };
+          if (!next.id) return;
+
+          queryClient.setQueriesData<BrowseTechniciansResponse>(
+            { queryKey: ['browse-technicians'] },
+            (old) => {
+              if (!old) return old;
+              const idx = old.technicians.findIndex((t) => t.id === next.id);
+              if (idx === -1) return old;
+
+              const technicians = [...old.technicians];
+              technicians[idx] = { ...technicians[idx], is_available: Boolean(next.is_available) };
+              return { ...old, technicians };
+            },
+          );
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [queryClient, filters]);
 }
 
 async function fetchTechnicianPreview(technicianId: string): Promise<BrowseTechniciansResponse['technicians'][number]> {

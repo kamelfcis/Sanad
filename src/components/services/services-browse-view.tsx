@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/shared/error-state';
-import { useBrowseTechnicians } from '@/hooks/use-browse-technicians';
+import { useBrowseTechnicians, useTechnicianAvailabilityRealtime } from '@/hooks/use-browse-technicians';
 import { useUserLocation } from '@/hooks/use-user-location';
 import { ServicesBrowseFilters, type ServicesBrowseFiltersState } from '@/components/services/services-browse-filters';
 import { TechnicianBrowseCard } from '@/components/services/technician-browse-card';
@@ -64,6 +64,9 @@ export function ServicesBrowseView() {
   }, [filters, location.lat, location.lng, searchQuery, urlGovernorate, urlSearch, urlSpecialty]);
 
   const { data, isLoading, error, refetch } = useBrowseTechnicians(queryFilters);
+
+  // Flip cards live as technicians toggle their availability.
+  useTechnicianAvailabilityRealtime(queryFilters);
 
   const handleFilterChange = (patch: Partial<ServicesBrowseFiltersState>) => {
     setFilters((current) => ({ ...current, ...patch }));

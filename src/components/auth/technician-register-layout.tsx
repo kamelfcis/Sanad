@@ -14,7 +14,7 @@ export function TechnicianRegisterLayout({
 }) {
   return (
     <div dir="rtl" className="min-h-screen bg-surface" style={{ fontFamily: 'var(--font-cairo)' }}>
-      <header className="border-b border-border bg-white px-6 py-4">
+      <header className="border-b border-border bg-white dark:bg-card px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div
@@ -39,7 +39,7 @@ export function TechnicianRegisterLayout({
         <main>{children}</main>
 
         <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-          <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-border bg-white dark:bg-card shadow-sm">
             <div className="px-6 py-5" style={{ background: gradients.primary }}>
               <p className="text-sm text-white/80">الباقة الأساسية</p>
               <div className="mt-1 flex items-baseline gap-1">
@@ -64,7 +64,7 @@ export function TechnicianRegisterLayout({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-border bg-white dark:bg-card p-6 shadow-sm">
             <h3 className="mb-4 text-base font-bold text-text-primary">ليه صنايعي؟</h3>
             <ul className="space-y-3">
               {TRUST_BULLETS.map((item) => (

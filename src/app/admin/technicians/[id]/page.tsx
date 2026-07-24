@@ -36,7 +36,7 @@ const statusColors: Record<string, string> = {
   verified: 'bg-green-100 text-green-700',
   pending: 'bg-amber-100 text-amber-700',
   rejected: 'bg-red-100 text-red-700',
-  suspended: 'bg-gray-100 text-gray-700',
+  suspended: 'bg-gray-100 dark:bg-muted text-gray-700 dark:text-muted-foreground',
   unverified: 'bg-blue-100 text-blue-700',
 };
 
@@ -181,7 +181,7 @@ export default function AdminTechnicianDetailPage() {
       </Button>
 
       <div className="mx-auto max-w-3xl space-y-6">
-        <div className="flex items-start gap-4 rounded-2xl border border-[#FF6B00]/15 bg-white p-5 shadow-sm">
+        <div className="flex items-start gap-4 rounded-2xl border border-[#FF6B00]/15 bg-white dark:bg-card p-5 shadow-sm">
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-[#FF6B00]/20 bg-[#FF6B00]/5">
             {headerPhoto ? (
               <OptimizedImage src={headerPhoto} alt={tech.full_name ?? ''} fill sizes="80px" />

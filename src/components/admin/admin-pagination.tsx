@@ -89,7 +89,7 @@ export function AdminPagination({
       )}
     >
       <div className={cn('flex flex-wrap items-center gap-3', summaryClassName)}>
-        <p className="text-sm text-[#64748B]">
+        <p className="text-sm text-[#64748B] dark:text-muted-foreground">
           {t('common.pageOf', {
             page,
             totalPages: safeTotalPages,
@@ -98,13 +98,13 @@ export function AdminPagination({
         </p>
 
         {onLimitChange && limit != null ? (
-          <label className="flex items-center gap-2 text-sm text-[#64748B]">
+          <label className="flex items-center gap-2 text-sm text-[#64748B] dark:text-muted-foreground">
             <span>{t('common.rowsPerPage')}</span>
             <select
               value={limit}
               onChange={(e) => onLimitChange(Number(e.target.value) as AdminPageSize)}
               aria-label={t('common.rowsPerPage')}
-              className="h-8 rounded-lg border border-[#E2E8F0] bg-white px-2 text-sm text-[#0F172A] shadow-sm focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00]"
+              className="h-8 rounded-lg border border-[#E2E8F0] dark:border-border bg-white dark:bg-card px-2 text-sm text-[#0F172A] dark:text-foreground shadow-sm focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00]"
             >
               {pageSizeOptions.map((size) => (
                 <option key={size} value={size}>
@@ -122,7 +122,7 @@ export function AdminPagination({
           size="sm"
           disabled={isFirstPage}
           onClick={() => onPageChange(1)}
-          className="border-[#E2E8F0]"
+          className="border-[#E2E8F0] dark:border-border"
           aria-label={t('common.first')}
         >
           {!isRtl && <FirstIcon className="h-4 w-4" />}
@@ -135,7 +135,7 @@ export function AdminPagination({
           size="sm"
           disabled={isFirstPage}
           onClick={() => onPageChange(page - 1)}
-          className="border-[#E2E8F0]"
+          className="border-[#E2E8F0] dark:border-border"
           aria-label={t('common.previous')}
         >
           {!isRtl && <PreviousIcon className="h-4 w-4" />}
@@ -148,7 +148,7 @@ export function AdminPagination({
             item === 'ellipsis' ? (
               <span
                 key={`ellipsis-${index}`}
-                className="flex h-8 min-w-8 items-center justify-center px-1 text-sm text-[#64748B]"
+                className="flex h-8 min-w-8 items-center justify-center px-1 text-sm text-[#64748B] dark:text-muted-foreground"
                 aria-hidden
               >
                 …
@@ -163,7 +163,7 @@ export function AdminPagination({
                 aria-label={t('common.goToPage', { page: item })}
                 aria-current={item === page ? 'page' : undefined}
                 className={cn(
-                  'h-8 min-w-8 border-[#E2E8F0] px-2 tabular-nums',
+                  'h-8 min-w-8 border-[#E2E8F0] dark:border-border px-2 tabular-nums',
                   item === page &&
                     'border-[#FF6B00] bg-[#FF6B00] text-white hover:bg-[#FF6B00] hover:text-white disabled:opacity-100',
                 )}
@@ -179,7 +179,7 @@ export function AdminPagination({
           size="sm"
           disabled={isLastPage}
           onClick={() => onPageChange(page + 1)}
-          className="border-[#E2E8F0]"
+          className="border-[#E2E8F0] dark:border-border"
           aria-label={t('common.next')}
         >
           {isRtl && <NextIcon className="h-4 w-4" />}
@@ -192,7 +192,7 @@ export function AdminPagination({
           size="sm"
           disabled={isLastPage}
           onClick={() => onPageChange(safeTotalPages)}
-          className="border-[#E2E8F0]"
+          className="border-[#E2E8F0] dark:border-border"
           aria-label={t('common.last')}
         >
           {isRtl && <LastIcon className="h-4 w-4" />}

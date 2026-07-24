@@ -180,7 +180,7 @@ function HeroSlideCard({
       <img
         src={slide.image_url}
         alt={slide.title_ar}
-        className="mb-4 h-32 w-full rounded-xl border border-gray-100 object-cover"
+        className="mb-4 h-32 w-full rounded-xl border border-gray-100 dark:border-border object-cover"
       />
 
       <AdminEntityCardHeader
@@ -199,7 +199,7 @@ function HeroSlideCard({
 
       <AdminEntityCardInfoBox className="mt-4">
         <AdminEntityCardInfoRow label={t('tables.icon')}>
-          <span className="text-[#64748B]">{slide.icon_key ?? t('common.dash')}</span>
+          <span className="text-[#64748B] dark:text-muted-foreground">{slide.icon_key ?? t('common.dash')}</span>
         </AdminEntityCardInfoRow>
         <AdminEntityCardInfoRow label={t('tables.order')}>
           <span className="font-semibold tabular-nums">{index + 1}</span>
@@ -498,13 +498,13 @@ export default function AdminHeroSlidesPage() {
                     className="mx-auto h-14 w-20 rounded-md object-cover"
                   />
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A]" dir="auto">
+                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground" dir="auto">
                   {slide.title_ar}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]" dir="auto">
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground" dir="auto">
                   {slide.subtitle_ar}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]">
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground">
                   {slide.icon_key ?? t('common.dash')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>

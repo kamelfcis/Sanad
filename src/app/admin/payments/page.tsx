@@ -151,7 +151,7 @@ function PaymentCard({
 
       <AdminEntityCardInfoBox className="mt-4">
         <AdminEntityCardInfoRow label={t('tables.service')} fullWidth>
-          <span className="text-[#64748B]">
+          <span className="text-[#64748B] dark:text-muted-foreground">
             {payment.booking?.services?.name_ar ?? t('payments.booking')}
           </span>
         </AdminEntityCardInfoRow>
@@ -261,19 +261,19 @@ export default function AdminPaymentsPage() {
           <AdminPremiumTableBody>
             {data?.payments.map((payment) => (
               <AdminPremiumTableRow key={payment.id}>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A]">
+                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
                   {payment.customer?.full_name ?? t('payments.customer')}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]">
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground">
                   {payment.booking?.services?.name_ar ?? t('payments.booking')}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="tabular-nums text-[#0F172A]" dir="ltr">
+                <AdminPremiumTableCell className="tabular-nums text-[#0F172A] dark:text-foreground" dir="ltr">
                   {formatCurrency(Number(payment.amount))}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
                   <PaymentStatusBadge status={payment.status} context="admin" />
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
                   {formatDateTime(payment.created_at)}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>

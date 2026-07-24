@@ -23,7 +23,7 @@ export function SplitLayout({
   subtitle: string;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-white lg:flex-row">
+    <div className="flex min-h-screen flex-col bg-white dark:bg-card lg:flex-row">
       <div className="relative flex min-h-[50vh] flex-col justify-end overflow-hidden lg:min-h-screen lg:w-[55%]">
         <OptimizedImage
           src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80"
@@ -82,7 +82,7 @@ export function SplitLayout({
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center overflow-y-auto bg-white p-6 lg:p-16">
+      <div className="flex flex-1 items-center justify-center overflow-y-auto bg-white dark:bg-card p-6 lg:p-16">
         <SlideUp className="w-full max-w-md">{children}</SlideUp>
       </div>
     </div>

@@ -71,7 +71,7 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
     <div className="space-y-3" data-testid="category-icon-picker">
       <div className="flex items-center justify-between gap-3">
         <Label>{labels.title}</Label>
-        <div className="inline-flex rounded-lg border border-[#E2E8F0] bg-white p-0.5">
+        <div className="inline-flex rounded-lg border border-[#E2E8F0] dark:border-border bg-white dark:bg-card p-0.5">
           <button
             type="button"
             data-testid="category-icon-mode-preset"
@@ -80,7 +80,7 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
               'rounded-md px-3 py-1 text-xs font-medium transition-colors',
               mode === 'preset'
                 ? 'bg-[#FF6B00] text-white'
-                : 'text-[#64748B] hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]',
+                : 'text-[#64748B] dark:text-muted-foreground hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]',
             )}
           >
             {labels.preset}
@@ -93,7 +93,7 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
               'rounded-md px-3 py-1 text-xs font-medium transition-colors',
               mode === 'upload'
                 ? 'bg-[#FF6B00] text-white'
-                : 'text-[#64748B] hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]',
+                : 'text-[#64748B] dark:text-muted-foreground hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]',
             )}
           >
             {labels.upload}
@@ -101,8 +101,8 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
         </div>
       </div>
 
-      <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-[#F8FAFC]/90 px-3 py-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-[#94A3B8]">
+      <div className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-border bg-[#F8FAFC]/90 px-3 py-2">
+        <span className="text-xs font-medium uppercase tracking-wide text-[#94A3B8] dark:text-muted-foreground">
           {labels.preview}
         </span>
         {previewIcon ? (
@@ -110,14 +110,14 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
             <CategoryIconDisplay icon={previewIcon} iconType={mode} size="lg" variant="avatar" />
           </span>
         ) : (
-          <span className="text-sm text-[#94A3B8]">—</span>
+          <span className="text-sm text-[#94A3B8] dark:text-muted-foreground">—</span>
         )}
       </div>
 
       {mode === 'preset' ? (
         <div className="space-y-2">
           <div className="relative">
-            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8] dark:text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -127,7 +127,7 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
             />
           </div>
           <div
-            className="grid max-h-48 grid-cols-6 gap-2 overflow-y-auto rounded-xl border border-[#E2E8F0] p-2 sm:grid-cols-8"
+            className="grid max-h-48 grid-cols-6 gap-2 overflow-y-auto rounded-xl border border-[#E2E8F0] dark:border-border p-2 sm:grid-cols-8"
             data-testid="category-icon-grid"
           >
             {filteredIcons.map((key) => {
@@ -145,7 +145,7 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
                     'flex h-10 w-10 items-center justify-center rounded-lg border transition-colors',
                     selected
                       ? 'border-[#FF6B00] bg-[#FF6B00]/10 text-[#FF6B00]'
-                      : 'border-transparent bg-white text-[#64748B] hover:border-[#FF6B00]/30 hover:bg-[#FF6B00]/5 hover:text-[#FF6B00]',
+                      : 'border-transparent bg-white dark:bg-card text-[#64748B] dark:text-muted-foreground hover:border-[#FF6B00]/30 hover:bg-[#FF6B00]/5 hover:text-[#FF6B00]',
                   )}
                 >
                   <Icon className="h-5 w-5" aria-hidden />
@@ -161,8 +161,8 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
             className={cn(
               'flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed p-5 transition-colors',
               upload.uploading
-                ? 'pointer-events-none border-[#E2E8F0] opacity-70'
-                : 'border-[#E2E8F0] hover:border-[#FF6B00]/40 hover:bg-[#FF6B00]/5',
+                ? 'pointer-events-none border-[#E2E8F0] dark:border-border opacity-70'
+                : 'border-[#E2E8F0] dark:border-border hover:border-[#FF6B00]/40 hover:bg-[#FF6B00]/5',
             )}
             data-testid="category-icon-upload-dropzone"
           >
@@ -178,11 +178,11 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
               }}
             />
             {upload.uploading ? (
-              <Loader2 className="h-7 w-7 animate-spin text-[#64748B]" />
+              <Loader2 className="h-7 w-7 animate-spin text-[#64748B] dark:text-muted-foreground" />
             ) : (
-              <Upload className="h-7 w-7 text-[#64748B]" />
+              <Upload className="h-7 w-7 text-[#64748B] dark:text-muted-foreground" />
             )}
-            <p className="text-center text-sm text-[#64748B]">
+            <p className="text-center text-sm text-[#64748B] dark:text-muted-foreground">
               {upload.uploading ? labels.uploading : labels.uploadHint}
             </p>
           </div>
@@ -194,7 +194,7 @@ export function CategoryIconPicker({ icon, iconType, onChange, labels }: Categor
                 upload.reset();
                 onChange({ icon: '', iconType: 'upload' });
               }}
-              className="inline-flex items-center gap-1 text-xs text-[#64748B] hover:text-destructive"
+              className="inline-flex items-center gap-1 text-xs text-[#64748B] dark:text-muted-foreground hover:text-destructive"
             >
               <X className="h-3 w-3" />
               {labels.remove}

@@ -15,10 +15,10 @@ export function HowItWorksSection() {
       <div className="mx-auto max-w-7xl">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16 text-center">
           <span className="mb-4 inline-block rounded-full bg-[#FF6B00]/5 px-4 py-1.5 text-sm font-medium text-[#FF6B00]">كيف تعمل</span>
-          <h2 className="mb-4 text-3xl font-bold text-[#0F172A] md:text-4xl" style={{ fontFamily: 'var(--font-heading)' }}>
+          <h2 className="mb-4 text-3xl font-bold text-[#0F172A] dark:text-foreground md:text-4xl" style={{ fontFamily: 'var(--font-heading)' }}>
             ثلاث خطوات بسيطة
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-[#475569]">احصل على خدمات الصيانة المنزلية بأسهل وأسرع طريقة</p>
+          <p className="mx-auto max-w-2xl text-lg text-[#475569] dark:text-muted-foreground">احصل على خدمات الصيانة المنزلية بأسهل وأسرع طريقة</p>
         </motion.div>
 
         <div className="relative grid gap-8 md:grid-cols-3">
@@ -33,12 +33,12 @@ export function HowItWorksSection() {
               transition={{ duration: 0.5, delay: i * 0.15 }}
               className="relative flex flex-col items-center text-center"
             >
-              <div className="relative mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-[#E2E8F0] bg-white shadow-sm">
+              <div className="relative mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-[#E2E8F0] dark:border-border bg-white dark:bg-card shadow-sm">
                 <step.icon className="h-8 w-8" style={{ color: step.color }} />
                 <div className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white" style={{ background: step.color }}>{i + 1}</div>
               </div>
-              <h3 className="mb-3 text-xl font-semibold text-[#0F172A]" style={{ fontFamily: 'var(--font-cairo)' }}>{step.title}</h3>
-              <p className="max-w-xs text-[#475569]">{step.description}</p>
+              <h3 className="mb-3 text-xl font-semibold text-[#0F172A] dark:text-foreground" style={{ fontFamily: 'var(--font-cairo)' }}>{step.title}</h3>
+              <p className="max-w-xs text-[#475569] dark:text-muted-foreground">{step.description}</p>
             </motion.div>
           ))}
         </div>

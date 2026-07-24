@@ -20,7 +20,7 @@ export function FAQSection() {
       <div className="mx-auto max-w-3xl">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16 text-center">
           <span className="mb-4 inline-block rounded-full bg-[#FF6B00]/5 px-4 py-1.5 text-sm font-medium text-[#FF6B00]">الأسئلة الشائعة</span>
-          <h2 className="mb-4 text-3xl font-bold text-[#0F172A] md:text-4xl" style={{ fontFamily: 'var(--font-heading)' }}>
+          <h2 className="mb-4 text-3xl font-bold text-[#0F172A] dark:text-foreground md:text-4xl" style={{ fontFamily: 'var(--font-heading)' }}>
             لديك سؤال؟ لدينا الجواب
           </h2>
         </motion.div>
@@ -33,17 +33,17 @@ export function FAQSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.03 }}
-              className="cursor-pointer rounded-xl border border-[#E2E8F0] bg-white transition-colors hover:border-[#FF6B00]/20"
+              className="cursor-pointer rounded-xl border border-[#E2E8F0] dark:border-border bg-white dark:bg-card transition-colors hover:border-[#FF6B00]/20"
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
             >
               <div className="flex items-center justify-between p-5">
-                <h3 className="text-base font-medium text-[#0F172A]" style={{ fontFamily: 'var(--font-cairo)' }}>{faq.q}</h3>
-                <ChevronDown className={`h-5 w-5 text-[#475569] transition-transform duration-200 ${openIndex === i ? 'rotate-180' : ''}`} />
+                <h3 className="text-base font-medium text-[#0F172A] dark:text-foreground" style={{ fontFamily: 'var(--font-cairo)' }}>{faq.q}</h3>
+                <ChevronDown className={`h-5 w-5 text-[#475569] dark:text-muted-foreground transition-transform duration-200 ${openIndex === i ? 'rotate-180' : ''}`} />
               </div>
               <AnimatePresence>
                 {openIndex === i && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <p className="px-5 pb-5 text-sm leading-relaxed text-[#475569]">{faq.a}</p>
+                    <p className="px-5 pb-5 text-sm leading-relaxed text-[#475569] dark:text-muted-foreground">{faq.a}</p>
                   </motion.div>
                 )}
               </AnimatePresence>

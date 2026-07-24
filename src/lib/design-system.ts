@@ -33,6 +33,28 @@ export const darkColors = {
   textPrimary: '#F8FAFC',
   textSecondary: '#CBD5E1',
   textMuted: '#64748B',
+  primary: '#FF8A34',
+  primaryForeground: '#0B1720',
+  successForeground: '#F8FAFC',
+  warningForeground: '#F8FAFC',
+  sidebar: '#0E1F2B',
+  sidebarForeground: '#F8FAFC',
+  sidebarBorder: '#1E3A4A',
+  sidebarAccent: 'rgba(255, 138, 52, 0.08)',
+} as const;
+
+/** Recharts/chart palette per theme (see globals.css --chart-*). */
+export const chartColors = {
+  light: ['#FF6B00', '#194E5B', '#10B981', '#F59E0B', '#94A3B8'],
+  dark: ['#FF8A34', '#2F7084', '#10B981', '#F59E0B', '#64748B'],
+} as const;
+
+/** Dark-surface elevation — deeper than light shadows. */
+export const darkShadows = {
+  sm: '0 1px 2px 0 rgba(0, 0, 0, 0.4)',
+  md: '0 4px 16px rgba(0, 0, 0, 0.4)',
+  lg: '0 10px 30px rgba(0, 0, 0, 0.5)',
+  primary: '0 0 0 1px rgba(255, 138, 52, 0.3)',
 } as const;
 
 export const gradients = {
@@ -110,10 +132,12 @@ export const animation = {
 export const designSystem = {
   colors,
   darkColors,
+  chartColors,
   gradients,
   typography,
   radius,
   shadows,
+  darkShadows,
   spacing,
   animation,
 } as const;

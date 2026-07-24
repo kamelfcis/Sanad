@@ -15,7 +15,7 @@ export function AdminPremiumTable({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white shadow-lg shadow-[#FF6B00]/10',
+        'overflow-hidden rounded-2xl border border-[#E2E8F0] dark:border-border bg-white dark:bg-card shadow-lg shadow-[#FF6B00]/10',
         className,
       )}
     >

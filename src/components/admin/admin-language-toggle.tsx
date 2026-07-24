@@ -20,7 +20,7 @@ export function AdminLanguageToggle() {
         className={cn(
           'rounded-md px-2.5 py-1 transition-all',
           locale === 'en'
-            ? 'bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/80'
+            ? 'bg-white dark:bg-card text-zinc-900 shadow-sm ring-1 ring-zinc-200/80'
             : 'text-zinc-500 hover:text-zinc-800',
         )}
       >
@@ -32,7 +32,7 @@ export function AdminLanguageToggle() {
         className={cn(
           'rounded-md px-2.5 py-1 transition-all',
           locale === 'ar'
-            ? 'bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/80'
+            ? 'bg-white dark:bg-card text-zinc-900 shadow-sm ring-1 ring-zinc-200/80'
             : 'text-zinc-500 hover:text-zinc-800',
         )}
       >

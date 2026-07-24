@@ -137,7 +137,7 @@ function ReviewCard({
         })}
         badge={
           review.is_hidden ? (
-            <Badge variant="outline" className="border-0 bg-gray-100 text-gray-600">
+            <Badge variant="outline" className="border-0 bg-gray-100 dark:bg-muted text-gray-600 dark:text-muted-foreground">
               {t('reviews.hidden')}
             </Badge>
           ) : (
@@ -152,7 +152,7 @@ function ReviewCard({
 
       {review.comment ? (
         <AdminEntityCardInfoBox className="mt-4" columns={1}>
-          <p className="text-sm leading-relaxed text-[#0F172A]" dir="auto">
+          <p className="text-sm leading-relaxed text-[#0F172A] dark:text-foreground" dir="auto">
             {review.comment}
           </p>
         </AdminEntityCardInfoBox>
@@ -271,10 +271,10 @@ export default function AdminReviewsPage() {
           <AdminPremiumTableBody>
             {data?.reviews.map((r: any) => (
               <AdminPremiumTableRow key={r.id}>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A]">
+                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
                   {r.customer?.full_name ?? t('technicians.detail.anonymous')}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]">
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground">
                   {r.technician?.full_name ?? t('common.unknown')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
@@ -282,14 +282,14 @@ export default function AdminReviewsPage() {
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
                   {r.is_hidden ? (
-                    <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                    <Badge variant="outline" className="bg-gray-100 dark:bg-muted text-gray-600 dark:text-muted-foreground">
                       {t('reviews.hidden')}
                     </Badge>
                   ) : (
-                    <span className="text-[#64748B]">{t('reviews.filters.visible')}</span>
+                    <span className="text-[#64748B] dark:text-muted-foreground">{t('reviews.filters.visible')}</span>
                   )}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
                   {formatDateTime(r.created_at)}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>

@@ -117,6 +117,7 @@ export interface Database {
           location_lng: number | null;
           preferred_time: string | null;
           price_quote: number | null;
+          cancellation_reason: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -131,6 +132,7 @@ export interface Database {
           location_lng?: number | null;
           preferred_time?: string | null;
           price_quote?: number | null;
+          cancellation_reason?: string | null;
         };
         Update: {
           technician_id?: string | null;
@@ -141,6 +143,7 @@ export interface Database {
           location_lng?: number | null;
           preferred_time?: string | null;
           price_quote?: number | null;
+          cancellation_reason?: string | null;
           updated_at?: string;
         };
       };

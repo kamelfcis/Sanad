@@ -135,6 +135,74 @@ export async function notifyBookingStatusChange(
   );
 }
 
+/**
+ * Customer-initiated cancel: notify assigned / pending technicians (not the customer).
+ * If nobody was assigned and the booking still needed admin matching, notify admins.
+ */
+export async function notifyBookingCancelledByCustomer(
+  booking: BookingContext,
+  options: {
+    technicianIds: string[];
+    notifyAdmins: boolean;
+    reason?: string;
+  },
+): Promise<void> {
+  const serviceLabel = booking.serviceName ?? 'خدمة';
+  const reason = options.reason?.trim();
+  const techMessage = reason
+    ? `ألغى العميل طلب "${serviceLabel}": ${reason}`
+    : `ألغى العميل طلب "${serviceLabel}".`;
+
+  const uniqueTechIds = [...new Set(options.technicianIds.filter(Boolean))];
+
+  await Promise.all(
+    uniqueTechIds.map((technicianId) =>
+      notifyUser({
+        userId: technicianId,
+        type: 'booking_cancelled',
+        title: 'تم إلغاء الطلب',
+        message: techMessage,
+        entityType: 'booking',
+        entityId: booking.bookingId,
+        metadata: {
+          bookingId: booking.bookingId,
+          status: 'cancelled',
+          cancelledBy: 'customer',
+          reason: reason ?? null,
+        },
+      }),
+    ),
+  );
+
+  if (options.notifyAdmins) {
+    const adminIds = await getAdminUserIds();
+    if (adminIds.length === 0) return;
+
+    const adminMessage = reason
+      ? `ألغى العميل طلب "${serviceLabel}" الذي كان بانتظار التعيين: ${reason}`
+      : `ألغى العميل طلب "${serviceLabel}" الذي كان بانتظار التعيين اليدوي.`;
+
+    await Promise.all(
+      adminIds.map((adminId) =>
+        notifyUser({
+          userId: adminId,
+          type: 'booking_cancelled',
+          title: 'إلغاء طلب بانتظار التعيين',
+          message: adminMessage,
+          entityType: 'booking',
+          entityId: booking.bookingId,
+          metadata: {
+            bookingId: booking.bookingId,
+            status: 'cancelled',
+            cancelledBy: 'customer',
+            reason: reason ?? null,
+          },
+        }),
+      ),
+    );
+  }
+}
+
 export async function notifyChatMessage(
   recipientId: string,
   senderName: string,

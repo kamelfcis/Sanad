@@ -60,7 +60,7 @@ function SpecialtyChip({
         'inline-flex w-full items-center justify-center gap-2 rounded-full border px-3 py-2.5 text-sm font-semibold transition-all duration-200 md:px-4 md:py-3 md:text-[15px]',
         active
           ? 'border-secondary bg-secondary text-white shadow-md shadow-secondary/20'
-          : 'border-border/70 bg-white text-text-primary shadow-sm hover:border-secondary/35 hover:shadow-md',
+          : 'border-border/70 bg-white dark:bg-card text-text-primary shadow-sm hover:border-secondary/35 hover:shadow-md',
       )}
     >
       <span className="text-lg leading-none md:text-xl" aria-hidden>{icon}</span>
@@ -102,7 +102,7 @@ export function ServicesBrowseFilters({ filters, onChange }: ServicesBrowseFilte
 
       {/* Filter bar — single row like reference */}
       <div
-        className="flex flex-col gap-4 rounded-2xl border border-border/70 bg-white px-4 py-4 shadow-sm md:flex-row md:flex-wrap md:items-end md:gap-5 md:px-5 md:py-5"
+        className="flex flex-col gap-4 rounded-2xl border border-border/70 bg-white dark:bg-card px-4 py-4 shadow-sm md:flex-row md:flex-wrap md:items-end md:gap-5 md:px-5 md:py-5"
       >
         <div className="min-w-[140px] flex-1 space-y-2">
           <Label htmlFor="governorate-filter" className="text-sm font-semibold text-text-primary">
@@ -116,7 +116,7 @@ export function ServicesBrowseFilters({ filters, onChange }: ServicesBrowseFilte
           >
             <SelectTrigger
               id="governorate-filter"
-              className="h-10 rounded-xl border-border/80 bg-white shadow-none"
+              className="h-10 rounded-xl border-border/80 bg-white dark:bg-card shadow-none"
             >
               <SelectValue placeholder="كل المحافظات" />
             </SelectTrigger>
@@ -141,7 +141,7 @@ export function ServicesBrowseFilters({ filters, onChange }: ServicesBrowseFilte
           >
             <SelectTrigger
               id="sort-filter"
-              className="h-10 rounded-xl border-border/80 bg-white shadow-none"
+              className="h-10 rounded-xl border-border/80 bg-white dark:bg-card shadow-none"
             >
               <SelectValue />
             </SelectTrigger>

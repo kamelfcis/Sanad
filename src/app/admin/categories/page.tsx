@@ -164,16 +164,16 @@ function CategoryAdminCard({
 
       <AdminEntityCardInfoBox className="mt-4">
         <AdminEntityCardInfoRow label={t('tables.slug')}>
-          <span className="font-mono text-sm text-[#64748B]" dir="ltr">
+          <span className="font-mono text-sm text-[#64748B] dark:text-muted-foreground" dir="ltr">
             {category.slug}
           </span>
         </AdminEntityCardInfoRow>
         <AdminEntityCardInfoRow label={t('tables.nameEn')}>
-          <span className="text-[#64748B]">{category.name_en}</span>
+          <span className="text-[#64748B] dark:text-muted-foreground">{category.name_en}</span>
         </AdminEntityCardInfoRow>
         {category.description ? (
           <AdminEntityCardInfoRow label={t('categories.form.description')} fullWidth>
-            <span className="line-clamp-2 text-[#64748B]">{category.description}</span>
+            <span className="line-clamp-2 text-[#64748B] dark:text-muted-foreground">{category.description}</span>
           </AdminEntityCardInfoRow>
         ) : null}
       </AdminEntityCardInfoBox>
@@ -407,11 +407,11 @@ export default function AdminCategoriesPage() {
                     variant="avatar"
                   />
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A]" dir="auto">
+                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground" dir="auto">
                   {c.name_ar}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]">{c.name_en}</AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B]" dir="ltr">
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground">{c.name_en}</AdminPremiumTableCell>
+                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground" dir="ltr">
                   {c.slug}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
