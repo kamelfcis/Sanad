@@ -30,6 +30,7 @@ import {
   Bell,
   LayoutDashboard,
   Briefcase,
+  Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
@@ -81,6 +82,7 @@ export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavPr
         security: adminI18n.t('userNav.security'),
         notifications: adminI18n.t('userNav.notifications'),
         myJobs: adminI18n.t('userNav.myJobs'),
+        myReviews: adminI18n.t('userNav.myReviews'),
         logout: adminI18n.t('userNav.logout'),
       }
     : {
@@ -92,6 +94,7 @@ export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavPr
         security: 'الأمان',
         notifications: 'الإشعارات',
         myJobs: 'مهامي',
+        myReviews: 'التقييمات',
         logout: 'تسجيل الخروج',
       };
 
@@ -149,10 +152,16 @@ export function UserNav({ size = 'default', showLogoutLabel = false }: UserNavPr
                 {labels.notifications}
               </DropdownMenuItem>
               {profile?.role === 'technician' && (
-                <DropdownMenuItem onClick={() => router.push('/technician/jobs')}>
-                  <Briefcase className={cn('h-4 w-4', iconMargin)} />
-                  {labels.myJobs}
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem onClick={() => router.push('/technician/jobs')}>
+                    <Briefcase className={cn('h-4 w-4', iconMargin)} />
+                    {labels.myJobs}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/technician/reviews')}>
+                    <Star className={cn('h-4 w-4', iconMargin)} />
+                    {labels.myReviews}
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

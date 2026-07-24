@@ -43,6 +43,8 @@ export default function TechnicianProfilePage() {
   const [isAvailable, setIsAvailable] = useState(techProfile?.is_available ?? false);
 
   useEffect(() => {
+    // Sync the availability toggle to the loaded server value.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (techProfile) setIsAvailable(techProfile.is_available);
   }, [techProfile?.is_available]);
   const [selectedSkills, setSelectedSkills] = useState(
@@ -202,8 +204,11 @@ export default function TechnicianProfilePage() {
                 </div>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="max_distance_km">Max service distance (km)</Label>
+                <Label htmlFor="max_distance_km">نطاق الخدمة المفضّل (كم)</Label>
                 <Input id="max_distance_km" type="number" {...register('max_distance_km')} />
+                <p className="text-xs text-muted-foreground">
+                  نطاق تفضيلي فقط — حالياً يظهر ملفك لجميع العملاء بغضّ النظر عن المسافة.
+                </p>
               </div>
             </CardContent>
           </Card>

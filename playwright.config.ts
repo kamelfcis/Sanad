@@ -20,4 +20,14 @@ export default defineConfig({
   globalSetup: path.join(__dirname, 'e2e/global-setup.ts'),
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   outputDir: 'e2e/playwright-output',
+  // In CI, auto-start the built app. Locally, developers run their own server
+  // (npm run dev / start) so behavior is unchanged.
+  webServer: process.env.CI
+    ? {
+        command: 'npm run start',
+        url: 'http://localhost:3000',
+        timeout: 180_000,
+        reuseExistingServer: false,
+      }
+    : undefined,
 });

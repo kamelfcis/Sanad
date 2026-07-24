@@ -40,6 +40,8 @@ export function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
+    // Reset carousel to the first slide when the slide set changes (e.g. after load).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentSlide(0);
   }, [heroImages.length]);
 

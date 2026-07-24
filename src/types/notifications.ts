@@ -4,6 +4,7 @@ export const NOTIFICATION_TYPES = [
   'booking_started',
   'booking_completed',
   'booking_cancelled',
+  'booking_unassigned',
   'chat_message',
   'review_received',
   'technician_approved',

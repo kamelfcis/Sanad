@@ -4,7 +4,11 @@ import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase
 import { requireAuth } from '@/lib/api/auth';
 import { parseJsonBody, parseSearchParams } from '@/lib/api/validate';
 import { createBookingSchema, listBookingsQuerySchema } from '@/lib/validations/booking';
-import { notifyBookingAssignedBatch } from '@/lib/notifications/events';
+import {
+  notifyBookingAssignedBatch,
+  notifyAdminsBookingNeedsAssignment,
+} from '@/lib/notifications/events';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   const supabase = await createServerSupabaseClient();
@@ -121,7 +125,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (imagesError) {
-      console.error('Failed to save booking images:', imagesError);
+      logger.error('Failed to save booking images', imagesError, { bookingId: booking.id });
     }
   }
 
@@ -134,8 +138,21 @@ export async function POST(request: NextRequest) {
       });
 
       if (assignError) {
-        console.error('Direct technician assignment failed:', assignError);
-        return NextResponse.json({ error: assignError.message }, { status: 500 });
+        logger.error('Direct technician assignment failed', assignError, {
+          bookingId: booking.id,
+          technicianId: technician_id,
+        });
+        // Roll the booking back to an unassigned state and alert admins so it is
+        // not left as a "matched" booking with no assignment row.
+        await writeClient
+          .from('bookings')
+          .update({ status: 'pending', technician_id: null })
+          .eq('id', booking.id);
+        await notifyAdminsBookingNeedsAssignment({ bookingId: booking.id });
+        return NextResponse.json(
+          { error: assignError.message, booking_id: booking.id, needs_manual_assignment: true },
+          { status: 500 },
+        );
       }
 
       const { data: updatedBooking } = await writeClient
@@ -158,37 +175,49 @@ export async function POST(request: NextRequest) {
         p_booking_id: booking.id,
       });
 
+      const { data: updatedBooking } = await writeClient
+        .from('bookings')
+        .select('*, services(name_ar, name_en, slug)')
+        .eq('id', booking.id)
+        .single();
+
+      const serviceName =
+        (updatedBooking?.services as { name_ar?: string } | null)?.name_ar ?? 'خدمة';
+
       if (matchError) {
-        console.error('Auto-matching failed:', matchError);
-      } else {
-        const { data: updatedBooking } = await writeClient
-          .from('bookings')
-          .select('*, services(name_ar, name_en, slug)')
-          .eq('id', booking.id)
-          .single();
-
-        if (updatedBooking) {
-          const { data: assignments } = await writeClient
-            .from('booking_assignments')
-            .select('technician_id')
-            .eq('booking_id', booking.id)
-            .eq('status', 'pending');
-
-          if (assignments && assignments.length > 0) {
-            const serviceName =
-              (updatedBooking.services as { name_ar?: string } | null)?.name_ar ?? 'خدمة';
-            await notifyBookingAssignedBatch(
-              assignments.map((a) => a.technician_id),
-              { bookingId: booking.id, serviceName },
-            );
-          }
-
-          return NextResponse.json(updatedBooking, { status: 201 });
-        }
+        // The booking exists but auto-matching failed — do not report success
+        // silently; alert admins so it can be assigned manually.
+        logger.error('Auto-matching failed', matchError, { bookingId: booking.id });
+        await notifyAdminsBookingNeedsAssignment({ bookingId: booking.id, serviceName });
+        return NextResponse.json(
+          { ...(updatedBooking ?? booking), needs_manual_assignment: true },
+          { status: 201 },
+        );
       }
+
+      const { data: assignments } = await writeClient
+        .from('booking_assignments')
+        .select('technician_id')
+        .eq('booking_id', booking.id)
+        .eq('status', 'pending');
+
+      if (assignments && assignments.length > 0) {
+        await notifyBookingAssignedBatch(
+          assignments.map((a) => a.technician_id),
+          { bookingId: booking.id, serviceName },
+        );
+      } else {
+        // RPC ran but matched no technician — surface to admins for manual assignment.
+        logger.warn('Auto-matching produced no assignments', { bookingId: booking.id });
+        await notifyAdminsBookingNeedsAssignment({ bookingId: booking.id, serviceName });
+      }
+
+      return NextResponse.json(updatedBooking ?? booking, { status: 201 });
     }
   } catch (e) {
-    console.error('Booking assignment error:', e);
+    logger.error('Booking assignment error', e instanceof Error ? e : undefined, {
+      bookingId: booking.id,
+    });
   }
 
   return NextResponse.json(booking, { status: 201 });

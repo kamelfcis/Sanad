@@ -1,3 +1,8 @@
+// Product decision (2026-07): technician `max_distance_km` is an informational
+// preference only and is intentionally NOT used to filter browse/match results.
+// Sanad shows every verified technician regardless of the customer's distance so
+// low-density areas still return results. `distance_km` below is for display/sort
+// only. Revisit this if technician density makes radius filtering worthwhile.
 import {
   specialtyToCategorySlug,
   TECHNICIAN_SPECIALTIES,

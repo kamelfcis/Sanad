@@ -166,6 +166,8 @@ export function AdminAdvancedFiltersPanel({
   const [open, setOpen] = useState(defaultOpen ?? hasActiveFilters);
 
   useEffect(() => {
+    // Auto-expand the filter panel when filters become active.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (hasActiveFilters) setOpen(true);
   }, [hasActiveFilters]);
 
