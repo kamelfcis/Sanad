@@ -1,4 +1,5 @@
 import type { NotificationType, NotificationEntityType } from '@/types/notifications';
+import { logger } from '@/lib/logger';
 
 export interface EmailNotificationPayload {
   userId: string;
@@ -105,9 +106,13 @@ function resolveProvider(): EmailProvider | null {
 
 const EMAIL_TRIGGER_TYPES: NotificationType[] = [
   'booking_assigned',
+  'booking_accepted',
   'booking_completed',
   'review_received',
   'technician_approved',
+  'technician_rejected',
+  'payment_approved',
+  'payment_rejected',
 ];
 
 async function getUserEmail(userId: string): Promise<string | null> {
@@ -127,7 +132,7 @@ export async function sendEmailNotification(payload: EmailNotificationPayload): 
 
   const provider = resolveProvider();
   if (!provider) {
-    console.warn('[email] No provider configured — set RESEND_API_KEY or SENDGRID_API_KEY');
+    logger.warn('[email] No provider configured — set RESEND_API_KEY or SENDGRID_API_KEY');
     return;
   }
 
@@ -157,7 +162,7 @@ export async function sendEmailNotification(payload: EmailNotificationPayload): 
   });
 
   if (!result.success) {
-    console.error('[email] send failed:', result.error);
+    logger.error('[email] send failed', undefined, { error: result.error, type: payload.type });
   }
 }
 

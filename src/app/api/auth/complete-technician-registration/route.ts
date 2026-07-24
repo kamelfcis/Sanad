@@ -112,23 +112,23 @@ export async function POST(request: NextRequest) {
   const userId = auth.user.id;
   const email = profile.email ?? auth.user.email ?? '';
 
-  const profilePhotoUrl = await uploadFileForUser(
+  const profileUpload = await uploadFileForUser(
     userId,
     profilePhoto as File,
     (profilePhoto as File).type,
   );
-  const idCardPhotoUrl = await uploadFileForUser(
+  const idCardUpload = await uploadFileForUser(
     userId,
     idCardPhoto as File,
     (idCardPhoto as File).type,
   );
-  const idCardBackPhotoUrl = await uploadFileForUser(
+  const idCardBackUpload = await uploadFileForUser(
     userId,
     idCardBackPhoto as File,
     (idCardBackPhoto as File).type,
   );
 
-  if (!profilePhotoUrl || !idCardPhotoUrl || !idCardBackPhotoUrl) {
+  if (!profileUpload.ok || !idCardUpload.ok || !idCardBackUpload.ok) {
     return NextResponse.json({ error: 'فشل رفع الصور. حاول مرة أخرى.' }, { status: 500 });
   }
 
@@ -148,9 +148,9 @@ export async function POST(request: NextRequest) {
       workingHours: parsed.data.workingHours,
       bio: parsed.data.bio,
     },
-    profilePhotoUrl,
-    idCardPhotoUrl,
-    idCardBackPhotoUrl,
+    profileUpload.url,
+    idCardUpload.url,
+    idCardBackUpload.url,
   );
 
   if (result.error) {

@@ -1,5 +1,6 @@
 'use client';
 
+import { createElement } from 'react';
 import { cn } from '@/lib/utils/cn';
 import {
   getCategoryIcon,
@@ -64,8 +65,8 @@ export function CategoryIconDisplay({
     );
   }
 
-  const Icon = getCategoryIcon(icon);
-
+  // Render the resolved icon via createElement so the linter does not treat a
+  // dynamically-selected (module-level) icon component as one created in render.
   if (variant === 'avatar') {
     return (
       <span
@@ -76,16 +77,20 @@ export function CategoryIconDisplay({
         )}
         data-category-icon={icon ?? 'default'}
       >
-        <Icon className={cn(sizeClasses[size], 'text-[#FF6B00]')} aria-hidden />
+        {createElement(getCategoryIcon(icon), {
+          className: cn(sizeClasses[size], 'text-[#FF6B00]'),
+          'aria-hidden': true,
+        })}
       </span>
     );
   }
 
-  return (
-    <Icon
-      className={cn(sizeClasses[size], 'text-[#FF6B00]', className)}
-      aria-hidden
-      data-category-icon={icon ?? 'default'}
-    />
+  return createElement(
+    getCategoryIcon(icon) as React.ComponentType<Record<string, unknown>>,
+    {
+      className: cn(sizeClasses[size], 'text-[#FF6B00]', className),
+      'aria-hidden': true,
+      'data-category-icon': icon ?? 'default',
+    },
   );
 }

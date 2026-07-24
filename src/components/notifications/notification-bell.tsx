@@ -40,6 +40,7 @@ const TYPE_ICONS: Record<NotificationType, typeof Bell> = {
   booking_started: Wrench,
   booking_completed: CheckCheck,
   booking_cancelled: Calendar,
+  booking_unassigned: Calendar,
   chat_message: MessageSquare,
   review_received: Star,
   technician_approved: UserCheck,

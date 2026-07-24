@@ -41,12 +41,90 @@ See `docs/RATE-LIMITING.md` and `docs/RATE-LIMIT-VALIDATION.md`.
 
 ---
 
+## App-Level Rate Limiting (proxy)
+
+`src/proxy.ts` applies best-effort IP throttling to `/api/*` (`src/lib/rate-limit/`)
+independently of the Cloudflare worker: `/api/auth/*` → 10 req/min/IP, other
+`/api/*` → 120 req/min/IP, returning **429** with `Retry-After`.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `RATE_LIMIT_ENABLED` | Set to `false` to disable the proxy throttle (E2E/local). | enabled |
+
+**Caveat:** counters are in-memory *per runtime instance*, so on multi-instance
+serverless hosting this is burst protection only — always also enable the
+**Supabase Auth rate limits** (below) and, for hard global limits, deploy the
+Cloudflare worker or a shared store (Upstash Redis).
+
+---
+
+## Web Push (VAPID)
+
+Generate a keypair once: `npx web-push generate-vapid-keys`.
+
+| Variable | Scope | Description |
+|----------|-------|-------------|
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | client + server | Public key used by the browser to subscribe |
+| `VAPID_PRIVATE_KEY` | **server only** | Private key — never commit, never `NEXT_PUBLIC_` |
+| `VAPID_SUBJECT` | server (optional) | `mailto:` or `https:` contact; defaults to `mailto:admin@sanad.app` |
+
+When unset, `sendPushToUser` returns 0 and push is silently skipped (in-app
+notifications still work). Client hook: `src/hooks/use-push-notifications.ts`
+(registers `/sw.js`); server: `src/lib/push/web-push.ts`.
+
+---
+
+## Email Notifications (Resend / SendGrid)
+
+Transactional email uses a raw `fetch` provider (no SDK dependency) —
+`src/lib/email/index.ts`.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ENABLE_EMAIL_NOTIFICATIONS` | `true` to send emails | `false` |
+| `EMAIL_PROVIDER` | `resend` (default) or `sendgrid` | `resend` |
+| `RESEND_API_KEY` | Resend API key (server only) | — |
+| `SENDGRID_API_KEY` | SendGrid API key (server only) | — |
+| `EMAIL_FROM` | From header for Resend, e.g. `Sanad <notifications@sanad.app>` | fallback set |
+| `EMAIL_FROM_ADDRESS` | From address for SendGrid | fallback set |
+
+Fires for: `booking_assigned`, `booking_accepted` (confirmed), `booking_completed`,
+`technician_approved`, `technician_rejected`, `payment_approved`, `payment_rejected`,
+`review_received`. Verify sender domain in the provider before enabling in staging.
+
+---
+
+## Error Monitoring (Sentry or equivalent)
+
+`src/lib/logger.ts` exposes a pluggable `setErrorReporter()` sink; `logger.error`
+/`logger.warn` forward to it. To enable Sentry, install the SDK and register the
+reporter once at startup (e.g. in `instrumentation.ts`):
+
+```ts
+// npm i @sentry/nextjs --legacy-peer-deps   (Next 16 peer ranges)
+import * as Sentry from '@sentry/nextjs';
+import { setErrorReporter } from '@/lib/logger';
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.1 });
+  setErrorReporter({
+    captureException: (e, ctx) => Sentry.captureException(e, { extra: ctx }),
+    captureMessage: (m, ctx) => Sentry.captureMessage(m, { extra: ctx }),
+  });
+}
+```
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SENTRY_DSN` | Sentry project DSN (server) | — (no-op when unset) |
+
+---
+
 ## Optional
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `NODE_ENV` | `development` / `production` | Set by framework |
-| Sentry DSN | Error monitoring (not wired) | — |
 
 ---
 

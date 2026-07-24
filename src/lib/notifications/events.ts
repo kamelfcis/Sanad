@@ -234,6 +234,26 @@ export async function notifyAdminsNewTechnicianApplication(
   await createNotifications(inputs);
 }
 
+export async function notifyAdminsBookingNeedsAssignment(
+  booking: BookingContext,
+): Promise<void> {
+  const adminIds = await getAdminUserIds();
+  if (adminIds.length === 0) return;
+
+  const label = booking.serviceName ?? 'خدمة';
+  const inputs = adminIds.map((adminId) => ({
+    userId: adminId,
+    type: 'booking_unassigned' as const,
+    title: 'حجز بحاجة إلى تعيين يدوي',
+    message: `تعذّر تعيين فني تلقائياً لطلب "${label}". يرجى تعيين فني يدوياً.`,
+    entityType: 'booking' as const,
+    entityId: booking.bookingId,
+    metadata: { bookingId: booking.bookingId, reason: 'auto_match_failed' },
+  }));
+
+  await createNotifications(inputs);
+}
+
 interface PaymentContext {
   paymentId: string;
   bookingId: string;

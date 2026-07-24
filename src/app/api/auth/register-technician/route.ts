@@ -118,23 +118,23 @@ export async function POST(request: NextRequest) {
 
   const userId = authData.user.id;
 
-  const profilePhotoUrl = await uploadFileForUser(
+  const profileUpload = await uploadFileForUser(
     userId,
     profilePhoto as File,
     (profilePhoto as File).type,
   );
-  const idCardPhotoUrl = await uploadFileForUser(
+  const idCardUpload = await uploadFileForUser(
     userId,
     idCardPhoto as File,
     (idCardPhoto as File).type,
   );
-  const idCardBackPhotoUrl = await uploadFileForUser(
+  const idCardBackUpload = await uploadFileForUser(
     userId,
     idCardBackPhoto as File,
     (idCardBackPhoto as File).type,
   );
 
-  if (!profilePhotoUrl || !idCardPhotoUrl || !idCardBackPhotoUrl) {
+  if (!profileUpload.ok || !idCardUpload.ok || !idCardBackUpload.ok) {
     await supabase.auth.admin.deleteUser(userId);
     return NextResponse.json({ error: 'فشل رفع الصور. حاول مرة أخرى.' }, { status: 500 });
   }
@@ -155,9 +155,9 @@ export async function POST(request: NextRequest) {
       workingHours: data.workingHours,
       bio: data.bio,
     },
-    profilePhotoUrl,
-    idCardPhotoUrl,
-    idCardBackPhotoUrl,
+    profileUpload.url,
+    idCardUpload.url,
+    idCardBackUpload.url,
   );
 
   if (result.error) {

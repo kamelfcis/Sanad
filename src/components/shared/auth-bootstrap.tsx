@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { useAuthStore, type AuthProfile } from '@/store/auth-store';
 
@@ -15,17 +15,19 @@ interface AuthBootstrapProps {
  * protected layouts don't block on a client getSession() round-trip.
  */
 export function AuthBootstrap({ initialUser, initialProfile, children }: AuthBootstrapProps) {
-  const seeded = useRef(false);
-
-  if (!seeded.current && !useAuthStore.getState().sessionResolved) {
-    useAuthStore.setState({
-      user: initialUser,
-      profile: initialProfile,
-      isLoading: false,
-      sessionResolved: true,
-    });
-    seeded.current = true;
-  }
+  // Lazy initializer runs exactly once during the first render, seeding the
+  // external auth store before children paint without reading a ref during render.
+  useState(() => {
+    if (!useAuthStore.getState().sessionResolved) {
+      useAuthStore.setState({
+        user: initialUser,
+        profile: initialProfile,
+        isLoading: false,
+        sessionResolved: true,
+      });
+    }
+    return true;
+  });
 
   return <>{children}</>;
 }

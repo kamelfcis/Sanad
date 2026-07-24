@@ -648,6 +648,7 @@
     "security": "Security",
     "notifications": "Notifications",
     "myJobs": "My Jobs",
+    "myReviews": "Reviews",
     "logout": "Log out"
   },
   "logoutModal": {

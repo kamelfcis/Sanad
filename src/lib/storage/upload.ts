@@ -1,5 +1,10 @@
 import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
 import { STORAGE_BUCKET } from '@/lib/storage/constants';
+import { logger } from '@/lib/logger';
+
+export type UploadResult =
+  | { ok: true; url: string }
+  | { ok: false; error: string };
 
 const MIME_EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -36,8 +41,11 @@ export async function uploadFileForUser(
   file: Blob,
   fileType: string,
   subfolder?: 'payments',
-): Promise<string | null> {
-  if (!isServiceRoleConfigured()) return null;
+): Promise<UploadResult> {
+  if (!isServiceRoleConfigured()) {
+    logger.error('uploadFileForUser: service role key not configured');
+    return { ok: false, error: 'storage_not_configured' };
+  }
 
   const path = generatePath(userId, fileType, subfolder);
   const supabase = createServiceRoleClient();
@@ -47,8 +55,12 @@ export async function uploadFileForUser(
     upsert: false,
   });
 
-  if (error) return null;
-  return getPublicUrl(path);
+  if (error) {
+    logger.error('uploadFileForUser: storage upload failed', error, { path });
+    return { ok: false, error: error.message };
+  }
+
+  return { ok: true, url: getPublicUrl(path) };
 }
 
 export async function generateUploadUrl(
@@ -56,7 +68,10 @@ export async function generateUploadUrl(
   userId: string,
   subfolder?: 'payments',
 ): Promise<{ url: string; publicUrl: string; key: string; token: string } | null> {
-  if (!isServiceRoleConfigured()) return null;
+  if (!isServiceRoleConfigured()) {
+    logger.error('generateUploadUrl: service role key not configured');
+    return null;
+  }
 
   const path = generatePath(userId, fileType, subfolder);
   const supabase = createServiceRoleClient();
@@ -65,7 +80,12 @@ export async function generateUploadUrl(
     .from(STORAGE_BUCKET)
     .createSignedUploadUrl(path);
 
-  if (error || !data) return null;
+  if (error || !data) {
+    logger.error('generateUploadUrl: failed to create signed upload URL', error ?? undefined, {
+      path,
+    });
+    return null;
+  }
 
   return {
     url: data.signedUrl,

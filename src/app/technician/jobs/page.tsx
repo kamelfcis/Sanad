@@ -11,10 +11,10 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
 
 const statusFilters = [
-  { label: 'Available', value: 'pending' },
-  { label: 'Active', value: 'in_progress' },
-  { label: 'Completed', value: 'completed' },
-  { label: 'All', value: '' },
+  { label: 'المتاحة', value: 'pending' },
+  { label: 'قيد التنفيذ', value: 'in_progress' },
+  { label: 'المكتملة', value: 'completed' },
+  { label: 'الكل', value: '' },
 ];
 
 export default function TechnicianJobsPage() {
@@ -41,9 +41,9 @@ export default function TechnicianJobsPage() {
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>
+          <h1 className="text-3xl font-bold tracking-tight">الطلبات</h1>
           <p className="mt-1 text-muted-foreground">
-            Find and manage your service requests.
+            تابع طلبات الخدمة الخاصة بك وأدرها.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -52,13 +52,13 @@ export default function TechnicianJobsPage() {
               variant={techProfile.is_available ? 'success' : 'secondary'}
               className="text-xs"
             >
-              {techProfile.is_available ? 'Available' : 'Offline'}
+              {techProfile.is_available ? 'متاح' : 'غير متصل'}
             </Badge>
           )}
           <Button variant="outline" size="sm" asChild>
             <Link href="/technician/profile">
               <Settings className="mr-1 h-4 w-4" />
-              Profile
+              الملف الشخصي
             </Link>
           </Button>
         </div>
@@ -69,9 +69,9 @@ export default function TechnicianJobsPage() {
         <div className="mb-6 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
           <div className="flex-1">
-            <p className="font-medium text-amber-800 dark:text-amber-200">Complete your profile</p>
+            <p className="font-medium text-amber-800 dark:text-amber-200">أكمل ملفك الشخصي</p>
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Set up your profile and add your skills to start receiving job requests.
+              أكمل ملفك الشخصي وأضف مهاراتك لتبدأ باستقبال طلبات العمل.
             </p>
           </div>
           <Button size="sm" asChild>
@@ -116,7 +116,7 @@ export default function TechnicianJobsPage() {
         </div>
       ) : error ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
-          Failed to load jobs. Please refresh the page.
+          تعذّر تحميل الطلبات. يرجى تحديث الصفحة.
         </div>
       ) : isPendingFilter ? (
         assignments?.length === 0 ? (
@@ -125,9 +125,9 @@ export default function TechnicianJobsPage() {
               <Briefcase className="h-8 w-8 text-muted-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">No available jobs</h2>
+              <h2 className="text-lg font-semibold">لا توجد طلبات متاحة</h2>
               <p className="text-sm text-muted-foreground">
-                There are no pending job requests assigned to you right now.
+                لا توجد طلبات عمل معلّقة معيّنة لك في الوقت الحالي.
               </p>
             </div>
           </div>
@@ -148,11 +148,9 @@ export default function TechnicianJobsPage() {
             <Briefcase className="h-8 w-8 text-muted-foreground" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold">No jobs found</h2>
+            <h2 className="text-lg font-semibold">لا توجد طلبات</h2>
             <p className="text-sm text-muted-foreground">
-              {statusFilter
-                ? `No jobs with status "${statusFilter}".`
-                : 'No job requests yet.'}
+              {statusFilter ? 'لا توجد طلبات في هذه الحالة.' : 'لا توجد طلبات عمل بعد.'}
             </p>
           </div>
         </div>
