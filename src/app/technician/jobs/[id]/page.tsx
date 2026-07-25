@@ -2,7 +2,11 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTechnicianAssignment, useRespondToAssignment } from '@/hooks/use-technician';
+import {
+  useTechnicianAssignment,
+  useRespondToAssignment,
+  useUpdateBookingStatus,
+} from '@/hooks/use-technician';
 import { BookingStatus } from '@/components/shared/booking-status';
 import { AssignmentStatus } from '@/components/shared/assignment-status';
 import { JobActionBar } from '@/components/shared/job-action-bar';
@@ -11,11 +15,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, MapPin, Calendar, Clock, Wrench, Phone, MessageCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import {
+  ArrowRight,
+  MapPin,
+  Calendar,
+  Clock,
+  Wrench,
+  Phone,
+  MessageCircle,
+  Play,
+  CheckCircle2,
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { LocationMap } from '@/components/maps/location-map';
 import { toTelHref } from '@/lib/utils/phone';
+
+function formatArabicDateTime(value: string): string {
+  return new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(value),
+  );
+}
 
 export default function TechnicianJobDetailPage() {
   const params = useParams();
@@ -23,6 +42,7 @@ export default function TechnicianJobDetailPage() {
   const id = params.id as string;
   const { data: assignment, isLoading, error } = useTechnicianAssignment(id);
   const respondMutation = useRespondToAssignment();
+  const statusMutation = useUpdateBookingStatus();
 
   if (isLoading) {
     return (
@@ -40,12 +60,12 @@ export default function TechnicianJobDetailPage() {
   if (error || !assignment) {
     return (
       <div className="container py-16 text-center">
-        <h1 className="mb-2 text-2xl font-bold">Job not found</h1>
+        <h1 className="mb-2 text-2xl font-bold">لم يتم العثور على الطلب</h1>
         <p className="mb-6 text-muted-foreground">
-          This job doesn&apos;t exist or you don&apos;t have access to it.
+          هذا الطلب غير موجود أو لا تملك صلاحية الوصول إليه.
         </p>
         <Button asChild>
-          <Link href="/technician/jobs">Back to jobs</Link>
+          <Link href="/technician/jobs">العودة إلى الطلبات</Link>
         </Button>
       </div>
     );
@@ -53,8 +73,7 @@ export default function TechnicianJobDetailPage() {
 
   const booking = assignment.booking;
   const customerPhone = booking.profiles?.phone?.trim() ?? '';
-  const customerName =
-    booking.profiles?.full_name?.trim() || customerPhone || 'Customer';
+  const customerName = booking.profiles?.full_name?.trim() || customerPhone || 'العميل';
   const canCallCustomer =
     !!customerPhone &&
     (booking.status === 'accepted' ||
@@ -69,28 +88,34 @@ export default function TechnicianJobDetailPage() {
 
   const handleAccept = async () => {
     await respondMutation.mutateAsync({ id: assignment.id, action: 'accept' });
-    toast({
-      title: 'Job accepted!',
-      description: 'Contact the customer to confirm the details.',
-    });
+    toast({ title: 'تم قبول الطلب', description: 'تواصل مع العميل لتأكيد التفاصيل.' });
     router.refresh();
   };
 
   const handleReject = async () => {
     await respondMutation.mutateAsync({ id: assignment.id, action: 'reject' });
-    toast({
-      title: 'Job declined',
-      description: 'The job will be offered to another technician.',
-    });
+    toast({ title: 'تم رفض الطلب', description: 'سيتم عرض الطلب على فني آخر.' });
+    router.refresh();
+  };
+
+  const handleStart = async () => {
+    await statusMutation.mutateAsync({ bookingId: booking.id, status: 'in_progress' });
+    toast({ title: 'تم بدء العمل', description: 'تم إعلام العميل ببدء تنفيذ الخدمة.' });
+    router.refresh();
+  };
+
+  const handleComplete = async () => {
+    await statusMutation.mutateAsync({ bookingId: booking.id, status: 'completed' });
+    toast({ title: 'تم إنهاء العمل', description: 'تم إعلام العميل باكتمال الخدمة.' });
     router.refresh();
   };
 
   return (
-    <div className="container py-8">
+    <div className="container py-8" dir="rtl">
       <Button variant="ghost" size="sm" asChild className="mb-4">
-        <Link href="/technician/jobs">
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          Back to jobs
+        <Link href="/technician/jobs" className="gap-2">
+          <ArrowRight className="h-4 w-4" />
+          العودة إلى الطلبات
         </Link>
       </Button>
 
@@ -99,19 +124,16 @@ export default function TechnicianJobDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight" dir="auto">
-                {booking.services?.name_ar ?? 'Service Request'}
+              <h1 className="text-2xl font-bold tracking-tight">
+                {booking.services?.name_ar ?? 'طلب خدمة'}
               </h1>
               <BookingStatus status={booking.status} />
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {booking.services?.name_en}
-            </p>
           </div>
           <AssignmentStatus status={assignment.status} />
         </div>
 
-        {/* Action Bar */}
+        {/* Action Bar (accept / decline while pending) */}
         <Card>
           <CardContent className="p-4">
             <JobActionBar
@@ -124,10 +146,50 @@ export default function TechnicianJobDetailPage() {
           </CardContent>
         </Card>
 
+        {/* Job lifecycle — Start / Complete */}
+        {booking.status === 'accepted' && (
+          <Card>
+            <CardContent className="p-4">
+              <Button
+                type="button"
+                className="h-11 w-full gap-2 rounded-xl font-bold"
+                onClick={handleStart}
+                disabled={statusMutation.isPending}
+              >
+                <Play className="h-5 w-5" />
+                بدء العمل
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        {booking.status === 'in_progress' && (
+          <Card>
+            <CardContent className="p-4">
+              <Button
+                type="button"
+                className="h-11 w-full gap-2 rounded-xl font-bold"
+                onClick={handleComplete}
+                disabled={statusMutation.isPending}
+              >
+                <CheckCircle2 className="h-5 w-5" />
+                إنهاء العمل
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        {booking.status === 'completed' && (
+          <Card>
+            <CardContent className="flex items-center gap-2 p-4 text-sm font-medium text-success">
+              <CheckCircle2 className="h-5 w-5" />
+              تم إنجاز الخدمة بنجاح.
+            </CardContent>
+          </Card>
+        )}
+
         {/* Customer Info */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Customer</CardTitle>
+            <CardTitle className="text-sm font-medium">العميل</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
@@ -149,11 +211,11 @@ export default function TechnicianJobDetailPage() {
               <Button
                 asChild
                 size="lg"
-                className="mt-4 w-full gap-2 rounded-xl bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]"
+                className="mt-4 h-11 w-full gap-2 rounded-xl bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]"
               >
                 <a href={toTelHref(customerPhone)}>
                   <Phone className="h-5 w-5" />
-                  Call Customer
+                  اتصل بالعميل
                 </a>
               </Button>
             )}
@@ -161,13 +223,15 @@ export default function TechnicianJobDetailPage() {
         </Card>
 
         {/* Chat */}
-        {(booking.status === 'accepted' || booking.status === 'in_progress' || booking.status === 'completed') && (
+        {(booking.status === 'accepted' ||
+          booking.status === 'in_progress' ||
+          booking.status === 'completed') && (
           <Card>
             <CardContent className="p-4">
-              <Button className="w-full" asChild>
+              <Button className="h-11 w-full gap-2 rounded-xl font-bold" asChild>
                 <Link href={`/technician/jobs/${booking.id}/chat`}>
-                  <MessageCircle className="mr-1 h-4 w-4" />
-                  Open Chat
+                  <MessageCircle className="h-4 w-4" />
+                  فتح المحادثة
                 </Link>
               </Button>
             </CardContent>
@@ -177,24 +241,21 @@ export default function TechnicianJobDetailPage() {
         {/* Description */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Job Details</CardTitle>
+            <CardTitle className="text-sm font-medium">تفاصيل الطلب</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-3 mb-3">
+            <div className="mb-3 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                 <Wrench className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="font-medium" dir="auto">{booking.services?.name_ar ?? 'Service'}</p>
-                <p className="text-sm text-muted-foreground">{booking.services?.name_en}</p>
+                <p className="font-medium">{booking.services?.name_ar ?? 'الخدمة'}</p>
               </div>
             </div>
             {booking.description && (
               <>
                 <Separator className="my-3" />
-                <p className="text-sm text-muted-foreground" dir="auto">
-                  {booking.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{booking.description}</p>
               </>
             )}
           </CardContent>
@@ -203,23 +264,35 @@ export default function TechnicianJobDetailPage() {
         {/* Location & Time */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Location & Time</CardTitle>
+            <CardTitle className="text-sm font-medium">الموقع والوقت</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {booking.location_address && (
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Address</p>
+                  <p className="text-xs text-muted-foreground">العنوان</p>
                   <p className="text-sm">{booking.location_address}</p>
                   {booking.location_lat != null && booking.location_lng != null && (
-                    <div className="mt-3" dir="rtl">
+                    <div className="mt-3">
                       <LocationMap
                         position={{ lat: booking.location_lat, lng: booking.location_lng }}
                         label={booking.location_address}
                         className="h-[220px] w-full overflow-hidden rounded-xl border border-border"
                       />
                     </div>
+                  )}
+                  {booking.apartment_number && (
+                    <p className="mt-2 text-sm">
+                      <span className="text-xs text-muted-foreground">رقم الشقة: </span>
+                      {booking.apartment_number}
+                    </p>
+                  )}
+                  {booking.floor_number && (
+                    <p className="text-sm">
+                      <span className="text-xs text-muted-foreground">الدور: </span>
+                      {booking.floor_number}
+                    </p>
                   )}
                 </div>
               </div>
@@ -228,20 +301,16 @@ export default function TechnicianJobDetailPage() {
               <div className="flex items-start gap-3">
                 <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Preferred Time</p>
-                  <p className="text-sm">
-                    {format(new Date(booking.preferred_time), 'MMMM d, yyyy \'at\' h:mm a')}
-                  </p>
+                  <p className="text-xs text-muted-foreground">الوقت المفضل</p>
+                  <p className="text-sm">{formatArabicDateTime(booking.preferred_time)}</p>
                 </div>
               </div>
             )}
             <div className="flex items-start gap-3">
               <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Requested</p>
-                <p className="text-sm">
-                  {format(new Date(booking.created_at), 'MMMM d, yyyy \'at\' h:mm a')}
-                </p>
+                <p className="text-xs text-muted-foreground">تاريخ الطلب</p>
+                <p className="text-sm">{formatArabicDateTime(booking.created_at)}</p>
               </div>
             </div>
           </CardContent>

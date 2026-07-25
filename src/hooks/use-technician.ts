@@ -47,6 +47,8 @@ interface Booking {
   location_address: string | null;
   location_lat: number | null;
   location_lng: number | null;
+  apartment_number: string | null;
+  floor_number: string | null;
   preferred_time: string | null;
   created_at: string;
   services: { name_ar: string; name_en: string; slug: string; price: number | null; price_type: string } | null;
@@ -163,6 +165,8 @@ interface Assignment {
     location_address: string | null;
     location_lat: number | null;
     location_lng: number | null;
+    apartment_number: string | null;
+    floor_number: string | null;
     preferred_time: string | null;
     created_at: string;
     services: { name_ar: string; name_en: string; slug: string; price: number | null; price_type: string } | null;
@@ -222,6 +226,33 @@ export function useRespondToAssignment() {
     mutationFn: ({ id, action }: { id: string; action: 'accept' | 'reject' }) =>
       respondToAssignment(id, action),
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['technician-assignments'] });
+      qc.invalidateQueries({ queryKey: ['technician-bookings'] });
+      qc.invalidateQueries({ queryKey: ['booking'] });
+    },
+  });
+}
+
+async function updateBookingStatus(bookingId: string, status: 'in_progress' | 'completed') {
+  const res = await fetch(`/api/technician/bookings/${bookingId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? 'Failed to update job status');
+  }
+  return res.json();
+}
+
+export function useUpdateBookingStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, status }: { bookingId: string; status: 'in_progress' | 'completed' }) =>
+      updateBookingStatus(bookingId, status),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['technician-assignment'] });
       qc.invalidateQueries({ queryKey: ['technician-assignments'] });
       qc.invalidateQueries({ queryKey: ['technician-bookings'] });
       qc.invalidateQueries({ queryKey: ['booking'] });

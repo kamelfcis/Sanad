@@ -47,12 +47,22 @@ export default function TechnicianProfilePage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (techProfile) setIsAvailable(techProfile.is_available);
   }, [techProfile?.is_available]);
-  const [selectedSkills, setSelectedSkills] = useState(
-    techSkills?.map((s) => ({
-      service_id: s.service_id,
-      price_override: s.price_override,
-    })) ?? [],
-  );
+  const [selectedSkills, setSelectedSkills] = useState<
+    { service_id: string; price_override: number | null }[]
+  >([]);
+  // Whether selectedSkills has been hydrated from the server. Until this is true
+  // the selector has not loaded, so we must NOT persist selectedSkills (an empty
+  // array here would wipe the technician's real skills and lock them out).
+  const [skillsHydrated, setSkillsHydrated] = useState(false);
+
+  useEffect(() => {
+    if (!techSkills || skillsHydrated) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedSkills(
+      techSkills.map((s) => ({ service_id: s.service_id, price_override: s.price_override })),
+    );
+    setSkillsHydrated(true);
+  }, [techSkills, skillsHydrated]);
 
   const {
     register,
@@ -77,9 +87,13 @@ export default function TechnicianProfilePage() {
       phone: data.phone || undefined,
     });
 
-    await updateSkills.mutateAsync(selectedSkills);
+    // Only persist skills once they have hydrated from the server; otherwise a
+    // not-yet-loaded selector would submit [] and wipe existing skills.
+    if (skillsHydrated) {
+      await updateSkills.mutateAsync(selectedSkills);
+    }
 
-    toast({ title: 'Profile updated', description: 'Your changes have been saved.' });
+    toast({ title: 'تم تحديث الملف الشخصي', description: 'تم حفظ تغييراتك.' });
   };
 
   const toggleAvailability = async () => {
@@ -88,16 +102,16 @@ export default function TechnicianProfilePage() {
     try {
       await updateProfile.mutateAsync({ is_available: newVal });
       toast({
-        title: newVal ? 'You are now available' : 'You are now offline',
+        title: newVal ? 'أنت متاح الآن' : 'أنت غير متاح الآن',
         description: newVal
-          ? 'Customers can assign you to new jobs.'
-          : 'You will not receive new job requests.',
+          ? 'يمكن للعملاء تعيينك لطلبات جديدة.'
+          : 'لن تصلك طلبات عمل جديدة.',
       });
     } catch {
       setIsAvailable(!newVal);
       toast({
-        title: 'Could not update availability',
-        description: 'Please try again.',
+        title: 'تعذّر تحديث الحالة',
+        description: 'يرجى المحاولة مرة أخرى.',
         variant: 'destructive',
       });
     }
@@ -120,26 +134,26 @@ export default function TechnicianProfilePage() {
 
   if (isError) {
     return (
-      <div className="container flex flex-col items-center gap-4 py-16 text-center">
+      <div className="container flex flex-col items-center gap-4 py-16 text-center" dir="rtl">
         <AlertCircle className="h-12 w-12 text-destructive/70" />
         <div>
-          <h1 className="text-xl font-semibold">Could not load profile</h1>
+          <h1 className="text-xl font-semibold">تعذّر تحميل الملف الشخصي</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {error instanceof Error ? error.message : 'Something went wrong. Please try again.'}
+            {error instanceof Error ? error.message : 'حدث خطأ ما. يرجى المحاولة مرة أخرى.'}
           </p>
         </div>
-        <Button onClick={() => void refetch()}>Retry</Button>
+        <Button onClick={() => void refetch()}>إعادة المحاولة</Button>
       </div>
     );
   }
 
   const statusKey = techProfile?.verification_status ?? 'unverified';
   const verificationBadge = {
-    unverified: { label: 'Unverified', variant: 'secondary' as const },
-    pending: { label: 'Pending Review', variant: 'warning' as const },
-    verified: { label: 'Verified', variant: 'success' as const },
-    rejected: { label: 'Rejected', variant: 'destructive' as const },
-  }[statusKey] ?? { label: 'Unknown', variant: 'outline' as const };
+    unverified: { label: 'غير موثّق', variant: 'secondary' as const },
+    pending: { label: 'قيد المراجعة', variant: 'warning' as const },
+    verified: { label: 'موثّق', variant: 'success' as const },
+    rejected: { label: 'مرفوض', variant: 'destructive' as const },
+  }[statusKey] ?? { label: 'غير معروف', variant: 'outline' as const };
 
   const needsSetup =
     !techProfile?.national_id ||
@@ -153,27 +167,27 @@ export default function TechnicianProfilePage() {
 
   if (needsSetup) {
     return (
-      <div className="container py-16 text-center">
+      <div className="container py-16 text-center" dir="rtl">
         <User className="mx-auto mb-4 h-16 w-16 text-muted-foreground/50" />
-        <h1 className="mb-2 text-2xl font-bold">Profile not set up</h1>
+        <h1 className="mb-2 text-2xl font-bold">لم يكتمل إعداد ملفك</h1>
         <p className="mb-6 text-muted-foreground">
-          Complete your profile setup to start receiving jobs.
+          أكمل إعداد ملفك الشخصي لتبدأ باستقبال الطلبات.
         </p>
         <Button asChild>
-          <a href="/auth/register-technician?complete=1">Complete registration</a>
+          <a href="/auth/register-technician?complete=1">إكمال التسجيل</a>
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="container py-8">
+    <div className="container py-8" dir="rtl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
-        <p className="mt-1 text-muted-foreground">Manage your profile, skills, and availability.</p>
+        <h1 className="text-3xl font-bold tracking-tight">ملفي الشخصي</h1>
+        <p className="mt-1 text-muted-foreground">أدر ملفك الشخصي ومهاراتك وحالة توفّرك.</p>
         {missingFields.includes('bio') && (
           <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Your bio was cleared. Add a short bio below and save to stay eligible for jobs.
+            تم مسح نبذتك التعريفية. أضف نبذة قصيرة أدناه واحفظها لتبقى مؤهلاً لاستقبال الطلبات.
           </p>
         )}
       </div>
@@ -184,22 +198,22 @@ export default function TechnicianProfilePage() {
           {/* About */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">About</CardTitle>
-              <CardDescription>Your professional information</CardDescription>
+              <CardTitle className="text-lg">نبذة عنك</CardTitle>
+              <CardDescription>معلوماتك المهنية</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1">
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio">النبذة التعريفية</Label>
                 <Textarea id="bio" className="min-h-[100px]" {...register('bio')} />
                 {errors.bio && <p className="text-xs text-destructive">{errors.bio.message}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <Label htmlFor="years_experience">Years of experience</Label>
+                  <Label htmlFor="years_experience">سنوات الخبرة</Label>
                   <Input id="years_experience" type="number" {...register('years_experience')} />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">رقم الهاتف</Label>
                   <Input id="phone" type="tel" {...register('phone')} />
                 </div>
               </div>
@@ -216,17 +230,17 @@ export default function TechnicianProfilePage() {
           {/* Skills */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Skills & Services</CardTitle>
-              <CardDescription>Select the services you offer and set your prices</CardDescription>
+              <CardTitle className="text-lg">المهارات والخدمات</CardTitle>
+              <CardDescription>اختر الخدمات التي تقدّمها وحدّد أسعارك</CardDescription>
             </CardHeader>
             <CardContent>
               <SkillSelector selected={selectedSkills} onChange={setSelectedSkills} />
             </CardContent>
           </Card>
 
-          <Button type="submit" className="w-full" disabled={updateProfile.isPending}>
-            {updateProfile.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
+          <Button type="submit" className="w-full gap-2" disabled={updateProfile.isPending}>
+            {updateProfile.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            حفظ التغييرات
           </Button>
         </div>
 
@@ -235,24 +249,28 @@ export default function TechnicianProfilePage() {
           {/* Status Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Status</CardTitle>
+              <CardTitle className="text-sm font-medium">الحالة</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Available for jobs</span>
+                  <span id="availability-label" className="text-sm">
+                    متاح للعمل
+                  </span>
                 </div>
                 <Switch
                   checked={isAvailable}
                   onCheckedChange={toggleAvailability}
+                  aria-labelledby="availability-label"
+                  aria-label="متاح للعمل"
                 />
               </div>
               <Separator />
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Verification</span>
-                <Badge variant={verificationBadge.variant} className="ml-auto">
+                <span className="text-sm">التوثيق</span>
+                <Badge variant={verificationBadge.variant} className="ms-auto">
                   {verificationBadge.label}
                 </Badge>
               </div>
@@ -262,13 +280,13 @@ export default function TechnicianProfilePage() {
           {/* Stats Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Statistics</CardTitle>
+              <CardTitle className="text-sm font-medium">الإحصائيات</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Completed jobs</span>
+                  <span className="text-sm">الطلبات المكتملة</span>
                 </div>
                 <span className="font-semibold">{techProfile?.completed_jobs ?? 0}</span>
               </div>
@@ -276,12 +294,12 @@ export default function TechnicianProfilePage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Star className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Rating</span>
+                  <span className="text-sm">التقييم</span>
                 </div>
                 <span className="font-semibold">
                   {(techProfile?.total_ratings ?? 0) > 0
                     ? `${techProfile?.average_rating?.toFixed(1) ?? '0.0'} (${techProfile?.total_ratings ?? 0})`
-                    : 'No ratings'}
+                    : 'لا توجد تقييمات'}
                 </span>
               </div>
             </CardContent>
@@ -291,7 +309,7 @@ export default function TechnicianProfilePage() {
 
       {/* Reviews Section */}
       <div className="mt-8">
-        <h2 className="mb-4 text-xl font-semibold">Customer Reviews</h2>
+        <h2 className="mb-4 text-xl font-semibold">تقييمات العملاء</h2>
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-1">
             <Card>
@@ -320,9 +338,9 @@ export default function TechnicianProfilePage() {
                 <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
                   <Star className="h-8 w-8 text-muted-foreground/30" />
                   <div>
-                    <p className="text-sm font-medium">No reviews yet</p>
+                    <p className="text-sm font-medium">لا توجد تقييمات بعد</p>
                     <p className="text-xs text-muted-foreground">
-                      Reviews will appear here after customers complete bookings.
+                      ستظهر التقييمات هنا بعد أن يُكمل العملاء طلباتهم.
                     </p>
                   </div>
                 </CardContent>

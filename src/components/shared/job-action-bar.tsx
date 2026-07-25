@@ -46,14 +46,12 @@ export function JobActionBar({ status, createdAt, onAccept, onReject }: JobActio
       <div className="flex items-center gap-3">
         <AssignmentStatus status={expired ? 'cancelled' : status} />
         {status === 'accepted' && (
-          <p className="text-xs text-muted-foreground">You have accepted this job.</p>
+          <p className="text-xs text-muted-foreground">لقد قبلت هذا الطلب.</p>
         )}
         {status === 'rejected' && (
-          <p className="text-xs text-muted-foreground">You have declined this job.</p>
+          <p className="text-xs text-muted-foreground">لقد رفضت هذا الطلب.</p>
         )}
-        {expired && (
-          <p className="text-xs text-destructive">Response time has expired.</p>
-        )}
+        {expired && <p className="text-xs text-destructive">انتهى وقت الاستجابة.</p>}
       </div>
     );
   }
@@ -94,29 +92,29 @@ export function JobActionBar({ status, createdAt, onAccept, onReject }: JobActio
       <div className="flex gap-2">
         <Button
           variant="default"
-          className="flex-1"
+          className="h-11 flex-1 gap-2 rounded-xl font-bold"
           onClick={handleAccept}
           disabled={isAccepting || isRejecting}
         >
           {isAccepting ? (
-            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <CheckCircle className="mr-1 h-4 w-4" />
+            <CheckCircle className="h-4 w-4" />
           )}
-          Accept
+          قبول
         </Button>
         <Button
           variant="outline"
-          className="flex-1"
+          className="h-11 flex-1 gap-2 rounded-xl font-bold"
           onClick={handleReject}
           disabled={isAccepting || isRejecting}
         >
           {isRejecting ? (
-            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <XCircle className="mr-1 h-4 w-4" />
+            <XCircle className="h-4 w-4" />
           )}
-          Decline
+          رفض
         </Button>
       </div>
     </div>
