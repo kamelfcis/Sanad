@@ -46,7 +46,7 @@ export default function TechnicianProfilePage() {
     // Sync the availability toggle to the loaded server value.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (techProfile) setIsAvailable(techProfile.is_available);
-  }, [techProfile?.is_available]);
+  }, [techProfile]);
   const [selectedSkills, setSelectedSkills] = useState<
     { service_id: string; price_override: number | null }[]
   >([]);

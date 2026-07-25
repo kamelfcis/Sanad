@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
 import { asAdminListItems } from '@/lib/admin/list-items';
 
 interface TechProfile {
@@ -244,6 +246,76 @@ async function updateBookingStatus(bookingId: string, status: 'in_progress' | 'c
     throw new Error(err.error ?? 'Failed to update job status');
   }
   return res.json();
+}
+
+/**
+ * Live-pushes new/updated assignments to the technician's jobs list. Subscribes
+ * to booking_assignments changes for this technician and refetches the list, so
+ * a newly matched job appears without a manual refresh. RLS ("Technicians read
+ * own assignments") scopes delivery to the technician's own rows.
+ * Requires booking_assignments in the supabase_realtime publication
+ * (migration 00031); degrades to normal polling/refetch until then.
+ */
+export function useTechnicianAssignmentsRealtime(technicianId?: string) {
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (!technicianId) return;
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel('technician-assignments-live')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'booking_assignments',
+          filter: `technician_id=eq.${technicianId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ['technician-assignments'] });
+          qc.invalidateQueries({ queryKey: ['technician-bookings'] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [qc, technicianId]);
+}
+
+export interface TechnicianEarningsJob {
+  bookingId: string;
+  serviceName: string | null;
+  status: string;
+  createdAt: string;
+  amount: number;
+  paymentStatus: 'approved' | 'pending' | 'rejected' | 'unpaid';
+}
+
+export interface TechnicianEarnings {
+  totalEarned: number;
+  totalPending: number;
+  completedJobs: number;
+  jobs: TechnicianEarningsJob[];
+}
+
+async function fetchEarnings(): Promise<TechnicianEarnings> {
+  const res = await fetch('/api/technician/earnings');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? 'Failed to load earnings');
+  }
+  return res.json();
+}
+
+export function useTechnicianEarnings() {
+  return useQuery({
+    queryKey: ['technician-earnings'],
+    queryFn: fetchEarnings,
+  });
 }
 
 export function useUpdateBookingStatus() {

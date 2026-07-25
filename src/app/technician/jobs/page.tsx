@@ -1,14 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { useTechnicianBookings, useTechnicianAssignments, useTechnicianProfile } from '@/hooks/use-technician';
+import { useEffect, useState } from 'react';
+import {
+  useTechnicianBookings,
+  useTechnicianAssignments,
+  useTechnicianProfile,
+  useUpdateTechnicianProfile,
+  useTechnicianAssignmentsRealtime,
+} from '@/hooks/use-technician';
 import { TechnicianJobCard } from '@/components/shared/technician-job-card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Briefcase, AlertCircle, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
+import { toast } from '@/hooks/use-toast';
 
 const statusFilters = [
   { label: 'المتاحة', value: 'pending' },
@@ -26,6 +33,36 @@ export default function TechnicianJobsPage() {
   const { data: bookings, isLoading: bookingsLoading, error: bookingsError } =
     useTechnicianBookings(isPendingFilter ? undefined : (statusFilter || undefined));
   const { data: techProfile } = useTechnicianProfile();
+  const updateProfile = useUpdateTechnicianProfile();
+
+  // Live-push newly matched assignments into the list (see migration 00031).
+  useTechnicianAssignmentsRealtime(techProfile?.id);
+
+  const [isAvailable, setIsAvailable] = useState(techProfile?.is_available ?? false);
+  useEffect(() => {
+    // Sync the quick toggle to the loaded server value.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (techProfile) setIsAvailable(techProfile.is_available);
+  }, [techProfile]);
+
+  const toggleAvailability = async () => {
+    const newVal = !isAvailable;
+    setIsAvailable(newVal);
+    try {
+      await updateProfile.mutateAsync({ is_available: newVal });
+      toast({
+        title: newVal ? 'أنت متاح الآن' : 'أنت غير متاح الآن',
+        description: newVal ? 'يمكن للعملاء تعيينك لطلبات جديدة.' : 'لن تصلك طلبات عمل جديدة.',
+      });
+    } catch {
+      setIsAvailable(!newVal);
+      toast({
+        title: 'تعذّر تحديث الحالة',
+        description: 'يرجى المحاولة مرة أخرى.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const isLoading = isPendingFilter ? assignmentsLoading : bookingsLoading;
   const error = isPendingFilter ? assignmentsError : bookingsError;
@@ -46,18 +83,24 @@ export default function TechnicianJobsPage() {
             تابع طلبات الخدمة الخاصة بك وأدرها.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {techProfile && (
-            <Badge
-              variant={techProfile.is_available ? 'success' : 'secondary'}
-              className="text-xs"
-            >
-              {techProfile.is_available ? 'متاح' : 'غير متصل'}
-            </Badge>
+            <div className="flex min-h-[44px] items-center gap-2 rounded-full border border-border px-3">
+              <span id="jobs-availability-label" className="text-sm font-medium">
+                {isAvailable ? 'متاح' : 'غير متصل'}
+              </span>
+              <Switch
+                checked={isAvailable}
+                onCheckedChange={toggleAvailability}
+                disabled={updateProfile.isPending}
+                aria-labelledby="jobs-availability-label"
+                aria-label="متاح للعمل"
+              />
+            </div>
           )}
           <Button variant="outline" size="sm" asChild>
-            <Link href="/technician/profile">
-              <Settings className="mr-1 h-4 w-4" />
+            <Link href="/technician/profile" className="gap-1.5">
+              <Settings className="h-4 w-4" />
               الملف الشخصي
             </Link>
           </Button>
@@ -87,7 +130,7 @@ export default function TechnicianJobsPage() {
             key={f.value}
             onClick={() => setStatusFilter(f.value)}
             className={cn(
-              'shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
+              'flex min-h-[44px] shrink-0 items-center rounded-full border px-4 text-sm font-medium transition-colors',
               statusFilter === f.value
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border hover:border-muted-foreground/50',

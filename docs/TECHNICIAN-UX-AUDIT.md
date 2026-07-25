@@ -131,6 +131,27 @@ Error-recovery retry buttons on technician list/detail screens; "Open in Maps" d
 
 ---
 
+## Implementation status (post-audit)
+
+**Shipped to production** (commit `5d22bb4`, deploy READY at https://sanad-five-zeta.vercel.app):
+- P1 #4 — profile save no longer wipes skills (root cause: `selectedSkills` hydration).
+- P0-1/P0-2 — Start Job / Complete Job (`PATCH /api/technician/bookings/[id]` + buttons, customer notified).
+- P0-3 — Arabic/RTL pass on job-detail & profile (`ArrowRight`, `ms-`/`me-`, Arabic dates/toasts).
+
+**Implemented, awaiting review/second deploy** (not yet committed):
+- P1-5 — jobs filter tabs now ≥44px (spec: `tabs≥44px=4/4`).
+- P1-6 — availability `Switch` has an accessible label (job list + profile).
+- P1-7 — Reviews (+ Earnings) links added to header nav; nav labels translated to Arabic.
+- P1-9 — quick availability toggle on the jobs list header (spec: `quickToggle=true`).
+- P1-8 — Earnings view: `/technician/earnings` + `GET /api/technician/earnings` (derived from
+  bookings + approved/pending payments via service role; no payouts table). Spec: `apiShapeOk=true`.
+- P1-10 — realtime new-assignment push (`useTechnicianAssignmentsRealtime`) wired to the jobs list.
+  Migration `00031_booking_assignments_realtime.sql` is applied; **live delivery verified** by the
+  audit spec (new assignment appears without a manual refresh: `before=4 after=5 liveUpdate=true`).
+
+**P2** — remains backlog (not in scope): error-recovery retry buttons, "Open in Maps", history
+filters, working-hours schedule, cancellation-reason display, trimming Profile's ~19 fetches.
+
 ## Quality gates (this audit change set)
 - `npx tsc --noEmit` → **pass** (0 errors), incl. the new spec.
 - `npx eslint e2e/technician-experience-audit.spec.ts playwright.audit.config.ts` → **0 errors**.

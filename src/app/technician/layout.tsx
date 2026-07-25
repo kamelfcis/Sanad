@@ -13,9 +13,11 @@ export const metadata: Metadata = pageMetadata(
 );
 
 const technicianNavItems = [
-  { label: 'Jobs', href: '/technician/jobs' },
-  { label: 'Chat', href: '/technician/chat' },
-  { label: 'Profile', href: '/technician/profile' },
+  { label: 'الطلبات', href: '/technician/jobs' },
+  { label: 'الأرباح', href: '/technician/earnings' },
+  { label: 'المحادثات', href: '/technician/chat' },
+  { label: 'التقييمات', href: '/technician/reviews' },
+  { label: 'الملف الشخصي', href: '/technician/profile' },
 ];
 
 export default async function TechnicianLayout({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,4 @@
-import { test, type Page, type BrowserContext } from '@playwright/test';
+import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 import {
   loadTestUsers,
   loginEmail,
@@ -172,20 +172,26 @@ test.describe.serial('Technician experience audit', () => {
         }
       }
     }
-    const availBadge = (await page.getByText(/^متاح$|غير متصل/).count()) > 0;
+    // P1-9: quick availability toggle present in the header with an accessible label.
+    const quickToggle = page.getByRole('switch').first();
+    const hasQuickToggle = (await quickToggle.count()) > 0;
+    const toggleHasLabel =
+      (await page.locator('[role="switch"][aria-label], [role="switch"][aria-labelledby]').count()) > 0;
     const emptyState = (await page.getByText(/لا توجد طلبات/).count()) > 0;
 
     const m = await perf(page);
     const shot = await screenshot(page, 'tech-audit-02-jobs-list');
+    // P1-5: all four filter tabs must be ≥44px. P1-9: quick toggle present + labeled.
+    const pass = tappableTabs === 4 && hasQuickToggle && toggleHasLabel;
     record({
       step: cards > 0 ? '03 Jobs list — with data' : '02 Jobs list — empty state',
-      result: 'PASS',
+      result: pass ? 'PASS' : 'FAIL',
       url: page.url(),
       networkErrors: networkErrors.slice(netBefore),
       screenshot: shot,
       notes: note(
         m,
-        `cards=${cards} tabs≥44px=${tappableTabs}/4 minTabH=${minTabHeight === 999 ? 'n/a' : Math.round(minTabHeight)}px availBadge=${availBadge} emptyState=${emptyState}`,
+        `cards=${cards} tabs≥44px=${tappableTabs}/4 minTabH=${minTabHeight === 999 ? 'n/a' : Math.round(minTabHeight)}px quickToggle=${hasQuickToggle} toggleLabel=${toggleHasLabel} emptyState=${emptyState}`,
       ),
     });
   });
@@ -495,6 +501,112 @@ test.describe.serial('Technician experience audit', () => {
       networkErrors: networkErrors.slice(netBefore),
       screenshot: shot,
       notes: note(m, `heading=${heading}`),
+    });
+  });
+
+  test('14 — Realtime new-assignment push (live delivery)', async ({ browser }) => {
+    // Ensure the technician is available so a direct booking can be assigned
+    // (earlier steps may have toggled availability off).
+    await page.request.put(`${BASE_URL}/api/technician/profile`, {
+      data: { is_available: true },
+    });
+
+    // Mount the jobs list (pending tab) with the realtime hook active. Do NOT
+    // reload after this point — any list growth must come from realtime push.
+    await page.goto('/technician/jobs');
+    await waitForPageReady(page);
+    await page.waitForTimeout(1500); // let the realtime channel subscribe
+    const before = await page.locator('a[href^="/technician/jobs/"]').count();
+
+    // Create a fresh direct booking to this technician from a customer context.
+    let created = false;
+    let createStatus = 0;
+    const custCtx = await browser.newContext();
+    try {
+      const custPage = await custCtx.newPage();
+      await loginEmail(custPage, users.customer.email, users.customer.password, '/services');
+      const resp = await custPage.request.post(`${BASE_URL}/api/bookings`, {
+        data: {
+          service_id: users.serviceId,
+          technician_id: users.technician.id,
+          description: 'طلب اختبار الدفع اللحظي — تحديث قائمة الطلبات مباشرةً',
+          location_address: 'مدينة نصر، القاهرة',
+          location_lat: 30.0444,
+          location_lng: 31.2357,
+          image_urls: [],
+        },
+      });
+      createStatus = resp.status();
+      created = createStatus < 400;
+    } finally {
+      await custCtx.close();
+    }
+
+    // Wait for the list to grow via realtime (no manual reload).
+    let live = false;
+    if (created) {
+      for (let i = 0; i < 20; i += 1) {
+        await page.waitForTimeout(1000);
+        if ((await page.locator('a[href^="/technician/jobs/"]').count()) > before) {
+          live = true;
+          break;
+        }
+      }
+    }
+
+    const after = await page.locator('a[href^="/technician/jobs/"]').count();
+    const shot = await screenshotQuick(page, 'tech-audit-14-realtime');
+    record({
+      step: '14 Realtime new-assignment push (live delivery)',
+      result: created && live ? 'PASS' : 'FAIL',
+      url: page.url(),
+      screenshot: shot,
+      notes: `createStatus=${createStatus} before=${before} after=${after} liveUpdate=${live}`,
+    });
+
+    // Hard assertions — realtime must deliver without a manual refresh.
+    expect(created, `booking POST failed with ${createStatus}`).toBeTruthy();
+    expect(live, 'jobs list did not update via realtime within 20s').toBeTruthy();
+  });
+
+  test('15 — Earnings view', async () => {
+    const netBefore = networkErrors.length;
+
+    // API shape: derived earnings (no payouts table).
+    const apiResp = await page.request.get(`${BASE_URL}/api/technician/earnings`);
+    const apiStatus = apiResp.status();
+    const apiBody = (await apiResp.json().catch(() => ({}))) as {
+      totalEarned?: number;
+      totalPending?: number;
+      completedJobs?: number;
+      jobs?: unknown[];
+    };
+    const apiShapeOk =
+      apiStatus < 400 &&
+      typeof apiBody.totalEarned === 'number' &&
+      typeof apiBody.totalPending === 'number' &&
+      typeof apiBody.completedJobs === 'number' &&
+      Array.isArray(apiBody.jobs);
+
+    await page.goto('/technician/earnings');
+    await waitForPageReady(page);
+    const heading = (await page.getByRole('heading', { name: /الأرباح/ }).count()) > 0;
+    const summaryCards = (await page.getByText(/إجمالي الأرباح|قيد التحصيل|الطلبات المكتملة/).count()) >= 3;
+    const navLink = await page.locator('header a[href="/technician/earnings"]').count();
+
+    const m = await perf(page);
+    const shot = await screenshot(page, 'tech-audit-15-earnings');
+    record({
+      step: '15 Earnings view',
+      result: heading && summaryCards && apiShapeOk ? 'PASS' : 'FAIL',
+      url: page.url(),
+      networkErrors: networkErrors.slice(netBefore),
+      api: { method: 'GET', path: '/api/technician/earnings', status: apiStatus, snippet: '' },
+      screenshot: shot,
+      notes: note(
+        m,
+        `heading=${heading} summaryCards=${summaryCards} apiShapeOk=${apiShapeOk} headerNavLink=${navLink} earned=${apiBody.totalEarned} pending=${apiBody.totalPending} completed=${apiBody.completedJobs}`,
+      ),
     });
   });
 });
