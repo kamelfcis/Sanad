@@ -61,6 +61,8 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
   const locationAddress = watch('location_address') ?? '';
   const locationLat = watch('location_lat');
   const locationLng = watch('location_lng');
+  const apartmentNumber = watch('apartment_number') ?? '';
+  const floorNumber = watch('floor_number') ?? '';
   const selectedServiceId = watch('service_id');
 
   const { data: categoryServices } = useServices(selectedCategory ?? undefined, {
@@ -153,6 +155,8 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
       <input type="hidden" {...register('location_address')} />
       <input type="hidden" {...register('location_lat', { valueAsNumber: true })} />
       <input type="hidden" {...register('location_lng', { valueAsNumber: true })} />
+      <input type="hidden" {...register('apartment_number')} />
+      <input type="hidden" {...register('floor_number')} />
 
       {/* Service Selection */}
       <fieldset>
@@ -240,11 +244,15 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
           address={locationAddress}
           lat={locationLat}
           lng={locationLng}
+          apartmentNumber={apartmentNumber}
+          floorNumber={floorNumber}
           onAddressChange={(value) => setValue('location_address', value, { shouldValidate: true })}
           onCoordsChange={({ lat, lng }) => {
             setValue('location_lat', lat);
             setValue('location_lng', lng);
           }}
+          onApartmentChange={(value) => setValue('apartment_number', value)}
+          onFloorChange={(value) => setValue('floor_number', value)}
           error={errors.location_address?.message}
         />
       </fieldset>

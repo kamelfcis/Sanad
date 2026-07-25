@@ -480,6 +480,8 @@ export interface AdminBookingListItem {
   location_address: string | null;
   location_lat: number | null;
   location_lng: number | null;
+  apartment_number: string | null;
+  floor_number: string | null;
   preferred_time: string | null;
   price_quote: number | null;
   created_at: string;

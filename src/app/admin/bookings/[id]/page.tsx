@@ -187,7 +187,22 @@ export default function AdminBookingDetailPage() {
               <>
                 <div className="flex items-start gap-3">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div><p className="text-xs text-muted-foreground">{t('bookings.detail.address')}</p><p className="text-sm">{booking.location_address}</p></div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('bookings.detail.address')}</p>
+                    <p className="text-sm">{booking.location_address}</p>
+                    {booking.apartment_number && (
+                      <p className="text-sm">
+                        <span className="text-xs text-muted-foreground">{t('bookings.detail.apartmentNumber')}: </span>
+                        {booking.apartment_number}
+                      </p>
+                    )}
+                    {booking.floor_number && (
+                      <p className="text-sm">
+                        <span className="text-xs text-muted-foreground">{t('bookings.detail.floorNumber')}: </span>
+                        {booking.floor_number}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <Separator />
               </>

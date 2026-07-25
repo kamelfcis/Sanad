@@ -124,6 +124,8 @@
       "description": "الوصف",
       "noDescription": "لم يتم تقديم وصف.",
       "address": "العنوان",
+      "apartmentNumber": "رقم الشقة",
+      "floorNumber": "الدور",
       "preferredTime": "الوقت المفضل",
       "created": "تاريخ الإنشاء"
     },

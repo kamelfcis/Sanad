@@ -124,6 +124,8 @@
       "description": "Description",
       "noDescription": "No description provided.",
       "address": "Address",
+      "apartmentNumber": "Apartment",
+      "floorNumber": "Floor",
       "preferredTime": "Preferred Time",
       "created": "Created"
     },

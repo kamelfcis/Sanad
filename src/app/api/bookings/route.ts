@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   const parsed = await parseJsonBody(request, createBookingSchema);
   if ('response' in parsed) return parsed.response;
 
-  const { service_id, description, location_address, location_lat, location_lng, preferred_time, image_urls, technician_id } =
+  const { service_id, description, location_address, location_lat, location_lng, apartment_number, floor_number, preferred_time, image_urls, technician_id } =
     parsed.data;
 
   const rpcClient = isServiceRoleConfigured() ? createServiceRoleClient() : supabase;
@@ -105,6 +105,8 @@ export async function POST(request: NextRequest) {
       location_address,
       location_lat: location_lat ?? null,
       location_lng: location_lng ?? null,
+      apartment_number: apartment_number ?? null,
+      floor_number: floor_number ?? null,
       preferred_time: preferred_time ? new Date(preferred_time).toISOString() : null,
       status: technician_id ? 'matched' : 'pending',
     })

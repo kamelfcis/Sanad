@@ -164,6 +164,18 @@ export default function BookingDetailPage() {
                       />
                     </div>
                   )}
+                  {booking.apartment_number && (
+                    <p className="mt-2 text-sm">
+                      <span className="text-xs text-muted-foreground">رقم الشقة: </span>
+                      {booking.apartment_number}
+                    </p>
+                  )}
+                  {booking.floor_number && (
+                    <p className="text-sm">
+                      <span className="text-xs text-muted-foreground">الدور: </span>
+                      {booking.floor_number}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
