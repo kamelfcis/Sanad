@@ -30,6 +30,12 @@ import {
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
+import { AdminModerationDialog } from '@/components/admin/admin-moderation-dialog';
+import {
+  AdminBlockedBadge,
+  AdminModerationActions,
+} from '@/components/admin/admin-moderation-actions';
+import { useAdminModeration, type ModerationRequest } from '@/hooks/use-admin-moderation';
 import { Calendar, Eye, Users } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
@@ -42,8 +48,9 @@ function CustomerNameDisplay({
   t: ReturnType<typeof useAdminT>['t'];
 }) {
   return (
-    <span className="font-medium text-[#0F172A] dark:text-foreground">
+    <span className="flex flex-wrap items-center gap-1.5 font-medium text-[#0F172A] dark:text-foreground">
       {customer.full_name ?? t('customers.unnamed')}
+      {customer.is_blocked ? <AdminBlockedBadge /> : null}
     </span>
   );
 }
@@ -62,10 +69,14 @@ function CustomerCard({
   customer,
   t,
   formatDate,
+  onModerate,
+  isPending,
 }: {
   customer: any;
   t: ReturnType<typeof useAdminT>['t'];
   formatDate: ReturnType<typeof useAdminT>['formatDate'];
+  onModerate: (request: ModerationRequest) => void;
+  isPending: boolean;
 }) {
   const name = customer.full_name ?? t('customers.unnamed');
 
@@ -76,9 +87,12 @@ function CustomerCard({
         subtitle={t('customers.card.subtitle')}
         avatar={<AdminEntityCardAvatar fallback={customerInitials(name)} />}
         badge={
-          <AdminEntityCardMetaPill variant="orange">
-            {t('customers.detail.bookings', { count: customer.booking_count ?? 0 })}
-          </AdminEntityCardMetaPill>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {customer.is_blocked ? <AdminBlockedBadge /> : null}
+            <AdminEntityCardMetaPill variant="orange">
+              {t('customers.detail.bookings', { count: customer.booking_count ?? 0 })}
+            </AdminEntityCardMetaPill>
+          </div>
         }
       />
 
@@ -103,7 +117,16 @@ function CustomerCard({
       </AdminEntityCardMeta>
 
       <AdminEntityCardActions>
-        <AdminEntityCardActionsGroup />
+        <AdminEntityCardActionsGroup>
+          <AdminModerationActions
+            id={customer.id}
+            name={name}
+            subject="customer"
+            isBlocked={customer.is_blocked}
+            disabled={isPending}
+            onRequest={onModerate}
+          />
+        </AdminEntityCardActionsGroup>
         <AdminEntityCardPrimaryAction href={`/admin/customers/${customer.id}`} icon={Eye}>
           {t('common.view')}
         </AdminEntityCardPrimaryAction>
@@ -117,8 +140,10 @@ export default function AdminCustomersPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useAdminCustomers(search, page);
+  const { request: moderate, dialogProps, isPending } = useAdminModeration();
 
   return (
+    <>
     <AdminListShell
       pageId="customers"
       title={t('customers.title')}
@@ -179,9 +204,19 @@ export default function AdminCustomersPage() {
                   {c.created_at ? formatDate(c.created_at) : t('common.dash')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
-                  <AdminTableActionLink href={`/admin/customers/${c.id}`}>
-                    {t('common.view')}
-                  </AdminTableActionLink>
+                  <div className="flex flex-wrap items-center gap-1">
+                    <AdminTableActionLink href={`/admin/customers/${c.id}`}>
+                      {t('common.view')}
+                    </AdminTableActionLink>
+                    <AdminModerationActions
+                      id={c.id}
+                      name={c.full_name ?? t('customers.unnamed')}
+                      subject="customer"
+                      isBlocked={c.is_blocked}
+                      disabled={isPending}
+                      onRequest={moderate}
+                    />
+                  </div>
                 </AdminPremiumTableCell>
               </AdminPremiumTableRow>
             ))}
@@ -190,9 +225,18 @@ export default function AdminCustomersPage() {
       }
       cards={
         data?.customers.map((c: any) => (
-          <CustomerCard key={c.id} customer={c} t={t} formatDate={formatDate} />
+          <CustomerCard
+            key={c.id}
+            customer={c}
+            t={t}
+            formatDate={formatDate}
+            onModerate={moderate}
+            isPending={isPending}
+          />
         )) ?? null
       }
     />
+    <AdminModerationDialog {...dialogProps} />
+    </>
   );
 }

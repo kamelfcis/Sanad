@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAdminAuditLogs } from '@/hooks/use-admin';
+import { useAdminAuditLogs, type AdminAuditLogEntry } from '@/hooks/use-admin';
 import { Badge } from '@/components/ui/badge';
 import {
   AdminPremiumTable,
@@ -30,15 +30,23 @@ import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 
 const entityFilters = ['', 'booking', 'technician', 'customer', 'service', 'category', 'review'] as const;
 
-interface AuditLogEntry {
-  id: string;
-  action: string;
-  entity_type: string;
-  entity_id: string;
-  admin_id: string;
-  created_at: string;
-  metadata?: Record<string, unknown> | null;
-  admin?: { full_name?: string | null; email?: string | null } | null;
+type AuditLogEntry = AdminAuditLogEntry;
+
+/** Short form of a UUID, or a neutral dash when the column is null. */
+function ShortId({ id, dash }: { id: string | null | undefined; dash: string }) {
+  if (!id) {
+    return <span className="text-[#94A3B8] dark:text-muted-foreground">{dash}</span>;
+  }
+  return (
+    <code className="rounded-md bg-[#F1F5F9] px-1.5 py-0.5 font-mono text-xs text-[#64748B] dark:bg-muted dark:text-muted-foreground">
+      {id.slice(0, 8)}…
+    </code>
+  );
+}
+
+/** Display name for the acting admin; falls back to a short id, then a dash. */
+function adminLabel(log: AuditLogEntry, dash: string) {
+  return log.admin?.full_name?.trim() || (log.admin_id ? log.admin_id.slice(0, 8) : dash);
 }
 
 function useAuditLogLabels(t: ReturnType<typeof useAdminT>['t']) {
@@ -77,7 +85,7 @@ function AuditLogCard({
         subtitle={
           <>
             <span className="font-semibold text-[#FF6B00]">
-              {log.admin?.full_name ?? log.admin_id.slice(0, 8)}
+              {adminLabel(log, t('common.dash'))}
             </span>{' '}
             <span>{t('auditLogs.performedOn')}</span>{' '}
             <span className="capitalize">{entityLabel(log.entity_type)}</span>
@@ -92,9 +100,9 @@ function AuditLogCard({
 
       <AdminEntityCardMeta className="mt-3">
         <AdminEntityCardTagPill>
-          <code className="font-mono text-[11px]" dir="ltr">
-            {log.entity_id.slice(0, 8)}…
-          </code>
+          <span className="font-mono text-[11px]" dir="ltr">
+            {log.entity_id ? `${log.entity_id.slice(0, 8)}…` : t('common.dash')}
+          </span>
         </AdminEntityCardTagPill>
       </AdminEntityCardMeta>
 
@@ -111,7 +119,11 @@ function AuditLogCard({
       <AdminEntityCardMeta className="mt-3">
         <AdminEntityCardMetaPill variant="muted">
           <Calendar className="h-3 w-3 shrink-0" aria-hidden />
-          <time dateTime={log.created_at}>{formatDateTime(log.created_at)}</time>
+          {log.created_at ? (
+            <time dateTime={log.created_at}>{formatDateTime(log.created_at)}</time>
+          ) : (
+            <span>{t('common.dash')}</span>
+          )}
         </AdminEntityCardMetaPill>
       </AdminEntityCardMeta>
     </AdminEntityCard>
@@ -185,18 +197,16 @@ export default function AdminAuditLogsPage() {
                   </Badge>
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
-                  {log.admin?.full_name ?? log.admin_id.slice(0, 8)}
+                  {adminLabel(log, t('common.dash'))}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell className="capitalize text-[#64748B] dark:text-muted-foreground">
                   {entityLabel(log.entity_type)}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell dir="ltr">
-                  <code className="rounded-md bg-[#F1F5F9] dark:bg-muted px-1.5 py-0.5 text-xs font-mono text-[#64748B] dark:text-muted-foreground">
-                    {log.entity_id.slice(0, 8)}…
-                  </code>
+                  <ShortId id={log.entity_id} dash={t('common.dash')} />
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
-                  {formatDateTime(log.created_at)}
+                  {log.created_at ? formatDateTime(log.created_at) : t('common.dash')}
                 </AdminPremiumTableCell>
               </AdminPremiumTableRow>
             ))}

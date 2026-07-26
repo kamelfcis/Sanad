@@ -10,6 +10,8 @@ type ProfileJoin = {
   phone: string | null;
   avatar_url: string | null;
   created_at: string;
+  is_blocked: boolean | null;
+  blocked_reason: string | null;
 };
 
 type SkillJoin = {
@@ -51,7 +53,7 @@ export async function GET(
     .select(
       `
       *,
-      profile:profiles!inner(id, full_name, email, phone, avatar_url, created_at),
+      profile:profiles!inner(id, full_name, email, phone, avatar_url, created_at, is_blocked, blocked_reason),
       skills:technician_skills(
         price_override, is_active,
         service:services(id, name_ar, name_en, slug,
@@ -79,6 +81,8 @@ export async function GET(
     phone: profile?.phone ?? null,
     avatar_url: profile?.avatar_url ?? null,
     created_at: profile?.created_at ?? tech.created_at,
+    is_blocked: profile?.is_blocked ?? false,
+    blocked_reason: profile?.blocked_reason ?? null,
     skills,
   };
 

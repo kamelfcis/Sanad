@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAdminTechnician, useAdminUpdateTechnicianStatus } from '@/hooks/use-admin';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,12 @@ import {
   AdminStatusConfirmDialog,
   type TechnicianStatusAction,
 } from '@/components/admin/admin-status-confirm-dialog';
+import { AdminModerationDialog } from '@/components/admin/admin-moderation-dialog';
+import {
+  AdminBlockedBadge,
+  AdminModerationActions,
+} from '@/components/admin/admin-moderation-actions';
+import { useAdminModeration } from '@/hooks/use-admin-moderation';
 import { useToast } from '@/hooks/use-toast';
 
 const statusColors: Record<string, string> = {
@@ -48,6 +54,13 @@ export default function AdminTechnicianDetailPage() {
   const { data: tech, isLoading, error } = useAdminTechnician(id);
   const updateStatus = useAdminUpdateTechnicianStatus();
   const [pendingAction, setPendingAction] = useState<TechnicianStatusAction | null>(null);
+  const router = useRouter();
+  // The record is gone after a delete, so leave the detail page behind.
+  const {
+    request: moderate,
+    dialogProps: moderationDialogProps,
+    isPending: moderationPending,
+  } = useAdminModeration({ onDeleted: () => router.push('/admin/technicians') });
 
   const backIconClass = dir === 'ltr' ? 'mr-1' : 'ml-1';
   const actionIconClass = dir === 'ltr' ? 'mr-1' : 'ml-1';
@@ -197,7 +210,13 @@ export default function AdminTechnicianDetailPage() {
               <Badge variant="outline" className={statusColors[tech.verification_status]}>
                 {statusLabel(tech.verification_status)}
               </Badge>
+              {tech.is_blocked ? <AdminBlockedBadge /> : null}
             </div>
+            {tech.is_blocked && tech.blocked_reason ? (
+              <p className="mt-1 text-sm text-destructive">
+                {t('moderation.blockedReason')}: {tech.blocked_reason}
+              </p>
+            ) : null}
             <AdminEntityCardInfoLtrValue className="mt-1 text-sm text-muted-foreground">
               {tech.email}
             </AdminEntityCardInfoLtrValue>
@@ -227,6 +246,22 @@ export default function AdminTechnicianDetailPage() {
                 </Button>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-destructive/20">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">{t('moderation.actionsLabel')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AdminModerationActions
+              id={id}
+              name={tech.full_name ?? t('technicians.detail.unnamed')}
+              subject="technician"
+              isBlocked={tech.is_blocked}
+              disabled={moderationPending}
+              onRequest={moderate}
+            />
           </CardContent>
         </Card>
 
@@ -340,6 +375,8 @@ export default function AdminTechnicianDetailPage() {
         onConfirm={handleConfirm}
         onCancel={() => setPendingAction(null)}
       />
+
+      <AdminModerationDialog {...moderationDialogProps} />
     </div>
   );
 }

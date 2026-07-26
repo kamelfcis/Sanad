@@ -2,12 +2,18 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAdminCustomer } from '@/hooks/use-admin';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AdminModerationDialog } from '@/components/admin/admin-moderation-dialog';
+import {
+  AdminBlockedBadge,
+  AdminModerationActions,
+} from '@/components/admin/admin-moderation-actions';
+import { useAdminModeration } from '@/hooks/use-admin-moderation';
 import { ArrowLeft, User } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { BookingStatus } from '@/components/shared/booking-status';
@@ -18,6 +24,11 @@ export default function AdminCustomerDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const { data: customer, isLoading, error } = useAdminCustomer(id);
+  const router = useRouter();
+  // The record is gone after a delete, so leave the detail page behind.
+  const { request: moderate, dialogProps, isPending } = useAdminModeration({
+    onDeleted: () => router.push('/admin/customers'),
+  });
   const backIconClass = dir === 'ltr' ? 'mr-1' : 'ml-1';
 
   if (isLoading) {
@@ -41,6 +52,8 @@ export default function AdminCustomerDetailPage() {
     );
   }
 
+  const customerName = customer.full_name ?? t('customers.detail.unnamed');
+
   return (
     <div className="p-6">
       <Button variant="ghost" size="sm" asChild className="mb-4">
@@ -54,12 +67,36 @@ export default function AdminCustomerDetailPage() {
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <User className="h-8 w-8 text-primary" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">{customer.full_name ?? t('customers.detail.unnamed')}</h1>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-bold">{customerName}</h1>
+              {customer.is_blocked ? <AdminBlockedBadge /> : null}
+            </div>
             <p className="text-sm text-muted-foreground">{customer.email}</p>
             <p className="text-sm text-muted-foreground">{customer.phone ?? t('customers.detail.noPhone')}</p>
+            {customer.is_blocked && customer.blocked_reason ? (
+              <p className="mt-1 text-sm text-destructive">
+                {t('moderation.blockedReason')}: {customer.blocked_reason}
+              </p>
+            ) : null}
           </div>
         </div>
+
+        <Card className="border-destructive/20">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">{t('moderation.actionsLabel')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AdminModerationActions
+              id={id}
+              name={customerName}
+              subject="customer"
+              isBlocked={customer.is_blocked}
+              disabled={isPending}
+              onRequest={moderate}
+            />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
@@ -112,6 +149,8 @@ export default function AdminCustomerDetailPage() {
           </Card>
         )}
       </div>
+
+      <AdminModerationDialog {...dialogProps} />
     </div>
   );
 }

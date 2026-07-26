@@ -16,6 +16,23 @@ export async function requireAuth(
     return { response: errorResponse('Unauthorized', 401) };
   }
 
+  // A blocked account is banned at the auth layer too, so its refresh token
+  // dies within one token lifetime. This closes the window in between, and
+  // covers the case where the ban landed but the profile update did not.
+  //
+  // `error` here means the column is missing (migration 00032 has not run yet);
+  // the auth-level ban still holds, so let the request through rather than
+  // locking out every API caller.
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('is_blocked')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (!error && profile?.is_blocked) {
+    return { response: errorResponse('ACCOUNT_BLOCKED', 403) };
+  }
+
   return { user };
 }
 

@@ -627,7 +627,18 @@
       "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "فشل تحميل إعدادات الدفع",
       "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "فشل تحديث إعدادات الدفع",
       "ADMIN_FETCH_SITE_SETTINGS_FAILED": "فشل تحميل إعدادات الموقع",
-      "ADMIN_UPDATE_SITE_SETTINGS_FAILED": "فشل تحديث إعدادات الموقع"
+      "ADMIN_UPDATE_SITE_SETTINGS_FAILED": "فشل تحديث إعدادات الموقع",
+      "ADMIN_USER_NOT_FOUND": "الحساب غير موجود",
+      "ADMIN_BLOCK_USER_FAILED": "تعذّر تغيير حالة الحظر",
+      "ADMIN_DELETE_USER_FAILED": "تعذّر حذف الحساب",
+      "ADMIN_DELETE_USER_BLOCKED_BY_FK": "تعذّر حذف الحساب لوجود بيانات مرتبطة به. يلزم تشغيل أحدث ترحيل لقاعدة البيانات (00032).",
+      "ADMIN_DELETE_BOOKING_FAILED": "تعذّر حذف الحجز",
+      "ADMIN_BOOKING_NOT_FOUND": "الحجز غير موجود",
+      "ADMIN_MODERATE_SELF_FORBIDDEN": "لا يمكنك تنفيذ هذا الإجراء على حسابك الشخصي",
+      "ADMIN_MODERATE_ADMIN_FORBIDDEN": "لا يمكن تنفيذ هذا الإجراء على حساب مسؤول",
+      "ADMIN_MODERATE_PROTECTED_FORBIDDEN": "هذا الحساب محمي ولا يمكن حظره أو حذفه",
+      "ADMIN_SERVICE_ROLE_REQUIRED": "هذه العملية تتطلب إعداد مفتاح الخدمة على الخادم",
+      "ACCOUNT_BLOCKED": "تم حظر هذا الحساب"
     },
     "generic": "حدث خطأ غير متوقع"
   },
@@ -665,5 +676,55 @@
     "deleted": "تم الحذف بنجاح",
     "updated": "تم التحديث بنجاح",
     "error": "حدث خطأ"
+  },
+  "moderation": {
+    "block": "حظر",
+    "unblock": "إلغاء الحظر",
+    "delete": "حذف",
+    "blockedBadge": "محظور",
+    "blockedReason": "سبب الحظر",
+    "blockedSince": "تاريخ الحظر",
+    "actionsLabel": "إجراءات الإدارة",
+    "cancel": "إلغاء",
+    "reasonLabel": "سبب الحظر (اختياري)",
+    "reasonPlaceholder": "مثال: مخالفة شروط الاستخدام",
+    "confirmPhrase": "حذف",
+    "confirmPhraseLabel": "اكتب «{{phrase}}» للتأكيد",
+    "dialog": {
+      "block": {
+        "title": "حظر هذا الحساب؟",
+        "description": "سيتم حظر {{name}} ولن يتمكن من تسجيل الدخول أو استخدام المنصة حتى يُلغى الحظر.",
+        "confirm": "حظر الحساب"
+      },
+      "unblock": {
+        "title": "إلغاء حظر هذا الحساب؟",
+        "description": "سيستعيد {{name}} إمكانية تسجيل الدخول واستخدام المنصة فوراً.",
+        "confirm": "إلغاء الحظر"
+      },
+      "deleteTechnician": {
+        "title": "حذف هذا الفني نهائياً؟",
+        "description": "سيتم حذف حساب {{name}} نهائياً.",
+        "consequences": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف ملف الفني ومهاراته وتقييماته وإشعاراته ومحادثاته. الحجوزات السابقة ستبقى محفوظة للعميل بدون فني مرتبط.",
+        "confirm": "حذف نهائياً"
+      },
+      "deleteCustomer": {
+        "title": "حذف هذا العميل نهائياً؟",
+        "description": "سيتم حذف حساب {{name}} نهائياً.",
+        "consequences": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف حساب العميل وجميع حجوزاته وتقييماته ومدفوعاته وإشعاراته ومحادثاته.",
+        "confirm": "حذف نهائياً"
+      },
+      "deleteBooking": {
+        "title": "حذف هذا الحجز نهائياً؟",
+        "description": "سيتم حذف الحجز {{name}} نهائياً.",
+        "consequences": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف صور الحجز وتعييناته وتقييمه ودفعته والمحادثة المرتبطة به.",
+        "confirm": "حذف الحجز"
+      }
+    },
+    "toast": {
+      "blocked": "تم حظر الحساب",
+      "unblocked": "تم إلغاء حظر الحساب",
+      "userDeleted": "تم حذف الحساب نهائياً",
+      "bookingDeleted": "تم حذف الحجز نهائياً"
+    }
   }
 }

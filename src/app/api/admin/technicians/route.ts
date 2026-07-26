@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     .select(
       `
       *,
-      profile:profiles!inner(id, full_name, email, phone, avatar_url, created_at),
+      profile:profiles!inner(id, full_name, email, phone, avatar_url, created_at, is_blocked, blocked_reason),
       skills:technician_skills(count)
     `,
       { count: 'exact' },
@@ -49,6 +49,8 @@ export async function GET(request: NextRequest) {
     phone: string | null;
     avatar_url: string | null;
     created_at: string;
+    is_blocked: boolean | null;
+    blocked_reason: string | null;
   };
 
   const transformed = data?.map((row: Record<string, unknown>) => {
@@ -66,6 +68,8 @@ export async function GET(request: NextRequest) {
       avatar_url: profile?.avatar_url ?? null,
       created_at: profile?.created_at ?? tech.created_at,
       skills_count: skills?.[0]?.count ?? 0,
+      is_blocked: profile?.is_blocked ?? false,
+      blocked_reason: profile?.blocked_reason ?? null,
     };
   });
 

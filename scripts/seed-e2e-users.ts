@@ -70,6 +70,23 @@ async function ensureUser(
   return data.user.id;
 }
 
+
+async function ensureUnblocked(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  await supabase.auth.admin.updateUserById(userId, { ban_duration: 'none' });
+  await supabase
+    .from('profiles')
+    .update({
+      is_blocked: false,
+      blocked_at: null,
+      blocked_reason: null,
+      blocked_by: null,
+    })
+    .eq('id', userId);
+}
+
 async function main() {
   const url = requireEnv('NEXT_PUBLIC_SUPABASE_URL');
   const key = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
@@ -81,6 +98,7 @@ async function main() {
     full_name: CUSTOMER.fullName,
     role: 'customer',
   });
+  await ensureUnblocked(supabase, customerId);
 
   await supabase.from('profiles').upsert(
     {
@@ -100,6 +118,7 @@ async function main() {
     role: 'technician',
     phone: TECH.phone,
   });
+  await ensureUnblocked(supabase, techId);
 
   await supabase.from('profiles').upsert(
     {

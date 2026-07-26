@@ -28,6 +28,9 @@ import {
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
+import { AdminModerationDialog } from '@/components/admin/admin-moderation-dialog';
+import { AdminModerationActions } from '@/components/admin/admin-moderation-actions';
+import { useAdminModeration, type ModerationRequest } from '@/hooks/use-admin-moderation';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 import { useAdminListPagination } from '@/hooks/use-admin-list-pagination';
@@ -98,6 +101,11 @@ function BookingServiceDisplay({
   );
 }
 
+/** Bookings have no name, so the dialog identifies them by a short id. */
+function bookingShortRef(id: string) {
+  return `#${id.slice(0, 8)}`;
+}
+
 function BookingCustomerDisplay({ booking }: { booking: BookingRow }) {
   return (
     <span className="text-[#64748B] dark:text-muted-foreground">
@@ -126,11 +134,15 @@ function BookingCard({
   t,
   formatDateTime,
   formatCurrency,
+  onModerate,
+  isPending,
 }: {
   booking: BookingRow;
   t: ReturnType<typeof useAdminT>['t'];
   formatDateTime: ReturnType<typeof useAdminT>['formatDateTime'];
   formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
+  onModerate: (request: ModerationRequest) => void;
+  isPending: boolean;
 }) {
   const customerName = bookingCustomerName(booking, t);
   const scheduledAt = booking.preferred_time ?? booking.created_at;
@@ -170,7 +182,15 @@ function BookingCard({
       </AdminEntityCardMeta>
 
       <AdminEntityCardActions>
-        <AdminEntityCardActionsGroup />
+        <AdminEntityCardActionsGroup>
+          <AdminModerationActions
+            id={booking.id}
+            name={bookingShortRef(booking.id)}
+            subject="booking"
+            disabled={isPending}
+            onRequest={onModerate}
+          />
+        </AdminEntityCardActionsGroup>
         <AdminEntityCardPrimaryAction href={`/admin/bookings/${booking.id}`} icon={Eye}>
           {t('common.view')}
         </AdminEntityCardPrimaryAction>
@@ -185,6 +205,7 @@ export default function AdminBookingsPage() {
   const { page, limit, setPage, setLimit, resetPage } = useAdminListPagination();
   const { data, isLoading, error } = useAdminBookings(statusFilter || undefined, page, limit);
   const bookings = asAdminListItems(data, 'bookings');
+  const { request: moderate, dialogProps, isPending } = useAdminModeration();
 
   const statusFilters = [
     { label: t('bookings.filters.all'), value: '' },
@@ -196,6 +217,7 @@ export default function AdminBookingsPage() {
   ];
 
   return (
+    <>
     <AdminListShell
       pageId="bookings"
       title={t('bookings.title')}
@@ -268,9 +290,18 @@ export default function AdminBookingsPage() {
                   {formatDateTime(b.created_at)}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
-                  <AdminTableActionLink href={`/admin/bookings/${b.id}`}>
-                    {t('common.view')}
-                  </AdminTableActionLink>
+                  <div className="flex flex-wrap items-center gap-1">
+                    <AdminTableActionLink href={`/admin/bookings/${b.id}`}>
+                      {t('common.view')}
+                    </AdminTableActionLink>
+                    <AdminModerationActions
+                      id={b.id}
+                      name={bookingShortRef(b.id)}
+                      subject="booking"
+                      disabled={isPending}
+                      onRequest={moderate}
+                    />
+                  </div>
                 </AdminPremiumTableCell>
               </AdminPremiumTableRow>
             ))}
@@ -285,9 +316,13 @@ export default function AdminBookingsPage() {
             t={t}
             formatDateTime={formatDateTime}
             formatCurrency={formatCurrency}
+            onModerate={moderate}
+            isPending={isPending}
           />
         )) ?? null
       }
     />
+    <AdminModerationDialog {...dialogProps} />
+    </>
   );
 }

@@ -18,11 +18,15 @@ import { SplitLayout } from '@/components/auth/split-layout';
 import { getSafeInternalRedirect } from '@/lib/auth/safe-redirect';
 import { Loader2, ArrowLeft } from 'lucide-react';
 
+const BLOCKED_MESSAGE =
+  'تم حظر هذا الحساب من قبل الإدارة. لمعرفة السبب أو طلب استعادة الحساب، تواصل مع الدعم.';
+
 function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = getSafeInternalRedirect(searchParams.get('next'));
+  const wasBlocked = searchParams.get('blocked') === '1';
   const { setUser, setProfile, setLoading, setSessionResolved } = useAuthStore();
   const supabase = createClient();
 
@@ -83,10 +87,15 @@ function LoginForm() {
       : emailInput;
     const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: data.password });
     if (error) {
+      // Supabase reports a banned account as `user_banned`.
+      const isBanned =
+        error.code === 'user_banned' || /banned/i.test(error.message);
+
       toast({
-        title: 'فشل تسجيل الدخول',
-        description:
-          error.message === 'Invalid login credentials'
+        title: isBanned ? 'تم حظر هذا الحساب' : 'فشل تسجيل الدخول',
+        description: isBanned
+          ? BLOCKED_MESSAGE
+          : error.message === 'Invalid login credentials'
             ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.'
             : error.message,
         variant: 'destructive',
@@ -115,6 +124,16 @@ function LoginForm() {
           <h2 className="text-2xl font-bold text-text-primary" style={{ fontFamily: 'var(--font-heading)' }}>تسجيل الدخول</h2>
           <p className="mt-1 text-sm text-text-secondary">أدخل بياناتك للوصول إلى حسابك</p>
         </div>
+
+        {wasBlocked && (
+          <div
+            role="alert"
+            data-testid="login-blocked-notice"
+            className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          >
+            {BLOCKED_MESSAGE}
+          </div>
+        )}
 
         <Button variant="outline" className="w-full border-border text-text-primary hover:bg-surface" onClick={handleGoogleLogin}>
           <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24">

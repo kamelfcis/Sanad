@@ -627,7 +627,18 @@
       "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "Failed to load payment settings",
       "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "Failed to update payment settings",
       "ADMIN_FETCH_SITE_SETTINGS_FAILED": "Failed to load site settings",
-      "ADMIN_UPDATE_SITE_SETTINGS_FAILED": "Failed to update site settings"
+      "ADMIN_UPDATE_SITE_SETTINGS_FAILED": "Failed to update site settings",
+      "ADMIN_USER_NOT_FOUND": "Account not found",
+      "ADMIN_BLOCK_USER_FAILED": "Could not change the block state",
+      "ADMIN_DELETE_USER_FAILED": "Could not delete the account",
+      "ADMIN_DELETE_USER_BLOCKED_BY_FK": "Could not delete the account because related data still references it. Run the latest database migration (00032).",
+      "ADMIN_DELETE_BOOKING_FAILED": "Could not delete the booking",
+      "ADMIN_BOOKING_NOT_FOUND": "Booking not found",
+      "ADMIN_MODERATE_SELF_FORBIDDEN": "You cannot perform this action on your own account",
+      "ADMIN_MODERATE_ADMIN_FORBIDDEN": "This action cannot be performed on an admin account",
+      "ADMIN_MODERATE_PROTECTED_FORBIDDEN": "This account is protected and cannot be blocked or deleted",
+      "ADMIN_SERVICE_ROLE_REQUIRED": "This operation requires the server service-role key",
+      "ACCOUNT_BLOCKED": "This account has been blocked"
     },
     "generic": "An unexpected error occurred"
   },
@@ -665,5 +676,55 @@
     "deleted": "Deleted successfully",
     "updated": "Updated successfully",
     "error": "Something went wrong"
+  },
+  "moderation": {
+    "block": "Block",
+    "unblock": "Unblock",
+    "delete": "Delete",
+    "blockedBadge": "Blocked",
+    "blockedReason": "Block reason",
+    "blockedSince": "Blocked on",
+    "actionsLabel": "Admin actions",
+    "cancel": "Cancel",
+    "reasonLabel": "Block reason (optional)",
+    "reasonPlaceholder": "e.g. violated the terms of use",
+    "confirmPhrase": "DELETE",
+    "confirmPhraseLabel": "Type “{{phrase}}” to confirm",
+    "dialog": {
+      "block": {
+        "title": "Block this account?",
+        "description": "{{name}} will be blocked and cannot sign in or use the platform until unblocked.",
+        "confirm": "Block account"
+      },
+      "unblock": {
+        "title": "Unblock this account?",
+        "description": "{{name}} regains access to sign in and use the platform immediately.",
+        "confirm": "Unblock"
+      },
+      "deleteTechnician": {
+        "title": "Permanently delete this technician?",
+        "description": "{{name}}'s account will be permanently deleted.",
+        "consequences": "This cannot be undone. The technician profile, skills, reviews, notifications and chats are removed. Past bookings stay with the customer, without a linked technician.",
+        "confirm": "Delete permanently"
+      },
+      "deleteCustomer": {
+        "title": "Permanently delete this customer?",
+        "description": "{{name}}'s account will be permanently deleted.",
+        "consequences": "This cannot be undone. The customer account and all of their bookings, reviews, payments, notifications and chats are removed.",
+        "confirm": "Delete permanently"
+      },
+      "deleteBooking": {
+        "title": "Permanently delete this booking?",
+        "description": "Booking {{name}} will be permanently deleted.",
+        "consequences": "This cannot be undone. The booking images, assignments, review, payment and linked conversation are removed.",
+        "confirm": "Delete booking"
+      }
+    },
+    "toast": {
+      "blocked": "Account blocked",
+      "unblocked": "Account unblocked",
+      "userDeleted": "Account permanently deleted",
+      "bookingDeleted": "Booking permanently deleted"
+    }
   }
 }

@@ -29,6 +29,12 @@ import {
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
+import { AdminModerationDialog } from '@/components/admin/admin-moderation-dialog';
+import {
+  AdminBlockedBadge,
+  AdminModerationActions,
+} from '@/components/admin/admin-moderation-actions';
+import { useAdminModeration, type ModerationRequest } from '@/hooks/use-admin-moderation';
 import { Calendar, Eye, Users } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
@@ -74,11 +80,15 @@ function TechnicianCard({
   t,
   formatDate,
   statusLabel,
+  onModerate,
+  isPending,
 }: {
   tech: AdminTechnicianListItem;
   t: ReturnType<typeof useAdminT>['t'];
   formatDate: ReturnType<typeof useAdminT>['formatDate'];
   statusLabel: (status: string) => string;
+  onModerate: (request: ModerationRequest) => void;
+  isPending: boolean;
 }) {
   const name = tech.full_name ?? t('customers.unnamed');
 
@@ -95,10 +105,13 @@ function TechnicianCard({
           />
         }
         badge={
-          <TechnicianStatusBadge
-            status={tech.verification_status}
-            label={statusLabel(tech.verification_status)}
-          />
+          <div className="flex flex-wrap items-center gap-1.5">
+            {tech.is_blocked ? <AdminBlockedBadge /> : null}
+            <TechnicianStatusBadge
+              status={tech.verification_status}
+              label={statusLabel(tech.verification_status)}
+            />
+          </div>
         }
       />
 
@@ -133,7 +146,16 @@ function TechnicianCard({
       </AdminEntityCardMeta>
 
       <AdminEntityCardActions>
-        <AdminEntityCardActionsGroup />
+        <AdminEntityCardActionsGroup>
+          <AdminModerationActions
+            id={tech.id}
+            name={name}
+            subject="technician"
+            isBlocked={tech.is_blocked}
+            disabled={isPending}
+            onRequest={onModerate}
+          />
+        </AdminEntityCardActionsGroup>
         <AdminEntityCardPrimaryAction href={`/admin/technicians/${tech.id}`} icon={Eye}>
           {t('common.view')}
         </AdminEntityCardPrimaryAction>
@@ -147,6 +169,7 @@ export default function AdminTechniciansPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useAdminTechniciansList(search, page);
+  const { request: moderate, dialogProps, isPending } = useAdminModeration();
 
   const statusLabel = (status: string) => {
     const key = `technicians.status.${status}`;
@@ -155,6 +178,7 @@ export default function AdminTechniciansPage() {
   };
 
   return (
+    <>
     <AdminListShell
       pageId="technicians"
       title={t('technicians.title')}
@@ -209,7 +233,10 @@ export default function AdminTechniciansPage() {
             {data?.technicians.map((tech) => (
               <AdminPremiumTableRow key={tech.id}>
                 <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
-                  {tech.full_name ?? t('customers.unnamed')}
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    {tech.full_name ?? t('customers.unnamed')}
+                    {tech.is_blocked ? <AdminBlockedBadge /> : null}
+                  </span>
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground" dir="ltr">
                   {tech.email ?? t('common.dash')}
@@ -232,9 +259,19 @@ export default function AdminTechniciansPage() {
                   {tech.created_at ? formatDate(tech.created_at) : t('common.dash')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
-                  <AdminTableActionLink href={`/admin/technicians/${tech.id}`}>
-                    {t('common.view')}
-                  </AdminTableActionLink>
+                  <div className="flex flex-wrap items-center gap-1">
+                    <AdminTableActionLink href={`/admin/technicians/${tech.id}`}>
+                      {t('common.view')}
+                    </AdminTableActionLink>
+                    <AdminModerationActions
+                      id={tech.id}
+                      name={tech.full_name ?? t('customers.unnamed')}
+                      subject="technician"
+                      isBlocked={tech.is_blocked}
+                      disabled={isPending}
+                      onRequest={moderate}
+                    />
+                  </div>
                 </AdminPremiumTableCell>
               </AdminPremiumTableRow>
             ))}
@@ -249,9 +286,13 @@ export default function AdminTechniciansPage() {
             t={t}
             formatDate={formatDate}
             statusLabel={statusLabel}
+            onModerate={moderate}
+            isPending={isPending}
           />
         )) ?? null
       }
     />
+    <AdminModerationDialog {...dialogProps} />
+    </>
   );
 }

@@ -147,6 +147,8 @@ export interface AdminTechnicianListItem {
   average_rating: number | null;
   created_at: string | null;
   skills_count?: number;
+  is_blocked?: boolean | null;
+  blocked_reason?: string | null;
 }
 
 export interface AdminTechnicianSkill {
@@ -189,6 +191,8 @@ export interface AdminTechnicianDetail {
   average_rating: number;
   total_ratings: number;
   created_at: string;
+  is_blocked?: boolean | null;
+  blocked_reason?: string | null;
   skills: AdminTechnicianSkill[];
   bookings: Record<string, unknown>[];
   reviews: Record<string, unknown>[];
@@ -275,6 +279,74 @@ export function useAdminCustomers(search?: string, page?: number) {
   return useQuery({
     queryKey: ['admin-customers', search, page],
     queryFn: () => fetchCustomers(search, page),
+  });
+}
+
+// ---- Moderation: block / unblock / delete ----
+
+/** Blocking state carried on every profile row the admin lists render. */
+export interface AdminBlockState {
+  is_blocked?: boolean | null;
+  blocked_at?: string | null;
+  blocked_reason?: string | null;
+  blocked_by?: string | null;
+}
+
+async function setUserBlocked(userId: string, blocked: boolean, reason?: string) {
+  const res = await fetch(`/api/admin/users/${userId}/block`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ blocked, reason: reason ?? null }),
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.BLOCK_USER_FAILED); }
+  return res.json();
+}
+
+async function deleteUser(userId: string) {
+  const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.DELETE_USER_FAILED); }
+  return res.json();
+}
+
+async function deleteBooking(bookingId: string) {
+  const res = await fetch(`/api/admin/bookings/${bookingId}`, { method: 'DELETE' });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? E.DELETE_BOOKING_FAILED); }
+  return res.json();
+}
+
+/**
+ * Blocking or removing a person moves numbers on the technician list, the
+ * customer list, their detail pages, the bookings list and the dashboard
+ * counters, so all of them are invalidated together.
+ */
+function invalidateModerationQueries(qc: ReturnType<typeof useQueryClient>) {
+  ['admin-technicians-list', 'admin-technician', 'admin-customers', 'admin-customer',
+   'admin-bookings', 'admin-booking', 'admin-dashboard', 'admin-audit-logs']
+    .forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
+}
+
+export function useAdminSetUserBlocked() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, blocked, reason }: { userId: string; blocked: boolean; reason?: string }) =>
+      setUserBlocked(userId, blocked, reason),
+    onSuccess: () => invalidateModerationQueries(qc),
+  });
+}
+
+export function useAdminDeleteUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId }: { userId: string }) => deleteUser(userId),
+    onSuccess: () => invalidateModerationQueries(qc),
+  });
+}
+
+export function useAdminDeleteBooking() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId }: { bookingId: string }) => deleteBooking(bookingId),
+    onSuccess: () => invalidateModerationQueries(qc),
   });
 }
 
@@ -611,8 +683,24 @@ export function useAdminModerateReview() {
 }
 
 // ---- Audit Logs ----
+/**
+ * Mirrors `audit_logs` (00010_admin_audit.sql). `entity_id`, `metadata` and
+ * `created_at` are all nullable in Postgres, and the `admin` relation is a left
+ * join — renderers must guard every one of them.
+ */
+export interface AdminAuditLogEntry {
+  id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  admin_id: string;
+  created_at: string | null;
+  metadata?: Record<string, unknown> | null;
+  admin?: { full_name?: string | null; email?: string | null } | null;
+}
+
 export interface AuditLogsResponse {
-  logs: any[];
+  logs: AdminAuditLogEntry[];
   total: number;
   page: number;
   limit: number;

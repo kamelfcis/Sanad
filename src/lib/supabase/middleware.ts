@@ -42,6 +42,37 @@ async function getTechnicianOnboardingStatus(
   };
 }
 
+/**
+ * The one profile read every authenticated request needs: the role for routing
+ * and the block flag for the gate below.
+ *
+ * `is_blocked` arrives with migration 00032. If the code is live before the
+ * migration has run, selecting it errors and would otherwise leave `profile`
+ * null — which reads as "no profile" and bounces every signed-in user to role
+ * selection. Fall back to the role alone so a deploy that lands ahead of the
+ * SQL degrades to the old behaviour instead of locking everyone out.
+ */
+async function loadRoutingProfile(
+  supabase: ReturnType<typeof createServerClient>,
+  userId: string,
+): Promise<{ role: string | null; is_blocked?: boolean | null } | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('role, is_blocked')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (!error) return data;
+
+  const { data: fallback } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle();
+
+  return fallback;
+}
+
 /** Routes an incomplete technician may use to fix soft gaps (e.g. bio cleared by a bad update). */
 function canAccessTechnicianRouteWhileIncomplete(pathname: string, missing: string[]) {
   if (missing.length === 0) return true;
@@ -123,14 +154,35 @@ export async function updateSession(request: NextRequest) {
   const isProtectedRoute =
     isCustomerRoute || isTechnicianRoute || isAdminRoute || isSettingsRoute || isNotificationsRoute;
 
+  // One profile read per authenticated request, shared by the block gate and
+  // every role-routing decision below.
+  const profile = user ? await loadRoutingProfile(supabase, user.id) : null;
+
+  // A blocked account keeps its cookies until the refresh token expires, so
+  // sign it out here rather than waiting for the auth-level ban to bite.
+  if (user && profile?.is_blocked) {
+    if (isApiRoute) {
+      return NextResponse.json({ error: 'ACCOUNT_BLOCKED' }, { status: 403 });
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/login';
+    url.search = '';
+    url.searchParams.set('blocked', '1');
+    const redirect = NextResponse.redirect(url);
+
+    // signOut writes the cleared auth cookies onto supabaseResponse through the
+    // setAll callback; carry them over or the session survives the redirect.
+    await supabase.auth.signOut();
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirect.cookies.set(cookie.name, cookie.value, cookie);
+    });
+
+    return redirect;
+  }
+
   if (isAuthRoute && user) {
     if (isCompleteRegistration) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
-
       if (profile && profile.role !== 'technician') {
         const url = request.nextUrl.clone();
         url.pathname = profile.role === 'admin' ? '/admin' : '/services';
@@ -145,12 +197,6 @@ export async function updateSession(request: NextRequest) {
     if (nextPath) {
       return NextResponse.redirect(redirectUrlForPath(nextPath, request.url));
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
 
     const url = request.nextUrl.clone();
     if (!profile) {
@@ -181,12 +227,6 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
-
     if (isCustomerRoute && profile?.role !== 'customer') {
       const url = request.nextUrl.clone();
       if (profile) {
