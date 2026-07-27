@@ -50,6 +50,8 @@ interface AdminModerationDialogProps {
    */
   confirmPhrase?: string;
   isPending?: boolean;
+  /** Overridden by the bulk dialog so tests can tell the two apart. */
+  testId?: string;
   labels: {
     title: string;
     description: string;
@@ -71,6 +73,7 @@ export function AdminModerationDialog({
   showReason = false,
   confirmPhrase,
   isPending = false,
+  testId = 'admin-moderation-dialog',
   labels,
   onConfirm,
   onCancel,
@@ -83,7 +86,7 @@ export function AdminModerationDialog({
         must never carry over to the next.
       */}
       <AlertDialogContent
-        data-testid="admin-moderation-dialog"
+        data-testid={testId}
         className="border-[#FF6B00]/20 sm:max-w-md"
       >
         <ModerationDialogBody

@@ -41,6 +41,15 @@ import {
   adminActionButtonDestructiveClass,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
+import { AdminModerationDialog } from '@/components/admin/admin-moderation-dialog';
+import {
+  AdminBulkDeleteToolbar,
+  AdminCardSelectToggle,
+  AdminSelectAllHeaderCell,
+  AdminSelectRowCell,
+} from '@/components/admin/admin-bulk-select';
+import { useAdminTableSelection } from '@/hooks/use-admin-table-selection';
+import { useAdminBulkDelete } from '@/hooks/use-admin-bulk-delete';
 import {
   Plus,
   Images,
@@ -91,9 +100,7 @@ function HeroSlideRowActions({
         variant="ghost"
         size="icon"
         className={adminActionButtonDestructiveClass}
-        onClick={() => {
-          if (confirm(t('heroSlides.deleteConfirm'))) onDelete(slide.id);
-        }}
+        onClick={() => onDelete(slide.id)}
         aria-label={t('common.delete')}
       >
         <Trash2 className="h-4 w-4" />
@@ -163,6 +170,9 @@ function HeroSlideCard({
   onDelete,
   onToggleActive,
   isReorderPending,
+  isSelected,
+  onSelect,
+  selectDisabled,
 }: {
   slide: any;
   index: number;
@@ -173,9 +183,19 @@ function HeroSlideCard({
   onDelete: (id: string) => void;
   onToggleActive: (slide: any) => void;
   isReorderPending: boolean;
+  isSelected: boolean;
+  onSelect: (checked: boolean) => void;
+  selectDisabled: boolean;
 }) {
   return (
     <AdminEntityCard>
+      <AdminCardSelectToggle
+        id={slide.id}
+        checked={isSelected}
+        onChange={onSelect}
+        disabled={selectDisabled}
+      />
+
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={slide.image_url}
@@ -238,9 +258,7 @@ function HeroSlideCard({
             icon={Trash2}
             label={t('common.delete')}
             variant="destructive"
-            onClick={() => {
-              if (confirm(t('heroSlides.deleteConfirm'))) onDelete(slide.id);
-            }}
+            onClick={() => onDelete(slide.id)}
           />
         </AdminEntityCardActionsGroup>
       </AdminEntityCardActions>
@@ -259,6 +277,14 @@ export default function AdminHeroSlidesPage() {
   const upload = useUpload();
 
   const iconMargin = dir === 'ltr' ? 'mr-1' : 'ml-1';
+
+  // Hero slides are not paginated, so the whole list is one selectable page.
+  const selection = useAdminTableSelection(slides ?? []);
+  const bulkDelete = useAdminBulkDelete({
+    subject: 'heroSlides',
+    deleteOne: (id) => deleteSlide.mutateAsync(id),
+    onSettled: ({ failed }) => selection.replace(failed),
+  });
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -452,6 +478,7 @@ export default function AdminHeroSlidesPage() {
   ) : null;
 
   return (
+    <>
     <AdminListShell
       pageId="hero-slides"
       title={t('heroSlides.title')}
@@ -469,9 +496,22 @@ export default function AdminHeroSlidesPage() {
       isEmpty={!slides?.length}
       empty={<AdminEmptyState icon={Images} title={t('heroSlides.empty')} />}
       cardsLayout="grid"
+      bulkToolbar={
+        <AdminBulkDeleteToolbar
+          count={selection.count}
+          isPending={bulkDelete.isPending}
+          onDelete={() => bulkDelete.request(selection.selected)}
+          onClear={selection.clear}
+        />
+      }
       table={
         <AdminPremiumTable>
           <AdminPremiumTableHead>
+            <AdminSelectAllHeaderCell
+              state={selection.headerState}
+              onChange={selection.selectAll}
+              disabled={!selection.hasSelectableRows || bulkDelete.isPending}
+            />
             <AdminPremiumTableHeaderCell>{t('tables.order')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.preview')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.title')}</AdminPremiumTableHeaderCell>
@@ -483,6 +523,12 @@ export default function AdminHeroSlidesPage() {
           <AdminPremiumTableBody>
             {slides?.map((slide: any, index: number) => (
               <AdminPremiumTableRow key={slide.id}>
+                <AdminSelectRowCell
+                  id={slide.id}
+                  checked={selection.isSelected(slide.id)}
+                  onChange={(checked) => selection.toggle(slide.id, checked)}
+                  disabled={bulkDelete.isPending}
+                />
                 <AdminPremiumTableCell>
                   <HeroSlideReorderButtons
                     index={index}
@@ -521,7 +567,7 @@ export default function AdminHeroSlidesPage() {
                   <HeroSlideRowActions
                     slide={slide}
                     onEdit={startEdit}
-                    onDelete={(id) => deleteSlide.mutate(id)}
+                    onDelete={(id) => bulkDelete.request([id])}
                     t={t}
                   />
                 </AdminPremiumTableCell>
@@ -540,12 +586,17 @@ export default function AdminHeroSlidesPage() {
             t={t}
             onMove={moveSlide}
             onEdit={startEdit}
-            onDelete={(id) => deleteSlide.mutate(id)}
+            onDelete={(id) => bulkDelete.request([id])}
             onToggleActive={toggleActive}
             isReorderPending={reorderSlides.isPending}
+            isSelected={selection.isSelected(slide.id)}
+            onSelect={(checked) => selection.toggle(slide.id, checked)}
+            selectDisabled={bulkDelete.isPending}
           />
         )) ?? null
       }
     />
+    <AdminModerationDialog {...bulkDelete.dialogProps} />
+    </>
   );
 }

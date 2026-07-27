@@ -45,6 +45,15 @@ import {
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
+import { AdminModerationDialog } from '@/components/admin/admin-moderation-dialog';
+import {
+  AdminBulkDeleteToolbar,
+  AdminCardSelectToggle,
+  AdminSelectAllHeaderCell,
+  AdminSelectRowCell,
+} from '@/components/admin/admin-bulk-select';
+import { useAdminTableSelection } from '@/hooks/use-admin-table-selection';
+import { useAdminBulkDelete } from '@/hooks/use-admin-bulk-delete';
 import { Plus, Wrench, Pencil, Trash2, X, Check } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { useAdminServicesFilters } from '@/hooks/use-admin-services-filters';
@@ -96,6 +105,7 @@ function ServiceRowActions({
         size="icon"
         className={adminActionButtonClass}
         onClick={() => onEdit(service)}
+        aria-label={t('common.edit')}
       >
         <Pencil className="h-4 w-4" />
       </Button>
@@ -103,9 +113,8 @@ function ServiceRowActions({
         variant="ghost"
         size="icon"
         className={adminActionButtonDestructiveClass}
-        onClick={() => {
-          if (confirm(t('services.deleteConfirm'))) onDelete(service.id);
-        }}
+        onClick={() => onDelete(service.id)}
+        aria-label={t('common.delete')}
       >
         <Trash2 className="h-4 w-4" />
       </Button>
@@ -144,9 +153,7 @@ function ServiceCardActions({
         icon={Trash2}
         label={t('common.delete')}
         variant="destructive"
-        onClick={() => {
-          if (confirm(t('services.deleteConfirm'))) onDelete(service.id);
-        }}
+        onClick={() => onDelete(service.id)}
       />
     </>
   );
@@ -160,6 +167,9 @@ function ServiceCard({
   formatCurrency,
   onEdit,
   onDelete,
+  isSelected,
+  onSelect,
+  selectDisabled,
 }: {
   service: any;
   t: ReturnType<typeof useAdminT>['t'];
@@ -168,11 +178,21 @@ function ServiceCard({
   formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
   onEdit: (service: any) => void;
   onDelete: (id: string) => void;
+  isSelected: boolean;
+  onSelect: (checked: boolean) => void;
+  selectDisabled: boolean;
 }) {
   const categoryLabel = serviceCategoryName(service.service_categories, locale);
 
   return (
     <AdminEntityCard>
+      <AdminCardSelectToggle
+        id={service.id}
+        checked={isSelected}
+        onChange={onSelect}
+        disabled={selectDisabled}
+      />
+
       <AdminEntityCardHeader
         title={<span dir="auto">{service.name_ar}</span>}
         subtitle={service.name_en ?? t('services.card.subtitle')}
@@ -240,6 +260,16 @@ export default function AdminServicesPage() {
   const updateService = useAdminUpdateService();
   const deleteService = useAdminDeleteService();
   const iconMargin = dir === 'ltr' ? 'mr-1' : 'ml-1';
+
+  const selection = useAdminTableSelection(
+    services ?? [],
+    `${page}|${limit}|${filters.search}|${filters.category_id}|${filters.is_active}|${filters.price_type}`,
+  );
+  const bulkDelete = useAdminBulkDelete({
+    subject: 'services',
+    deleteOne: (id) => deleteService.mutateAsync(id),
+    onSettled: ({ failed }) => selection.replace(failed),
+  });
 
   const formRef = useRef<HTMLDivElement>(null);
   const scrollToFormOnMount = useRef(false);
@@ -479,6 +509,7 @@ export default function AdminServicesPage() {
   ) : null;
 
   return (
+    <>
     <AdminListShell
       pageId="services"
       title={t('services.title')}
@@ -522,9 +553,22 @@ export default function AdminServicesPage() {
           />
         ) : null
       }
+      bulkToolbar={
+        <AdminBulkDeleteToolbar
+          count={selection.count}
+          isPending={bulkDelete.isPending}
+          onDelete={() => bulkDelete.request(selection.selected)}
+          onClear={selection.clear}
+        />
+      }
       table={
         <AdminPremiumTable>
           <AdminPremiumTableHead>
+            <AdminSelectAllHeaderCell
+              state={selection.headerState}
+              onChange={selection.selectAll}
+              disabled={!selection.hasSelectableRows || bulkDelete.isPending}
+            />
             <AdminPremiumTableHeaderCell>{t('tables.nameAr')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.nameEn')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.category')}</AdminPremiumTableHeaderCell>
@@ -535,6 +579,12 @@ export default function AdminServicesPage() {
           <AdminPremiumTableBody>
             {services?.map((s: any) => (
               <AdminPremiumTableRow key={s.id}>
+                <AdminSelectRowCell
+                  id={s.id}
+                  checked={selection.isSelected(s.id)}
+                  onChange={(checked) => selection.toggle(s.id, checked)}
+                  disabled={bulkDelete.isPending}
+                />
                 <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground" dir="auto">
                   {s.name_ar}
                 </AdminPremiumTableCell>
@@ -552,7 +602,7 @@ export default function AdminServicesPage() {
                   <ServiceRowActions
                     service={s}
                     onEdit={startEdit}
-                    onDelete={(id) => deleteService.mutate(id)}
+                    onDelete={(id) => bulkDelete.request([id])}
                     t={t}
                   />
                 </AdminPremiumTableCell>
@@ -571,10 +621,15 @@ export default function AdminServicesPage() {
             priceTypeLabel={priceTypeLabel}
             formatCurrency={formatCurrency}
             onEdit={startEdit}
-            onDelete={(id) => deleteService.mutate(id)}
+            onDelete={(id) => bulkDelete.request([id])}
+            isSelected={selection.isSelected(s.id)}
+            onSelect={(checked) => selection.toggle(s.id, checked)}
+            selectDisabled={bulkDelete.isPending}
           />
         )) ?? null
       }
     />
+    <AdminModerationDialog {...bulkDelete.dialogProps} />
+    </>
   );
 }

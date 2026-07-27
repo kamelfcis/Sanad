@@ -725,6 +725,60 @@
       "unblocked": "Account unblocked",
       "userDeleted": "Account permanently deleted",
       "bookingDeleted": "Booking permanently deleted"
+    },
+    "bulk": {
+      "toolbarLabel": "Bulk actions",
+      "select": "Select",
+      "selectedOne": "Selected",
+      "selected": "{{count}} selected",
+      "selectRow": "Select this row",
+      "selectAll": "Select all rows on this page",
+      "deleteSelected": "Delete selected",
+      "clearSelection": "Clear selection",
+      "protectedRow": "This account is protected and cannot be deleted",
+      "dialog": {
+        "bookings": {
+          "title": "Permanently delete {{count}} bookings?",
+          "description": "The {{count}} selected bookings will be permanently deleted.",
+          "consequences": "This cannot be undone. For every selected booking the images, assignments, review, payment and linked conversation are removed.",
+          "confirm": "Delete {{count}} bookings"
+        },
+        "customers": {
+          "title": "Permanently delete {{count}} customers?",
+          "description": "The {{count}} selected customer accounts will be permanently deleted.",
+          "consequences": "This cannot be undone. Each account and all of its bookings, reviews, payments, notifications and chats are removed.",
+          "confirm": "Delete {{count}} customers"
+        },
+        "technicians": {
+          "title": "Permanently delete {{count}} technicians?",
+          "description": "The {{count}} selected technician accounts will be permanently deleted.",
+          "consequences": "This cannot be undone. Each technician profile, its skills, reviews, notifications and chats are removed. Past bookings stay with the customer, without a linked technician.",
+          "confirm": "Delete {{count}} technicians"
+        },
+        "categories": {
+          "title": "Delete {{count}} categories?",
+          "description": "The {{count}} selected categories will be deleted.",
+          "consequences": "Services linked to these categories may stop appearing in the customer app.",
+          "confirm": "Delete {{count}} categories"
+        },
+        "services": {
+          "title": "Delete {{count}} services?",
+          "description": "The {{count}} selected services will be deleted.",
+          "consequences": "These services stop appearing in the customer app. Existing bookings keep the service they were created with.",
+          "confirm": "Delete {{count}} services"
+        },
+        "heroSlides": {
+          "title": "Delete {{count}} hero slides?",
+          "description": "The {{count}} selected slides will be deleted.",
+          "consequences": "The slides disappear from the customer home carousel immediately.",
+          "confirm": "Delete {{count}} slides"
+        }
+      },
+      "toast": {
+        "allDeleted": "Deleted {{count}} items",
+        "partial": "Deleted {{deleted}}, {{failed}} failed",
+        "allFailed": "Nothing was deleted — {{failed}} failed"
+      }
     }
   }
 }

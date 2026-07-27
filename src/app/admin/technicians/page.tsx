@@ -1,7 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useAdminTechniciansList, type AdminTechnicianListItem } from '@/hooks/use-admin';
+import {
+  useAdminDeleteUser,
+  useAdminTechniciansList,
+  type AdminTechnicianListItem,
+} from '@/hooks/use-admin';
 import { Badge } from '@/components/ui/badge';
 import {
   AdminPremiumTable,
@@ -34,10 +38,20 @@ import {
   AdminBlockedBadge,
   AdminModerationActions,
 } from '@/components/admin/admin-moderation-actions';
+import {
+  AdminBulkDeleteToolbar,
+  AdminCardSelectToggle,
+  AdminSelectAllHeaderCell,
+  AdminSelectRowCell,
+} from '@/components/admin/admin-bulk-select';
 import { useAdminModeration, type ModerationRequest } from '@/hooks/use-admin-moderation';
+import { useAdminTableSelection } from '@/hooks/use-admin-table-selection';
+import { useAdminBulkDelete } from '@/hooks/use-admin-bulk-delete';
 import { Calendar, Eye, Users } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
+import { isUserRowDeletable } from '@/lib/admin/moderation';
+import { useAuthStore } from '@/store/auth-store';
 import { cn } from '@/lib/utils/cn';
 
 const statusColors: Record<string, string> = {
@@ -82,6 +96,10 @@ function TechnicianCard({
   statusLabel,
   onModerate,
   isPending,
+  isSelected,
+  onSelect,
+  selectable,
+  notSelectableReason,
 }: {
   tech: AdminTechnicianListItem;
   t: ReturnType<typeof useAdminT>['t'];
@@ -89,11 +107,23 @@ function TechnicianCard({
   statusLabel: (status: string) => string;
   onModerate: (request: ModerationRequest) => void;
   isPending: boolean;
+  isSelected: boolean;
+  onSelect: (checked: boolean) => void;
+  selectable: boolean;
+  notSelectableReason: string;
 }) {
   const name = tech.full_name ?? t('customers.unnamed');
 
   return (
     <AdminEntityCard>
+      <AdminCardSelectToggle
+        id={tech.id}
+        checked={isSelected}
+        onChange={onSelect}
+        disabled={!selectable}
+        disabledReason={notSelectableReason}
+      />
+
       <AdminEntityCardHeader
         title={name}
         subtitle={t('technicians.card.subtitle')}
@@ -170,6 +200,21 @@ export default function AdminTechniciansPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useAdminTechniciansList(search, page);
   const { request: moderate, dialogProps, isPending } = useAdminModeration();
+  const actingAdminId = useAuthStore((s) => s.profile?.id ?? null);
+
+  const rows = data?.technicians ?? [];
+  const selection = useAdminTableSelection(
+    rows.map((tech) => ({ id: tech.id, selectable: isUserRowDeletable(tech, actingAdminId) })),
+    `${search}|${page}`,
+  );
+  const deleteUser = useAdminDeleteUser();
+  const bulkDelete = useAdminBulkDelete({
+    subject: 'technicians',
+    requireConfirmPhrase: true,
+    deleteOne: (id) => deleteUser.mutateAsync({ userId: id }),
+    // Accounts the server refused stay selected so the failure is visible.
+    onSettled: ({ failed }) => selection.replace(failed),
+  });
 
   const statusLabel = (status: string) => {
     const key = `technicians.status.${status}`;
@@ -214,9 +259,22 @@ export default function AdminTechniciansPage() {
           />
         ) : null
       }
+      bulkToolbar={
+        <AdminBulkDeleteToolbar
+          count={selection.count}
+          isPending={bulkDelete.isPending}
+          onDelete={() => bulkDelete.request(selection.selected)}
+          onClear={selection.clear}
+        />
+      }
       table={
         <AdminPremiumTable>
           <AdminPremiumTableHead>
+            <AdminSelectAllHeaderCell
+              state={selection.headerState}
+              onChange={selection.selectAll}
+              disabled={!selection.hasSelectableRows || bulkDelete.isPending}
+            />
             <AdminPremiumTableHeaderCell>{t('tables.name')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.email')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.status')}</AdminPremiumTableHeaderCell>
@@ -230,8 +288,15 @@ export default function AdminTechniciansPage() {
             <AdminPremiumTableHeaderCell>{t('tables.action')}</AdminPremiumTableHeaderCell>
           </AdminPremiumTableHead>
           <AdminPremiumTableBody>
-            {data?.technicians.map((tech) => (
+            {rows.map((tech) => (
               <AdminPremiumTableRow key={tech.id}>
+                <AdminSelectRowCell
+                  id={tech.id}
+                  checked={selection.isSelected(tech.id)}
+                  onChange={(checked) => selection.toggle(tech.id, checked)}
+                  disabled={bulkDelete.isPending || !isUserRowDeletable(tech, actingAdminId)}
+                  disabledReason={t('moderation.bulk.protectedRow')}
+                />
                 <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
                   <span className="flex flex-wrap items-center gap-1.5">
                     {tech.full_name ?? t('customers.unnamed')}
@@ -279,7 +344,7 @@ export default function AdminTechniciansPage() {
         </AdminPremiumTable>
       }
       cards={
-        data?.technicians.map((tech) => (
+        rows.map((tech) => (
           <TechnicianCard
             key={tech.id}
             tech={tech}
@@ -288,11 +353,16 @@ export default function AdminTechniciansPage() {
             statusLabel={statusLabel}
             onModerate={moderate}
             isPending={isPending}
+            isSelected={selection.isSelected(tech.id)}
+            onSelect={(checked) => selection.toggle(tech.id, checked)}
+            selectable={!bulkDelete.isPending && isUserRowDeletable(tech, actingAdminId)}
+            notSelectableReason={t('moderation.bulk.protectedRow')}
           />
-        )) ?? null
+        ))
       }
     />
     <AdminModerationDialog {...dialogProps} />
+    <AdminModerationDialog {...bulkDelete.dialogProps} />
     </>
   );
 }

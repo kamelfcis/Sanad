@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAdminBookings } from '@/hooks/use-admin';
+import { useAdminBookings, useAdminDeleteBooking } from '@/hooks/use-admin';
 import { BookingStatus } from '@/components/shared/booking-status';
 import { Calendar, ClipboardList, Clock, Eye } from 'lucide-react';
 import {
@@ -30,7 +30,15 @@ import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
 import { AdminModerationDialog } from '@/components/admin/admin-moderation-dialog';
 import { AdminModerationActions } from '@/components/admin/admin-moderation-actions';
+import {
+  AdminBulkDeleteToolbar,
+  AdminCardSelectToggle,
+  AdminSelectAllHeaderCell,
+  AdminSelectRowCell,
+} from '@/components/admin/admin-bulk-select';
 import { useAdminModeration, type ModerationRequest } from '@/hooks/use-admin-moderation';
+import { useAdminTableSelection } from '@/hooks/use-admin-table-selection';
+import { useAdminBulkDelete } from '@/hooks/use-admin-bulk-delete';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 import { useAdminListPagination } from '@/hooks/use-admin-list-pagination';
@@ -136,6 +144,8 @@ function BookingCard({
   formatCurrency,
   onModerate,
   isPending,
+  isSelected,
+  onSelect,
 }: {
   booking: BookingRow;
   t: ReturnType<typeof useAdminT>['t'];
@@ -143,12 +153,16 @@ function BookingCard({
   formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
   onModerate: (request: ModerationRequest) => void;
   isPending: boolean;
+  isSelected: boolean;
+  onSelect: (checked: boolean) => void;
 }) {
   const customerName = bookingCustomerName(booking, t);
   const scheduledAt = booking.preferred_time ?? booking.created_at;
 
   return (
     <AdminEntityCard>
+      <AdminCardSelectToggle id={booking.id} checked={isSelected} onChange={onSelect} />
+
       <AdminEntityCardHeader
         title={customerName}
         subtitle={t('bookings.card.subtitle')}
@@ -207,6 +221,19 @@ export default function AdminBookingsPage() {
   const bookings = asAdminListItems(data, 'bookings');
   const { request: moderate, dialogProps, isPending } = useAdminModeration();
 
+  const selection = useAdminTableSelection(
+    bookings ?? [],
+    `${statusFilter}|${page}|${limit}`,
+  );
+  const deleteBooking = useAdminDeleteBooking();
+  const bulkDelete = useAdminBulkDelete({
+    subject: 'bookings',
+    requireConfirmPhrase: true,
+    deleteOne: (id) => deleteBooking.mutateAsync({ bookingId: id }),
+    // Rows that failed stay selected so the admin can see what is left over.
+    onSettled: ({ failed }) => selection.replace(failed),
+  });
+
   const statusFilters = [
     { label: t('bookings.filters.all'), value: '' },
     { label: t('bookings.filters.pending'), value: 'pending' },
@@ -259,9 +286,22 @@ export default function AdminBookingsPage() {
           />
         ) : null
       }
+      bulkToolbar={
+        <AdminBulkDeleteToolbar
+          count={selection.count}
+          isPending={bulkDelete.isPending}
+          onDelete={() => bulkDelete.request(selection.selected)}
+          onClear={selection.clear}
+        />
+      }
       table={
         <AdminPremiumTable>
           <AdminPremiumTableHead>
+            <AdminSelectAllHeaderCell
+              state={selection.headerState}
+              onChange={selection.selectAll}
+              disabled={!selection.hasSelectableRows || bulkDelete.isPending}
+            />
             <AdminPremiumTableHeaderCell>{t('tables.service')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.customer')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.technician')}</AdminPremiumTableHeaderCell>
@@ -274,6 +314,12 @@ export default function AdminBookingsPage() {
           <AdminPremiumTableBody>
             {bookings?.map((b) => (
               <AdminPremiumTableRow key={b.id}>
+                <AdminSelectRowCell
+                  id={b.id}
+                  checked={selection.isSelected(b.id)}
+                  onChange={(checked) => selection.toggle(b.id, checked)}
+                  disabled={bulkDelete.isPending}
+                />
                 <AdminPremiumTableCell dir="auto">
                   <BookingServiceDisplay booking={b} t={t} />
                 </AdminPremiumTableCell>
@@ -318,11 +364,14 @@ export default function AdminBookingsPage() {
             formatCurrency={formatCurrency}
             onModerate={moderate}
             isPending={isPending}
+            isSelected={selection.isSelected(b.id)}
+            onSelect={(checked) => selection.toggle(b.id, checked)}
           />
         )) ?? null
       }
     />
     <AdminModerationDialog {...dialogProps} />
+    <AdminModerationDialog {...bulkDelete.dialogProps} />
     </>
   );
 }

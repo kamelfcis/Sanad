@@ -34,3 +34,22 @@ export function moderationBlocker(
   if (target.role === 'admin') return MODERATION_ERRORS.ADMIN;
   return null;
 }
+
+/**
+ * Same rule applied to a list row so the admin screens can grey out a checkbox
+ * instead of offering a bulk delete that only fails server-side. The server
+ * stays the source of truth; this just keeps obviously-doomed rows out of the
+ * batch. `actingAdminId` is optional because not every list knows who is
+ * signed in — self-deletes then fall back to the API error.
+ */
+export function isUserRowDeletable(
+  row: { id: string; email?: string | null; role?: string | null },
+  actingAdminId?: string | null,
+): boolean {
+  return (
+    moderationBlocker(
+      { id: row.id, email: row.email ?? null, role: row.role ?? null },
+      actingAdminId ?? '',
+    ) === null
+  );
+}

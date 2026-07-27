@@ -39,6 +39,15 @@ import {
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
+import { AdminModerationDialog } from '@/components/admin/admin-moderation-dialog';
+import {
+  AdminBulkDeleteToolbar,
+  AdminCardSelectToggle,
+  AdminSelectAllHeaderCell,
+  AdminSelectRowCell,
+} from '@/components/admin/admin-bulk-select';
+import { useAdminTableSelection } from '@/hooks/use-admin-table-selection';
+import { useAdminBulkDelete } from '@/hooks/use-admin-bulk-delete';
 import { CategoryIconPicker } from '@/components/admin/category-icon-picker';
 import { CategoryIconDisplay } from '@/components/shared/category-icon-display';
 import { resolveCategoryIconType, type CategoryIconType } from '@/lib/icons/category-icons';
@@ -74,6 +83,7 @@ function CategoryRowActions({
         size="icon"
         className={adminActionButtonClass}
         onClick={() => onEdit(category)}
+        aria-label={t('common.edit')}
       >
         <Pencil className="h-4 w-4" />
       </Button>
@@ -81,9 +91,8 @@ function CategoryRowActions({
         variant="ghost"
         size="icon"
         className={adminActionButtonDestructiveClass}
-        onClick={() => {
-          if (confirm(t('categories.deleteConfirm'))) onDelete(category.id);
-        }}
+        onClick={() => onDelete(category.id)}
+        aria-label={t('common.delete')}
       >
         <Trash2 className="h-4 w-4" />
       </Button>
@@ -123,9 +132,7 @@ function CategoryCardActions({
         icon={Trash2}
         label={t('common.delete')}
         variant="destructive"
-        onClick={() => {
-          if (confirm(t('categories.deleteConfirm'))) onDelete(category.id);
-        }}
+        onClick={() => onDelete(category.id)}
       />
     </>
   );
@@ -136,17 +143,30 @@ function CategoryAdminCard({
   t,
   onEdit,
   onDelete,
+  isSelected,
+  onSelect,
+  selectDisabled,
 }: {
   category: any;
   t: ReturnType<typeof useAdminT>['t'];
   onEdit: (category: any) => void;
   onDelete: (id: string) => void;
+  isSelected: boolean;
+  onSelect: (checked: boolean) => void;
+  selectDisabled: boolean;
 }) {
   const iconType = resolveCategoryIconType(category.icon, category.icon_type);
 
   return (
     <div data-testid={`category-card-${category.slug}`}>
       <AdminEntityCard>
+      <AdminCardSelectToggle
+        id={category.id}
+        checked={isSelected}
+        onChange={onSelect}
+        disabled={selectDisabled}
+      />
+
       <AdminEntityCardHeader
         title={<span dir="auto">{category.name_ar}</span>}
         subtitle={category.name_en}
@@ -216,6 +236,13 @@ export default function AdminCategoriesPage() {
   const updateCategory = useAdminUpdateCategory();
   const deleteCategory = useAdminDeleteCategory();
   const iconMargin = dir === 'ltr' ? 'mr-1' : 'ml-1';
+
+  const selection = useAdminTableSelection(categories ?? [], `${page}|${limit}`);
+  const bulkDelete = useAdminBulkDelete({
+    subject: 'categories',
+    deleteOne: (id) => deleteCategory.mutateAsync(id),
+    onSettled: ({ failed }) => selection.replace(failed),
+  });
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -352,6 +379,7 @@ export default function AdminCategoriesPage() {
   ) : null;
 
   return (
+    <>
     <AdminListShell
       pageId="categories"
       title={t('categories.title')}
@@ -386,9 +414,22 @@ export default function AdminCategoriesPage() {
           />
         ) : null
       }
+      bulkToolbar={
+        <AdminBulkDeleteToolbar
+          count={selection.count}
+          isPending={bulkDelete.isPending}
+          onDelete={() => bulkDelete.request(selection.selected)}
+          onClear={selection.clear}
+        />
+      }
       table={
         <AdminPremiumTable>
           <AdminPremiumTableHead>
+            <AdminSelectAllHeaderCell
+              state={selection.headerState}
+              onChange={selection.selectAll}
+              disabled={!selection.hasSelectableRows || bulkDelete.isPending}
+            />
             <AdminPremiumTableHeaderCell>{t('tables.icon')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.nameAr')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.nameEn')}</AdminPremiumTableHeaderCell>
@@ -399,6 +440,12 @@ export default function AdminCategoriesPage() {
           <AdminPremiumTableBody>
             {categories?.map((c: any) => (
               <AdminPremiumTableRow key={c.id}>
+                <AdminSelectRowCell
+                  id={c.id}
+                  checked={selection.isSelected(c.id)}
+                  onChange={(checked) => selection.toggle(c.id, checked)}
+                  disabled={bulkDelete.isPending}
+                />
                 <AdminPremiumTableCell>
                   <CategoryIconDisplay
                     icon={c.icon}
@@ -421,7 +468,7 @@ export default function AdminCategoriesPage() {
                   <CategoryRowActions
                     category={c}
                     onEdit={startEdit}
-                    onDelete={(id) => deleteCategory.mutate(id)}
+                    onDelete={(id) => bulkDelete.request([id])}
                     t={t}
                   />
                 </AdminPremiumTableCell>
@@ -437,10 +484,15 @@ export default function AdminCategoriesPage() {
             category={c}
             t={t}
             onEdit={startEdit}
-            onDelete={(id) => deleteCategory.mutate(id)}
+            onDelete={(id) => bulkDelete.request([id])}
+            isSelected={selection.isSelected(c.id)}
+            onSelect={(checked) => selection.toggle(c.id, checked)}
+            selectDisabled={bulkDelete.isPending}
           />
         )) ?? null
       }
     />
+    <AdminModerationDialog {...bulkDelete.dialogProps} />
+    </>
   );
 }

@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from 'react';
-import { useAdminCustomers } from '@/hooks/use-admin';
+import { useAdminCustomers, useAdminDeleteUser } from '@/hooks/use-admin';
 import {
   AdminPremiumTable,
   AdminPremiumTableBody,
@@ -35,10 +35,20 @@ import {
   AdminBlockedBadge,
   AdminModerationActions,
 } from '@/components/admin/admin-moderation-actions';
+import {
+  AdminBulkDeleteToolbar,
+  AdminCardSelectToggle,
+  AdminSelectAllHeaderCell,
+  AdminSelectRowCell,
+} from '@/components/admin/admin-bulk-select';
 import { useAdminModeration, type ModerationRequest } from '@/hooks/use-admin-moderation';
+import { useAdminTableSelection } from '@/hooks/use-admin-table-selection';
+import { useAdminBulkDelete } from '@/hooks/use-admin-bulk-delete';
 import { Calendar, Eye, Users } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
+import { isUserRowDeletable } from '@/lib/admin/moderation';
+import { useAuthStore } from '@/store/auth-store';
 
 function CustomerNameDisplay({
   customer,
@@ -71,17 +81,33 @@ function CustomerCard({
   formatDate,
   onModerate,
   isPending,
+  isSelected,
+  onSelect,
+  selectable,
+  notSelectableReason,
 }: {
   customer: any;
   t: ReturnType<typeof useAdminT>['t'];
   formatDate: ReturnType<typeof useAdminT>['formatDate'];
   onModerate: (request: ModerationRequest) => void;
   isPending: boolean;
+  isSelected: boolean;
+  onSelect: (checked: boolean) => void;
+  selectable: boolean;
+  notSelectableReason: string;
 }) {
   const name = customer.full_name ?? t('customers.unnamed');
 
   return (
     <AdminEntityCard>
+      <AdminCardSelectToggle
+        id={customer.id}
+        checked={isSelected}
+        onChange={onSelect}
+        disabled={!selectable}
+        disabledReason={notSelectableReason}
+      />
+
       <AdminEntityCardHeader
         title={name}
         subtitle={t('customers.card.subtitle')}
@@ -141,6 +167,21 @@ export default function AdminCustomersPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useAdminCustomers(search, page);
   const { request: moderate, dialogProps, isPending } = useAdminModeration();
+  const actingAdminId = useAuthStore((s) => s.profile?.id ?? null);
+
+  const rows: any[] = data?.customers ?? [];
+  const selection = useAdminTableSelection(
+    rows.map((c) => ({ id: c.id, selectable: isUserRowDeletable(c, actingAdminId) })),
+    `${search}|${page}`,
+  );
+  const deleteUser = useAdminDeleteUser();
+  const bulkDelete = useAdminBulkDelete({
+    subject: 'customers',
+    requireConfirmPhrase: true,
+    deleteOne: (id) => deleteUser.mutateAsync({ userId: id }),
+    // Accounts the server refused stay selected so the failure is visible.
+    onSettled: ({ failed }) => selection.replace(failed),
+  });
 
   return (
     <>
@@ -173,9 +214,22 @@ export default function AdminCustomersPage() {
           />
         ) : null
       }
+      bulkToolbar={
+        <AdminBulkDeleteToolbar
+          count={selection.count}
+          isPending={bulkDelete.isPending}
+          onDelete={() => bulkDelete.request(selection.selected)}
+          onClear={selection.clear}
+        />
+      }
       table={
         <AdminPremiumTable>
           <AdminPremiumTableHead>
+            <AdminSelectAllHeaderCell
+              state={selection.headerState}
+              onChange={selection.selectAll}
+              disabled={!selection.hasSelectableRows || bulkDelete.isPending}
+            />
             <AdminPremiumTableHeaderCell>{t('tables.name')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.email')}</AdminPremiumTableHeaderCell>
             <AdminPremiumTableHeaderCell>{t('tables.phone')}</AdminPremiumTableHeaderCell>
@@ -186,8 +240,15 @@ export default function AdminCustomersPage() {
             <AdminPremiumTableHeaderCell>{t('tables.action')}</AdminPremiumTableHeaderCell>
           </AdminPremiumTableHead>
           <AdminPremiumTableBody>
-            {data?.customers.map((c: any) => (
+            {rows.map((c: any) => (
               <AdminPremiumTableRow key={c.id}>
+                <AdminSelectRowCell
+                  id={c.id}
+                  checked={selection.isSelected(c.id)}
+                  onChange={(checked) => selection.toggle(c.id, checked)}
+                  disabled={bulkDelete.isPending || !isUserRowDeletable(c, actingAdminId)}
+                  disabledReason={t('moderation.bulk.protectedRow')}
+                />
                 <AdminPremiumTableCell>
                   <CustomerNameDisplay customer={c} t={t} />
                 </AdminPremiumTableCell>
@@ -224,7 +285,7 @@ export default function AdminCustomersPage() {
         </AdminPremiumTable>
       }
       cards={
-        data?.customers.map((c: any) => (
+        rows.map((c: any) => (
           <CustomerCard
             key={c.id}
             customer={c}
@@ -232,11 +293,16 @@ export default function AdminCustomersPage() {
             formatDate={formatDate}
             onModerate={moderate}
             isPending={isPending}
+            isSelected={selection.isSelected(c.id)}
+            onSelect={(checked) => selection.toggle(c.id, checked)}
+            selectable={!bulkDelete.isPending && isUserRowDeletable(c, actingAdminId)}
+            notSelectableReason={t('moderation.bulk.protectedRow')}
           />
-        )) ?? null
+        ))
       }
     />
     <AdminModerationDialog {...dialogProps} />
+    <AdminModerationDialog {...bulkDelete.dialogProps} />
     </>
   );
 }

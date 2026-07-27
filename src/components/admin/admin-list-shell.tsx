@@ -22,6 +22,8 @@ export interface AdminListShellProps {
   filters?: React.ReactNode;
   search?: React.ReactNode;
   toolbar?: React.ReactNode;
+  /** Multi-select actions. Rendered directly above the rows, only when there are rows. */
+  bulkToolbar?: React.ReactNode;
   isLoading: boolean;
   error?: string | null;
   isEmpty: boolean;
@@ -61,6 +63,7 @@ export function AdminListShell({
   filters,
   search,
   toolbar,
+  bulkToolbar,
   isLoading,
   error,
   isEmpty,
@@ -107,6 +110,7 @@ export function AdminListShell({
         empty
       ) : (
         <>
+          {bulkToolbar}
           {viewMode === 'table' ? table : (
             <div
               className={
