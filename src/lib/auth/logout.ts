@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { clearAppState } from '@/lib/auth/auth-cleanup';
-import { useAuthStore } from '@/store/auth-store';
 
 export type LogoutScope = 'local' | 'global';
 
@@ -32,6 +31,11 @@ export function markVoluntaryLogout() {
   } catch {
     // Ignore storage errors — cleanup still runs
   }
+}
+
+export function clearLogoutTransition() {
+  if (typeof document === 'undefined') return;
+  document.body.classList.remove('logout-fade-out');
 }
 
 export function resetVoluntaryLogoutFlag() {
@@ -100,9 +104,9 @@ async function signOutWithRetry(scope: LogoutScope): Promise<void> {
   }
 }
 
-export function clearLogoutTransition() {
+function applyLogoutTransition() {
   if (typeof document !== 'undefined') {
-    document.body.classList.remove('logout-fade-out');
+    document.body.classList.add('logout-fade-out');
   }
 }
 
@@ -119,31 +123,27 @@ export async function logout(options: LogoutOptions = {}): Promise<void> {
   const {
     scope = 'local',
     showToast = true,
-    redirectTo = '/services',
+    redirectTo = '/',
     skipServer = false,
   } = options;
 
   markVoluntaryLogout();
-  // Clear client auth state immediately so guards/nav don't race with async signOut.
-  useAuthStore.getState().reset();
+  applyLogoutTransition();
 
-  try {
-    if (!skipServer) {
-      await signOutWithRetry(scope);
-    }
-  } catch (err) {
-    console.warn('[logout] signOut failed:', err);
-  } finally {
-    clearAppState();
-    clearLogoutTransition();
+  if (!skipServer) {
+    await signOutWithRetry(scope);
+  }
 
-    if (showToast) {
-      queueLogoutSuccessToast();
-    }
+  clearAppState();
 
-    if (typeof window !== 'undefined') {
-      window.location.replace(redirectTo);
-    }
+  if (showToast) {
+    queueLogoutSuccessToast();
+  }
+
+  await new Promise((r) => setTimeout(r, 150));
+
+  if (typeof window !== 'undefined') {
+    window.location.href = redirectTo;
   }
 }
 

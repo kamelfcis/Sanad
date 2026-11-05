@@ -2,9 +2,17 @@
 
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { TechniciansMapInnerProps } from '@/components/maps/technicians-map-inner';
+import type { TechnicianMapMarker } from '@/lib/technicians/map-markers';
 
-export type TechniciansMapProps = TechniciansMapInnerProps;
+export type { TechnicianMapMarker };
+export { toMarkers } from '@/lib/technicians/map-markers';
+
+export interface TechniciansMapProps {
+  technicians: TechnicianMapMarker[];
+  center: import('@/lib/geo').GeoPoint;
+  zoom?: number;
+  className?: string;
+}
 
 export const TechniciansMap = dynamic(
   () => import('@/components/maps/technicians-map-inner').then((mod) => mod.TechniciansMapInner),

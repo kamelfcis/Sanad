@@ -1,1 +1,4 @@
-postgresql://postgres.xswhctwqvdtejmncswis@aws-0-eu-west-1.pooler.supabase.com:5432/postgres
+ryor
+
+module.exports = function BinaryOr(x, y) {
+	if ((x !== 0 && x !== 1) || (y !== 0 && y 

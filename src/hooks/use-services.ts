@@ -50,24 +50,17 @@ async function fetchServiceById(serviceId: string): Promise<Service> {
   return service;
 }
 
-import { formatMoney, DEFAULT_CURRENCY } from '@/lib/currency';
-import type { SiteCurrency } from '@/lib/currency/constants';
-
-export function formatServicePrice(
-  price: number | string | null | undefined,
-  currency: SiteCurrency = DEFAULT_CURRENCY,
-): string {
+export function formatServicePrice(price: number | string | null | undefined): string {
   if (price == null || price === '') return 'حسب المعاينة';
   const amount = typeof price === 'number' ? price : Number(price);
-  return Number.isFinite(amount) ? formatMoney(Math.round(amount), currency, 'ar') : 'حسب المعاينة';
+  return Number.isFinite(amount) ? `${Math.round(amount)} ج.م` : 'حسب المعاينة';
 }
 
-export function useServices(categorySlug?: string, options?: { enabled?: boolean }) {
+export function useServices(categorySlug?: string) {
   return useQuery({
     queryKey: ['services', categorySlug],
     queryFn: () => fetchServices(categorySlug),
     staleTime: 5 * 60 * 1000,
-    enabled: options?.enabled ?? true,
   });
 }
 

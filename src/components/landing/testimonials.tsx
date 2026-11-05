@@ -113,10 +113,10 @@ export function TestimonialsSection() {
                   type="button"
                   aria-label={`الانتقال إلى الشهادة ${i + 1}`}
                   onClick={() => setCurrent(i)}
-                  className={`min-h-6 min-w-6 rounded-full transition-all ${
+                  className={`h-2 rounded-full transition-all ${
                     i === current
                       ? 'w-8 bg-gradient-to-r from-primary to-accent'
-                      : 'bg-border'
+                      : 'w-2 bg-border'
                   }`}
                 />
               ))}

@@ -195,11 +195,16 @@ export async function loginEmail(
     }
   });
 
-  await page.goto('/auth/login');
+  await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
+  await page.locator('#email').waitFor({ state: 'attached', timeout: 60_000 });
+  await page.waitForTimeout(2500);
   await page.fill('#email', email);
   await page.fill('#password', password);
   await page.getByRole('button', { name: 'تسجيل الدخول' }).click();
-  await page.waitForURL((url) => url.pathname.includes(expectedPathPart), { timeout: 60_000 });
+  await page.waitForURL((url) => url.pathname.includes(expectedPathPart), {
+    timeout: 60_000,
+    waitUntil: 'domcontentloaded',
+  });
   await waitForPageReady(page, 30_000);
 
   return { consoleErrors, networkErrors };
@@ -262,6 +267,8 @@ export async function openCustomerBookingForm(
   await page.goto(target);
 
   if (page.url().includes('/auth/login')) {
+    await page.locator('#email').waitFor({ state: 'attached', timeout: 60_000 });
+    await page.waitForTimeout(2500);
     await page.fill('#email', email);
     await page.fill('#password', password);
     await page.getByRole('button', { name: 'تسجيل الدخول' }).click();

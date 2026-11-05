@@ -1,0 +1,18 @@
+---
+description: Vercel production deploy for Sanad
+alwaysApply: false
+---
+
+# Sanad Vercel production
+
+- **Production URL:** https://sanad-five-zeta.vercel.app/ (also `.cursor/sanad-production.url`)
+- **Vercel project:** `sanad-five-zeta` on Vercel
+
+When the user asks to deploy or redeploy after changes:
+
+1. Commit/push only when the user explicitly asks.
+2. Read Vercel credentials from the user's **personal agent store** file `sanad-vercel-deploy.json` (never commit tokens; never paste tokens in chat).
+3. Deploy with `VERCEL_TOKEN` set from that store, from project root: `npx vercel deploy --prod` (link project first with `npx vercel link` if `.vercel` is missing).
+4. Confirm production env vars on Vercel match Supabase (`NEXT_PUBLIC_*`, service role server-only).
+
+Local dev uses `.env.local`; production uses Vercel environment variables.

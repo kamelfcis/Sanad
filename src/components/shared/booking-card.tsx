@@ -32,12 +32,7 @@ export function BookingCard({
 
   return (
     <>
-      <Card
-        className="transition-all hover:border-primary/50 hover:shadow-sm"
-        dir="rtl"
-        data-testid="booking-card"
-        data-booking-id={id}
-      >
+      <Card className="transition-all hover:border-primary/50 hover:shadow-sm" dir="rtl">
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-3">
             <Link

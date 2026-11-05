@@ -43,23 +43,7 @@ function createEntry(
   };
 }
 
-/**
- * Pluggable error reporter (Sentry, Datadog, etc.). Left unset by default so the
- * logger works with zero external dependencies. Wire a real backend once at
- * startup (see `docs/ENVIRONMENT.md` → Monitoring) via `setErrorReporter`.
- */
-export interface ErrorReporter {
-  captureException(error: Error, context?: LogContext): void;
-  captureMessage(message: string, context?: LogContext): void;
-}
-
-let errorReporter: ErrorReporter | null = null;
-
-export function setErrorReporter(reporter: ErrorReporter | null): void {
-  errorReporter = reporter;
-}
-
-/** Structured logger — forwards warnings/errors to the configured reporter. */
+/** Structured logger — ready for Sentry integration later */
 export const logger = {
   debug(message: string, context?: LogContext) {
     if (!isDev) return;
@@ -75,13 +59,13 @@ export const logger = {
   warn(message: string, context?: LogContext, error?: Error) {
     const entry = createEntry('warn', message, context, error);
     console.warn(formatEntry(entry), error ?? '');
-    errorReporter?.captureMessage(message, context);
+    // Future: Sentry.captureMessage(message, { level: 'warning', extra: context })
   },
 
   error(message: string, error?: Error, context?: LogContext) {
     const entry = createEntry('error', message, context, error);
     console.error(formatEntry(entry), error ?? '');
-    errorReporter?.captureException(error ?? new Error(message), context);
+    // Future: Sentry.captureException(error ?? new Error(message), { extra: context })
   },
 };
 

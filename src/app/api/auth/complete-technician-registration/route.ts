@@ -71,7 +71,6 @@ export async function POST(request: NextRequest) {
 
   const profilePhoto = formData.get('profilePhoto');
   const idCardPhoto = formData.get('idCardPhoto');
-  const idCardBackPhoto = formData.get('idCardBackPhoto');
 
   const profilePhotoError = validateImageFile(
     profilePhoto instanceof File ? profilePhoto : null,
@@ -83,18 +82,10 @@ export async function POST(request: NextRequest) {
 
   const idCardPhotoError = validateImageFile(
     idCardPhoto instanceof File ? idCardPhoto : null,
-    'صورة وش البطاقة',
+    'صورة البطاقة',
   );
   if (idCardPhotoError) {
     return NextResponse.json({ error: idCardPhotoError }, { status: 400 });
-  }
-
-  const idCardBackPhotoError = validateImageFile(
-    idCardBackPhoto instanceof File ? idCardBackPhoto : null,
-    'صورة ضهر البطاقة',
-  );
-  if (idCardBackPhotoError) {
-    return NextResponse.json({ error: idCardBackPhotoError }, { status: 400 });
   }
 
   const admin = createServiceRoleClient();
@@ -112,23 +103,18 @@ export async function POST(request: NextRequest) {
   const userId = auth.user.id;
   const email = profile.email ?? auth.user.email ?? '';
 
-  const profileUpload = await uploadFileForUser(
+  const profilePhotoUrl = await uploadFileForUser(
     userId,
     profilePhoto as File,
     (profilePhoto as File).type,
   );
-  const idCardUpload = await uploadFileForUser(
+  const idCardPhotoUrl = await uploadFileForUser(
     userId,
     idCardPhoto as File,
     (idCardPhoto as File).type,
   );
-  const idCardBackUpload = await uploadFileForUser(
-    userId,
-    idCardBackPhoto as File,
-    (idCardBackPhoto as File).type,
-  );
 
-  if (!profileUpload.ok || !idCardUpload.ok || !idCardBackUpload.ok) {
+  if (!profilePhotoUrl || !idCardPhotoUrl) {
     return NextResponse.json({ error: 'فشل رفع الصور. حاول مرة أخرى.' }, { status: 500 });
   }
 
@@ -148,9 +134,8 @@ export async function POST(request: NextRequest) {
       workingHours: parsed.data.workingHours,
       bio: parsed.data.bio,
     },
-    profileUpload.url,
-    idCardUpload.url,
-    idCardBackUpload.url,
+    profilePhotoUrl,
+    idCardPhotoUrl,
   );
 
   if (result.error) {

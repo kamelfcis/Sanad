@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AdminPayment, Payment, PaymentMethod, PaymentSettings } from '@/types/payments';
-import { ADMIN_ERROR_CODES as E } from '@/lib/i18n/admin/types';
 
 interface BookingPaymentResponse {
   payment: Payment | null;
@@ -52,7 +51,7 @@ async function fetchAdminPayments(status?: string, page = 1): Promise<AdminPayme
   if (status) params.set('status', status);
   params.set('page', String(page));
   const res = await fetch(`/api/admin/payments?${params}`);
-  if (!res.ok) throw new Error(E.FETCH_PAYMENTS_FAILED);
+  if (!res.ok) throw new Error('Failed to fetch payments');
   return res.json();
 }
 
@@ -60,7 +59,7 @@ async function approvePayment(paymentId: string): Promise<Payment> {
   const res = await fetch(`/api/admin/payments/${paymentId}/approve`, { method: 'PATCH' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error ?? E.APPROVE_PAYMENT_FAILED);
+    throw new Error(err.error ?? 'Failed to approve payment');
   }
   return res.json();
 }
@@ -73,14 +72,14 @@ async function rejectPayment(paymentId: string, rejection_reason: string): Promi
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error ?? E.REJECT_PAYMENT_FAILED);
+    throw new Error(err.error ?? 'Failed to reject payment');
   }
   return res.json();
 }
 
 async function fetchPaymentSettings(): Promise<PaymentSettings> {
   const res = await fetch('/api/admin/payment-settings');
-  if (!res.ok) throw new Error(E.FETCH_PAYMENT_SETTINGS_FAILED);
+  if (!res.ok) throw new Error('Failed to fetch payment settings');
   return res.json();
 }
 
@@ -92,7 +91,7 @@ async function updatePaymentSettings(data: Omit<PaymentSettings, 'id' | 'updated
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error ?? E.UPDATE_PAYMENT_SETTINGS_FAILED);
+    throw new Error(err.error ?? 'Failed to update payment settings');
   }
   return res.json();
 }

@@ -17,9 +17,7 @@ import {
   Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/store/auth-store';
-import { getDisplayEmail, getDisplayName } from '@/lib/auth/display-user';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { UserNav } from '@/components/shared/user-nav';
 
@@ -49,13 +47,9 @@ interface MobileMenuProps {
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname();
-  const { user, profile, isLoading } = useAuthStore();
-  const isLoggedIn = Boolean(user);
+  const { profile } = useAuthStore();
 
-  const displayName = getDisplayName(user, profile);
-  const displayEmail = getDisplayEmail(user, profile);
-
-  const bookHref = isLoggedIn ? '/customer/bookings/new' : '/auth/register';
+  const bookHref = profile ? '/customer/bookings/new' : '/auth/register';
 
   return (
     <AnimatePresence>
@@ -66,7 +60,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm 2xl:hidden"
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm xl:hidden"
             onClick={onClose}
           />
           <motion.div
@@ -74,7 +68,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-r border-border bg-background shadow-2xl 2xl:hidden"
+            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-r border-border bg-background shadow-2xl xl:hidden"
             role="dialog"
             aria-modal="true"
             aria-label="قائمة التنقل"
@@ -110,19 +104,17 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             </div>
 
             <div className="border-b border-border px-5 py-4">
-              {isLoggedIn ? (
+              {profile ? (
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1 text-right">
                     <p className="truncate text-sm font-bold text-text-primary">
-                      {displayName ?? 'مستخدم'}
+                      {profile.full_name || 'مستخدم'}
                     </p>
-                    {displayEmail && (
-                      <p className="truncate text-xs text-text-muted">{displayEmail}</p>
-                    )}
+                    <p className="truncate text-xs text-text-muted">{profile.email}</p>
                   </div>
-                  <UserNav size="sm" />
+                  <UserNav />
                 </div>
-              ) : !isLoading ? (
+              ) : (
                 <div className="flex flex-col gap-2">
                   <Link href="/auth/login" onClick={onClose}>
                     <Button
@@ -143,7 +135,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     </Button>
                   </Link>
                 </div>
-              ) : null}
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-4">
@@ -215,4 +207,8 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       )}
     </AnimatePresence>
   );
+}
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }

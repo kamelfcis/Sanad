@@ -1,11 +1,7 @@
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
-import { getServerAuthSession } from '@/lib/auth/server-session';
-import { AuthBootstrap } from '@/components/shared/auth-bootstrap';
 import { AuthGuard } from '@/components/shared/auth-guard';
 import { Header } from '@/components/shared/header';
-import { DashboardSessionManager } from '@/components/shared/dashboard-session-manager';
-import { DashboardNotificationProvider } from '@/components/layout/dashboard-notification-provider';
 
 export const metadata: Metadata = pageMetadata(
   'لوحة العميل',
@@ -13,25 +9,18 @@ export const metadata: Metadata = pageMetadata(
 );
 
 const customerNavItems = [
-  { label: 'الخدمات', href: '/services' },
+  { label: 'الخدمات', href: '/customer/services' },
   { label: 'حجوزاتي', href: '/customer/bookings' },
   { label: 'المحادثات', href: '/customer/chat' },
 ];
 
-export default async function CustomerLayout({ children }: { children: React.ReactNode }) {
-  const { user, profile } = await getServerAuthSession();
-
+export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthBootstrap initialUser={user} initialProfile={profile}>
-      <AuthGuard allowedRoles={['customer']}>
-        <DashboardNotificationProvider>
-          <DashboardSessionManager />
-          <div className="flex min-h-screen flex-col">
-            <Header navItems={customerNavItems} />
-            <main className="flex-1">{children}</main>
-          </div>
-        </DashboardNotificationProvider>
-      </AuthGuard>
-    </AuthBootstrap>
+    <AuthGuard allowedRoles={['customer']}>
+      <div className="flex min-h-screen flex-col">
+        <Header navItems={customerNavItems} />
+        <main className="flex-1">{children}</main>
+      </div>
+    </AuthGuard>
   );
 }

@@ -17,11 +17,43 @@ import { OptimizedImage } from '@/components/shared/optimized-image';
 import { HeroTrustBadges } from '@/components/landing/hero-trust-badges';
 import { SlideUp, SlideUpView } from '@/components/animations';
 import { colors } from '@/lib/design-system';
-import { useHeroSlides } from '@/hooks/use-hero-slides';
-import { getCategoryIcon } from '@/lib/icons/category-icons';
-import { cn } from '@/lib/utils/cn';
+
+const heroImages = [
+  {
+    src: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80',
+    alt: 'فني كهرباء',
+    label: 'كهرباء',
+    rotate: -3,
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&q=80',
+    alt: 'فني سباكة',
+    label: 'سباكة',
+    rotate: 2,
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&q=80',
+    alt: 'فني تكييف',
+    label: 'تكييف وتبريد',
+    rotate: -2,
+    featured: true,
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1613665813446-82a78c468a1d?w=600&q=80',
+    alt: 'نجار',
+    label: 'نجارة',
+    rotate: 3,
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=600&q=80',
+    alt: 'دهان',
+    label: 'دهانات',
+    rotate: -1,
+  },
+];
 
 const features = [
+  { icon: Users, label: 'فنيون معتمدون', color: colors.primary },
   { icon: Shield, label: 'ضمان الجودة', color: colors.success },
   { icon: Zap, label: 'استجابة سريعة', color: colors.warning },
   { icon: Headphones, label: 'دعم 24/7', color: '#8B5CF6' },
@@ -35,25 +67,16 @@ const partners = [
 ];
 
 export function HeroSection() {
-  const { slides: heroImages, isLoading } = useHeroSlides();
-  const showCarousel = !isLoading && heroImages.length > 0;
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  useEffect(() => {
-    // Reset carousel to the first slide when the slide set changes (e.g. after load).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentSlide(0);
-  }, [heroImages.length]);
-
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   useEffect(() => {
-    if (!isAutoPlaying || heroImages.length === 0) return;
+    if (!isAutoPlaying) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroImages.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, [isAutoPlaying, heroImages.length]);
+  }, [isAutoPlaying]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % heroImages.length);
@@ -70,12 +93,7 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] dark:opacity-30" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 pb-16 pt-8 md:px-12 lg:px-20 lg:pb-20 lg:pt-16">
-        <div
-          className={cn(
-            'grid items-center gap-12',
-            showCarousel && 'lg:grid-cols-2 lg:gap-16',
-          )}
-        >
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div>
             <SlideUp className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5">
               <Shield className="h-4 w-4 text-primary" />
@@ -157,8 +175,7 @@ export function HeroSection() {
             <HeroTrustBadges />
           </div>
 
-          {showCarousel && (
-          <SlideUpView delay={0.2} className="relative" data-testid="hero-carousel">
+          <SlideUpView delay={0.2} className="relative">
             <div className="relative h-[400px] md:h-[500px] lg:h-[550px]">
               <AnimatePresence mode="wait">
                 {heroImages.map((img, index) => {
@@ -169,11 +186,9 @@ export function HeroSection() {
 
                   if (isFar) return null;
 
-                  const SlideIcon = getCategoryIcon(img.iconKey);
-
                   return (
                     <motion.div
-                      key={img.id}
+                      key={index}
                       initial={{ opacity: 0, scale: 0.8, rotate: img.rotate }}
                       animate={{
                         opacity: isCenter ? 1 : 0.6,
@@ -201,19 +216,16 @@ export function HeroSection() {
                         <div className="absolute bottom-6 right-6 left-6 rounded-xl bg-white/95 p-4 shadow-lg backdrop-blur">
                           <div className="flex items-center gap-3">
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent">
-                              <SlideIcon className="h-6 w-6 text-white" />
+                              <Zap className="h-6 w-6 text-white" />
                             </div>
                             <div>
-                              <p
+                              <h3
                                 className="text-lg font-bold text-text-primary"
                                 style={{ fontFamily: 'var(--font-heading)' }}
-                                data-testid={isCenter ? 'hero-slide-title' : undefined}
                               >
-                                {img.title}
-                              </p>
-                              <p className="text-sm text-text-secondary" data-testid={isCenter ? 'hero-slide-subtitle' : undefined}>
-                                {img.subtitle}
-                              </p>
+                                {img.label}
+                              </h3>
+                              <p className="text-sm text-text-secondary">خدمة احترافية</p>
                             </div>
                           </div>
                         </div>
@@ -241,26 +253,25 @@ export function HeroSection() {
               </button>
 
               <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
-                {heroImages.map((img, index) => (
+                {heroImages.map((_, index) => (
                   <button
-                    key={img.id}
+                    key={index}
                     type="button"
                     aria-label={`الانتقال إلى الشريحة ${index + 1}`}
                     onClick={() => {
                       setCurrentSlide(index);
                       setIsAutoPlaying(false);
                     }}
-                    className={`min-h-6 min-w-6 rounded-full transition-all duration-300 ${
+                    className={`h-2 rounded-full transition-all duration-300 ${
                       index === currentSlide
                         ? 'w-8 bg-gradient-to-r from-primary to-accent'
-                        : 'bg-text-muted/30 hover:bg-text-muted/50'
+                        : 'w-2 bg-text-muted/30 hover:bg-text-muted/50'
                     }`}
                   />
                 ))}
               </div>
             </div>
           </SlideUpView>
-          )}
         </div>
       </div>
 

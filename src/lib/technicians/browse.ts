@@ -1,14 +1,8 @@
-// Product decision (2026-07): technician `max_distance_km` is an informational
-// preference only and is intentionally NOT used to filter browse/match results.
-// Sanad shows every verified technician regardless of the customer's distance so
-// low-density areas still return results. `distance_km` below is for display/sort
-// only. Revisit this if technician density makes radius filtering worthwhile.
 import {
   specialtyToCategorySlug,
   TECHNICIAN_SPECIALTIES,
   type TechnicianSpecialtyValue,
 } from '@/lib/constants/technician-registration';
-import { getGovernorateCentroid, haversineDistanceKm, type GeoPoint } from '@/lib/geo';
 import type { BrowseTechnician, TechnicianBrowseBadge } from '@/types/technician-browse';
 
 interface RawSkill {
@@ -21,12 +15,10 @@ interface RawSkill {
   } | null;
 }
 
-export interface RawTechnicianRow {
+interface RawTechnicianRow {
   id: string;
   governorate: string | null;
   area: string | null;
-  location_lat: number | null;
-  location_lng: number | null;
   starting_price: number | null;
   is_available: boolean | null;
   verification_status: string;
@@ -47,30 +39,6 @@ function mockDistanceKm(id: string): number {
     hash = (hash + id.charCodeAt(i) * (i + 1)) % 1000;
   }
   return Math.round(((hash % 90) + 10) / 10 * 10) / 10;
-}
-
-export function resolveTechnicianCoords(row: RawTechnicianRow): GeoPoint | null {
-  if (row.location_lat != null && row.location_lng != null) {
-    return { lat: Number(row.location_lat), lng: Number(row.location_lng) };
-  }
-  return getGovernorateCentroid(row.governorate);
-}
-
-export function calculateDistanceKm(
-  userLocation: GeoPoint | undefined,
-  row: RawTechnicianRow,
-): number {
-  const techCoords = resolveTechnicianCoords(row);
-  if (userLocation && techCoords) {
-    const km = haversineDistanceKm(
-      userLocation.lat,
-      userLocation.lng,
-      techCoords.lat,
-      techCoords.lng,
-    );
-    return Math.round(km * 10) / 10;
-  }
-  return mockDistanceKm(row.id);
 }
 
 function mockResponseMinutes(isAvailable: boolean, completedJobs: number, id: string): number {
@@ -128,11 +96,7 @@ function buildBadges(
 
 export function transformBrowseTechnician(
   row: RawTechnicianRow,
-  options: {
-    categorySlug?: string;
-    includePhone?: boolean;
-    userLocation?: GeoPoint;
-  },
+  options: { categorySlug?: string; includePhone?: boolean },
 ): BrowseTechnician | null {
   if (!row.profile) return null;
 
@@ -142,7 +106,6 @@ export function transformBrowseTechnician(
   const completedJobs = Number(row.completed_jobs ?? 0);
   const isAvailable = Boolean(row.is_available);
   const responseMinutes = mockResponseMinutes(isAvailable, completedJobs, row.id);
-  const coords = resolveTechnicianCoords(row);
 
   return {
     id: row.id,
@@ -158,9 +121,7 @@ export function transformBrowseTechnician(
     average_rating: averageRating,
     completed_jobs: completedJobs,
     starting_price: resolveStartingPrice(row, activeSkills),
-    distance_km: calculateDistanceKm(options.userLocation, row),
-    location_lat: coords?.lat ?? null,
-    location_lng: coords?.lng ?? null,
+    distance_km: mockDistanceKm(row.id),
     response_time_minutes: responseMinutes,
     badges: buildBadges(row, averageRating, responseMinutes),
     primary_service_id: primary.serviceId,

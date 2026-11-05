@@ -2,14 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { Map, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/shared/error-state';
-import { useBrowseTechnicians, useTechnicianAvailabilityRealtime } from '@/hooks/use-browse-technicians';
-import { useUserLocation } from '@/hooks/use-user-location';
+import { useBrowseTechnicians } from '@/hooks/use-browse-technicians';
 import { ServicesBrowseFilters, type ServicesBrowseFiltersState } from '@/components/services/services-browse-filters';
 import { TechnicianBrowseCard } from '@/components/services/technician-browse-card';
 
@@ -22,51 +20,23 @@ const DEFAULT_FILTERS: ServicesBrowseFiltersState = {
 };
 
 export function ServicesBrowseView() {
-  const searchParams = useSearchParams();
-  const urlSpecialty = searchParams.get('specialty');
-  const urlGovernorate = searchParams.get('governorate');
-  const urlSearch = searchParams.get('q') ?? searchParams.get('search') ?? '';
-
-  const { location } = useUserLocation();
-
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<ServicesBrowseFiltersState>(DEFAULT_FILTERS);
 
   const queryFilters = useMemo(
     () => ({
-      search: (searchQuery.trim() || urlSearch.trim()) || undefined,
-      specialty: filters.specialty ?? urlSpecialty ?? undefined,
-      governorate: filters.governorate ?? urlGovernorate ?? undefined,
+      search: searchQuery.trim() || undefined,
+      specialty: filters.specialty ?? undefined,
+      governorate: filters.governorate ?? undefined,
       sort: filters.sort,
       maxPrice: filters.maxPrice,
       availableOnly: filters.availableOnly || undefined,
-      lat: location.lat,
-      lng: location.lng,
       limit: 24,
     }),
-    [filters, location.lat, location.lng, searchQuery, urlGovernorate, urlSearch, urlSpecialty],
+    [filters, searchQuery],
   );
 
-  const mapHref = useMemo(() => {
-    const params = new URLSearchParams();
-    const specialty = filters.specialty ?? urlSpecialty;
-    const governorate = filters.governorate ?? urlGovernorate;
-    const search = searchQuery.trim() || urlSearch.trim();
-    if (specialty) params.set('specialty', specialty);
-    if (governorate) params.set('governorate', governorate);
-    if (filters.sort !== 'rating') params.set('sort', filters.sort);
-    if (filters.maxPrice !== 500) params.set('maxPrice', String(filters.maxPrice));
-    if (filters.availableOnly) params.set('availableOnly', 'true');
-    if (search) params.set('q', search);
-    params.set('lat', String(location.lat));
-    params.set('lng', String(location.lng));
-    return `/services/map?${params.toString()}`;
-  }, [filters, location.lat, location.lng, searchQuery, urlGovernorate, urlSearch, urlSpecialty]);
-
   const { data, isLoading, error, refetch } = useBrowseTechnicians(queryFilters);
-
-  // Flip cards live as technicians toggle their availability.
-  useTechnicianAvailabilityRealtime(queryFilters);
 
   const handleFilterChange = (patch: Partial<ServicesBrowseFiltersState>) => {
     setFilters((current) => ({ ...current, ...patch }));
@@ -105,14 +75,14 @@ export function ServicesBrowseView() {
           {isLoading ? '...' : `${data?.total ?? 0} صنايعي مطابق لبحثك`}
         </p>
         <Button
-          asChild
+          type="button"
           variant="outline"
+          disabled
           className="gap-2 self-start sm:self-auto"
+          title="قريباً"
         >
-          <Link href={mapHref}>
-            <Map className="h-4 w-4" />
-            شوف على الخريطة
-          </Link>
+          <Map className="h-4 w-4" />
+          شوف على الخريطة
         </Button>
       </div>
 

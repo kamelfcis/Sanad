@@ -8,7 +8,7 @@ import { pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata(
   'خريطة الصنايعية',
-  'شوف أقرب الصنايعية الموثّقين على الخريطة واختار من يناسبك على منصة سند.',
+  'شoof أقرب الصنايعية الموثّقين على الخريطة واختار من يناسبك على منصة سند.',
 );
 
 export const dynamic = 'force-dynamic';

@@ -20,17 +20,10 @@ test.describe('Hero slides', () => {
 
   test('Admin can view hero slides management', async ({ page }) => {
     await loginEmail(page, users.admin.email, users.admin.password, '/admin');
+    await page.goto('/admin/hero-slides');
+    await waitForPageReady(page);
 
-    const slidesResponse = page.waitForResponse(
-      (response) =>
-        response.url().includes('/api/admin/hero-slides') && response.status() === 200,
-      { timeout: 90_000 },
-    );
-
-    await page.getByRole('link', { name: 'Hero Slides' }).click();
-    await slidesResponse;
-    await page.getByRole('heading', { name: 'Hero Slides' }).waitFor({ state: 'visible', timeout: 90_000 });
-
+    await expect(page.getByRole('heading', { name: 'Hero Slides' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Add Slide/i })).toBeVisible();
 
     await screenshot(page, 'hero-admin');

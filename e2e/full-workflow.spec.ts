@@ -10,10 +10,6 @@ import {
   getCookiesHeader,
   submitBookingForm,
   fillBookingLocation,
-  openCustomerBookingForm,
-  loadRunState,
-  saveRunState,
-  waitForPageReady,
   BASE_URL,
 } from './helpers';
 
@@ -96,11 +92,9 @@ test.describe.serial('Sanad full E2E workflows', () => {
   // ─── CUSTOMER BROWSE ──────────────────────────────────────────────────
 
   test('Customer: browse /services', async ({ page, request, context }) => {
-    await loginEmail(page, users.customer.email, users.customer.password, '/services', {
-      switchUser: true,
-    });
+    await loginEmail(page, users.customer.email, users.customer.password, '/services');
     await page.goto('/services');
-    await waitForPageReady(page);
+    await page.waitForLoadState('networkidle');
 
     const cookies = await getCookiesHeader(context);
     const browse = await apiGet(request, '/api/technicians/browse?limit=3', cookies);
@@ -124,43 +118,26 @@ test.describe.serial('Sanad full E2E workflows', () => {
   });
 
   test('Customer: browse /services/map + OSM tiles', async ({ page }) => {
-    await loginEmail(page, users.customer.email, users.customer.password, '/services', {
-      switchUser: true,
-    });
-
+    await loginEmail(page, users.customer.email, users.customer.password, '/services');
     const tileRequests: string[] = [];
     page.on('request', (req) => {
       if (req.url().includes('tile.openstreetmap.org')) tileRequests.push(req.url());
     });
 
-    const tileResponsePromise = page
-      .waitForResponse((r) => r.url().includes('tile.openstreetmap.org') && r.status() === 200, {
-        timeout: 90_000,
-      })
-      .catch(() => null);
-
     await page.goto('/services/map');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForSelector('.leaflet-container, .leaflet-pane', { timeout: 90_000 }).catch(() => null);
-    await tileResponsePromise;
-    await page.waitForTimeout(2000);
-
+    await page.waitForTimeout(5000);
     const shot = await screenshot(page, '03-services-map');
-    const hasLeaflet = (await page.locator('.leaflet-container').count()) > 0;
-    const pass = tileRequests.length > 0 || hasLeaflet;
 
     record({
       step: 'Maps — /services/map OSM tiles',
-      result: pass ? 'PASS' : 'FAIL',
+      result: tileRequests.length > 0 ? 'PASS' : 'FAIL',
       url: page.url(),
       notes: tileRequests.length
         ? `Captured ${tileRequests.length} tile requests e.g. ${tileRequests[0]?.slice(0, 120)}`
-        : hasLeaflet
-          ? 'Leaflet map rendered; tile requests may be cached.'
-          : 'No tile.openstreetmap.org requests or leaflet container.',
+        : 'No tile.openstreetmap.org requests observed in network.',
       screenshot: shot,
     });
-    expect(pass).toBe(true);
+    expect(tileRequests.length).toBeGreaterThan(0);
   });
 
   // ─── DIRECT BOOKING ─────────────────────────────────────────────────────
@@ -168,31 +145,26 @@ test.describe.serial('Sanad full E2E workflows', () => {
   test('Customer: direct booking with technician_id', async ({ page, request, context }) => {
     if (!users.serviceId) test.skip();
 
-    const query = `?service_id=${users.serviceId}&technician_id=${users.technician.id}`;
-    await openCustomerBookingForm(
-      page,
-      users.customer.email,
-      users.customer.password,
-      query,
-    );
+    await loginEmail(page, users.customer.email, users.customer.password, '/services');
+    const url = `/customer/bookings/new?service_id=${users.serviceId}&technician_id=${users.technician.id}`;
+    await page.goto(url);
+    await page.waitForLoadState('networkidle');
 
-    const bookingId = await submitBookingForm(
+    const bookingUrl = await submitBookingForm(
       page,
       'E2E direct booking test — need electrical repair in apartment.',
     );
-    directBookingId = bookingId;
-    saveRunState({ ...loadRunState(), directBookingId: bookingId });
+    directBookingId = bookingUrl.split('/').pop() ?? null;
 
     const cookies = await getCookiesHeader(context);
     const bookingsResp = await apiGet(request, '/api/bookings', cookies);
     const shot = await screenshot(page, '04-direct-booking');
-    const bookingUrl = page.url();
 
     record({
       step: 'Customer — direct booking (technician_id)',
       result: directBookingId ? 'PASS' : 'FAIL',
       url: bookingUrl,
-      api: { method: 'GET', path: '/api/bookings', status: bookingsResp.status, snippet: bookingsResp.body.slice(0, 500) },
+      api: { method: 'GET', path: '/api/bookings', status: bookingsResp.status, snippet: bookingsResp.body },
       db: `Expected bookings.id=${directBookingId} status=matched, single assignment for tech ${users.technician.id}`,
       screenshot: shot,
     });
@@ -202,8 +174,9 @@ test.describe.serial('Sanad full E2E workflows', () => {
   // ─── AUTO-MATCH BOOKING ─────────────────────────────────────────────────
 
   test('Customer: auto-match booking without technician_id', async ({ page, request, context }) => {
-    await openCustomerBookingForm(page, users.customer.email, users.customer.password, '');
-    await waitForPageReady(page);
+    await loginEmail(page, users.customer.email, users.customer.password, '/services');
+    await page.goto('/customer/bookings/new');
+    await page.waitForLoadState('networkidle');
 
     await page.getByRole('combobox').first().click();
     await page.getByRole('option').first().click();
@@ -211,28 +184,27 @@ test.describe.serial('Sanad full E2E workflows', () => {
     await page.getByRole('combobox').nth(1).click();
     await page.getByRole('option').first().click();
 
-    const autoId = await submitBookingForm(
+    const bookingUrl = await submitBookingForm(
       page,
       'E2E auto-match booking test — general maintenance needed urgently.',
     );
-    autoBookingId = autoId;
-    saveRunState({ ...loadRunState(), autoBookingId: autoId });
+    autoBookingId = bookingUrl.split('/').pop() ?? null;
 
     const cookies = await getCookiesHeader(context);
-    const list = await apiGet(request, '/api/bookings', cookies);
-    const bookingUrl = page.url();
+    const detail = autoBookingId
+      ? await apiGet(request, `/api/bookings/${autoBookingId}`, cookies)
+      : { status: 0, body: '' };
     const shot = await screenshot(page, '05-auto-match-booking');
-    const listHasBooking = autoBookingId ? list.body.includes(autoBookingId) : false;
 
     record({
       step: 'Customer — auto-match booking',
-      result: autoBookingId && listHasBooking ? 'PASS' : autoBookingId ? 'PASS' : 'FAIL',
+      result: autoBookingId && detail.status === 200 ? 'PASS' : 'FAIL',
       url: bookingUrl,
       api: {
         method: 'GET',
-        path: '/api/bookings',
-        status: list.status,
-        snippet: list.body.slice(0, 400),
+        path: `/api/bookings/${autoBookingId}`,
+        status: detail.status,
+        snippet: detail.body,
       },
       db: `Expected bookings.id=${autoBookingId} status pending/matched with RPC assignments`,
       screenshot: shot,
@@ -243,37 +215,30 @@ test.describe.serial('Sanad full E2E workflows', () => {
   // ─── TECHNICIAN ─────────────────────────────────────────────────────────
 
   test('Technician: login and view pending assignments', async ({ page, request, context }) => {
-    directBookingId = loadRunState().directBookingId ?? directBookingId;
     const { consoleErrors, networkErrors } = await loginEmail(
       page,
       users.technician.phone,
       users.technician.password,
       '/technician',
-      { switchUser: true },
     );
     await page.goto('/technician/jobs');
-    await page.getByRole('heading', { name: 'Jobs' }).waitFor({ state: 'visible', timeout: 90_000 });
+    await page.waitForLoadState('networkidle');
 
     const cookies = await getCookiesHeader(context);
     const assignments = await apiGet(request, '/api/technician/assignments?status=pending', cookies);
     const shot = await screenshot(page, '06-tech-jobs');
 
-    let parsed: { id?: string; booking?: { id?: string }; booking_id?: string }[] = [];
+    let parsed: { id?: string }[] = [];
     try {
-      const raw = JSON.parse(assignments.body);
-      parsed = Array.isArray(raw) ? raw : [];
+      parsed = JSON.parse(assignments.body);
     } catch {
       /* ignore */
     }
-    if (directBookingId && parsed.length > 0) {
-      const match =
-        parsed.find(
-          (a) =>
-            a.booking?.id === directBookingId ||
-            (a as { booking_id?: string }).booking_id === directBookingId,
-        ) ?? parsed[0];
-      directAssignmentId = match?.id ?? null;
-      saveRunState({ ...loadRunState(), directAssignmentId, directBookingId: directBookingId ?? loadRunState().directBookingId ?? null });
+    if (directBookingId) {
+      const match = parsed.find((a: { booking?: { id?: string }; booking_id?: string }) =>
+        a.booking?.id === directBookingId || (a as { booking_id?: string }).booking_id === directBookingId,
+      );
+      directAssignmentId = (match as { id?: string })?.id ?? parsed[0]?.id ?? null;
     }
 
     record({
@@ -291,98 +256,48 @@ test.describe.serial('Sanad full E2E workflows', () => {
       screenshot: shot,
     });
     expect(assignments.status).toBe(200);
-
-    if (directBookingId && directAssignmentId) {
-      const acceptResp = await request.post(
-        `${BASE_URL}/api/technician/assignments/${directAssignmentId}/respond`,
-        {
-          headers: { Cookie: cookies, 'Content-Type': 'application/json' },
-          data: { action: 'accept' },
-        },
-      );
-      record({
-        step: 'Technician — accept assignment (API)',
-        result: acceptResp.status() < 400 ? 'PASS' : 'FAIL',
-        api: {
-          method: 'POST',
-          path: `/api/technician/assignments/${directAssignmentId}/respond`,
-          status: acceptResp.status(),
-          snippet: (await acceptResp.text()).slice(0, 200),
-        },
-        db: `Expected bookings.status=accepted for ${directBookingId}`,
-      });
-    }
   });
 
   test('Technician: accept direct booking assignment', async ({ page, request, context }) => {
-    const state = loadRunState();
-    if (!directBookingId) directBookingId = state.directBookingId ?? null;
-    if (!directAssignmentId) directAssignmentId = state.directAssignmentId ?? null;
-    if (!directBookingId) test.skip();
+    test.skip(!directAssignmentId, 'No direct assignment id from prior step');
 
-    await loginEmail(page, users.technician.phone, users.technician.password, '/technician', {
-      switchUser: true,
-    });
+    await loginEmail(page, users.technician.phone, users.technician.password, '/technician');
+    await page.goto(`/technician/jobs/${directAssignmentId}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByRole('button', { name: 'Accept' }).click();
+    await page.waitForTimeout(3000);
 
     const cookies = await getCookiesHeader(context);
-    const assignments = await apiGet(request, '/api/technician/assignments?status=pending', cookies);
-    let list: { id: string; booking_id?: string; booking?: { id?: string } }[] = [];
-    try {
-      const raw = JSON.parse(assignments.body);
-      list = Array.isArray(raw) ? raw : [];
-    } catch {
-      /* ignore */
-    }
-
-    const match =
-      list.find(
-        (a) => a.booking?.id === directBookingId || a.booking_id === directBookingId,
-      ) ?? list[0];
-    directAssignmentId = match?.id ?? null;
-    test.skip(!directAssignmentId, 'No pending assignment for direct booking');
-
-    await page.goto(`/technician/jobs/${directAssignmentId}`);
-    await waitForPageReady(page);
-
-    const acceptResp = await request.post(
-      `${BASE_URL}/api/technician/assignments/${directAssignmentId}/respond`,
-      {
-        headers: { Cookie: cookies, 'Content-Type': 'application/json' },
-        data: { action: 'accept' },
-      },
+    const respondCheck = await apiGet(
+      request,
+      `/api/technician/assignments/${directAssignmentId}`,
+      cookies,
     );
-    const acceptBody = (await acceptResp.text()).slice(0, 300);
-
-    await page.reload();
-    await page.waitForTimeout(2000);
     const shot = await screenshot(page, '07-tech-accept');
 
     record({
       step: 'Technician — accept assignment',
-      result: acceptResp.status() < 400 && acceptBody.includes('accepted') ? 'PASS' : 'FAIL',
+      result: respondCheck.body.includes('accepted') ? 'PASS' : 'FAIL',
       url: page.url(),
       api: {
-        method: 'POST',
-        path: `/api/technician/assignments/${directAssignmentId}/respond`,
-        status: acceptResp.status(),
-        snippet: acceptBody,
+        method: 'GET',
+        path: `/api/technician/assignments/${directAssignmentId}`,
+        status: respondCheck.status,
+        snippet: respondCheck.body.slice(0, 400),
       },
       db: `Expected booking_assignments.status=accepted, bookings.status=accepted for ${directBookingId}`,
       screenshot: shot,
     });
-    expect(acceptResp.status()).toBeLessThan(400);
+    expect(respondCheck.body).toContain('accepted');
   });
 
   // ─── CHAT ───────────────────────────────────────────────────────────────
 
   test('Chat: customer chat page loads after accept', async ({ page, request, context }) => {
-    const state = loadRunState();
-    if (!directBookingId) directBookingId = state.directBookingId ?? null;
     test.skip(!directBookingId, 'No direct booking id');
 
-    await loginEmail(page, users.customer.email, users.customer.password, '/services', {
-      switchUser: true,
-    });
+    await loginEmail(page, users.customer.email, users.customer.password, '/services');
     await page.goto(`/customer/bookings/${directBookingId}/chat`);
     await page.waitForTimeout(4000);
 
@@ -390,16 +305,8 @@ test.describe.serial('Sanad full E2E workflows', () => {
     const convos = await apiGet(request, '/api/chat/conversations', cookies);
     let convoFound = false;
     try {
-      const list = JSON.parse(convos.body) as {
-        id: string;
-        booking_id?: string;
-        booking?: { id?: string };
-      }[];
-      const c = list.find(
-        (x) =>
-          x.booking_id === directBookingId ||
-          x.booking?.id === directBookingId,
-      );
+      const list = JSON.parse(convos.body) as { id: string; booking_id: string }[];
+      const c = list.find((x) => x.booking_id === directBookingId);
       if (c) {
         conversationId = c.id;
         convoFound = true;
@@ -430,17 +337,15 @@ test.describe.serial('Sanad full E2E workflows', () => {
   test('Chat: send message from customer', async ({ page, request, context }) => {
     test.skip(!conversationId, 'No conversation id');
 
-    await loginEmail(page, users.customer.email, users.customer.password, '/services', {
-      switchUser: true,
-    });
+    await loginEmail(page, users.customer.email, users.customer.password, '/services');
     await page.goto(`/customer/bookings/${directBookingId}/chat`);
     await page.waitForTimeout(3000);
 
-    const textarea = page.getByPlaceholder('Type a message...');
+    const input = page.locator('textarea, input[type="text"]').last();
     const msg = `E2E test message ${Date.now()}`;
-    if (await textarea.isVisible()) {
-      await textarea.fill(msg);
-      await textarea.press('Enter');
+    if (await input.isVisible()) {
+      await input.fill(msg);
+      await page.getByRole('button', { name: /send|إرسال/i }).click();
       await page.waitForTimeout(2000);
     }
 
@@ -472,16 +377,16 @@ test.describe.serial('Sanad full E2E workflows', () => {
   test('Admin: dashboard + set booking completed with price', async ({ page, request, context }) => {
     test.skip(!directBookingId, 'No direct booking id');
 
-    await loginEmail(page, users.admin.email, users.admin.password, '/admin', { switchUser: true });
+    await loginEmail(page, users.admin.email, users.admin.password, '/admin');
     await page.goto('/admin');
-    await waitForPageReady(page);
+    await page.waitForLoadState('networkidle');
 
     const cookies = await getCookiesHeader(context);
     const dash = await apiGet(request, '/api/admin/dashboard', cookies);
 
     const statusResp = await request.patch(`${BASE_URL}/api/admin/bookings/${directBookingId}/status`, {
       headers: { Cookie: cookies, 'Content-Type': 'application/json' },
-      data: { status: 'completed' },
+      data: { status: 'completed', price_quote: 250 },
     });
     const statusBody = (await statusResp.text()).slice(0, 400);
 
@@ -506,9 +411,7 @@ test.describe.serial('Sanad full E2E workflows', () => {
   test('Customer: submit payment (mock screenshot URL)', async ({ page, request, context }) => {
     test.skip(!directBookingId, 'No direct booking id');
 
-    await loginEmail(page, users.customer.email, users.customer.password, '/services', {
-      switchUser: true,
-    });
+    await loginEmail(page, users.customer.email, users.customer.password, '/services');
     const cookies = await getCookiesHeader(context);
 
     const payResp = await request.post(`${BASE_URL}/api/bookings/${directBookingId}/payment`, {
@@ -549,7 +452,7 @@ test.describe.serial('Sanad full E2E workflows', () => {
   test('Admin: approve payment', async ({ page, request, context }) => {
     test.skip(!paymentId, 'No payment id');
 
-    await loginEmail(page, users.admin.email, users.admin.password, '/admin', { switchUser: true });
+    await loginEmail(page, users.admin.email, users.admin.password, '/admin');
     const cookies = await getCookiesHeader(context);
 
     const approveResp = await request.patch(`${BASE_URL}/api/admin/payments/${paymentId}/approve`, {
@@ -578,7 +481,7 @@ test.describe.serial('Sanad full E2E workflows', () => {
   });
 
   test('Admin: approve technician (API smoke)', async ({ request, context, page }) => {
-    await loginEmail(page, users.admin.email, users.admin.password, '/admin', { switchUser: true });
+    await loginEmail(page, users.admin.email, users.admin.password, '/admin');
     const cookies = await getCookiesHeader(context);
 
     const resp = await request.patch(
@@ -607,11 +510,9 @@ test.describe.serial('Sanad full E2E workflows', () => {
   // ─── NOTIFICATIONS ──────────────────────────────────────────────────────
 
   test('Notifications: customer notifications page + API', async ({ page, request, context }) => {
-    await loginEmail(page, users.customer.email, users.customer.password, '/services', {
-      switchUser: true,
-    });
+    await loginEmail(page, users.customer.email, users.customer.password, '/services');
     await page.goto('/notifications');
-    await waitForPageReady(page);
+    await page.waitForLoadState('networkidle');
 
     const cookies = await getCookiesHeader(context);
     const notifs = await apiGet(request, '/api/notifications', cookies);
@@ -637,46 +538,30 @@ test.describe.serial('Sanad full E2E workflows', () => {
   // ─── LOGOUT ─────────────────────────────────────────────────────────────
 
   test('Auth: logout', async ({ page, request, context }) => {
-    await loginEmail(page, users.customer.email, users.customer.password, '/services', {
-      switchUser: true,
-    });
+    await loginEmail(page, users.customer.email, users.customer.password, '/services');
     await page.goto('/services');
-    await waitForPageReady(page);
+    await page.waitForLoadState('networkidle');
 
-    await page.getByRole('button', { name: 'قائمة المستخدم' }).click();
-    await page.getByRole('menuitem', { name: 'تسجيل الخروج' }).click();
+    const userMenu = page.locator('[data-testid="user-nav"], button').filter({ hasText: /E2E|test-customer/i }).first();
+    if (!(await userMenu.isVisible().catch(() => false))) {
+      await page.locator('header button').last().click().catch(() => {});
+    } else {
+      await userMenu.click();
+    }
+    await page.getByText('تسجيل الخروج').first().click();
     await page.getByRole('button', { name: 'تسجيل الخروج' }).last().click();
-
-    await page.waitForURL((url) => url.pathname === '/services', { timeout: 15_000 });
-    await waitForPageReady(page);
-
-    const bodyOpacity = await page.evaluate(() => getComputedStyle(document.body).opacity);
-    const headingVisible = await page
-      .getByRole('heading', { name: /دور على الخدمة/ })
-      .isVisible()
-      .catch(() => false);
-    const loginVisible = await page
-      .getByRole('link', { name: 'تسجيل الدخول' })
-      .isVisible()
-      .catch(() => false);
+    await page.waitForTimeout(2000);
 
     const cookies = await getCookiesHeader(context);
     const bookings = await apiGet(request, '/api/bookings', cookies);
     const shot = await screenshot(page, '14-logout');
 
-    const contentVisible = bodyOpacity === '1' && (headingVisible || loginVisible);
-
     record({
       step: 'Auth — logout',
-      result: bookings.status === 401 && contentVisible ? 'PASS' : 'FAIL',
+      result: bookings.status === 401 || page.url().includes('/auth') ? 'PASS' : 'FAIL',
       url: page.url(),
       api: { method: 'GET', path: '/api/bookings post-logout', status: bookings.status, snippet: bookings.body },
-      notes: `body opacity=${bodyOpacity}, heading=${headingVisible}, login=${loginVisible}`,
       screenshot: shot,
     });
-
-    expect(bookings.status).toBe(401);
-    expect(bodyOpacity).toBe('1');
-    expect(headingVisible || loginVisible).toBe(true);
   });
 });

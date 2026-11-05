@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { configureLeafletIcons } from '@/lib/geo/leaflet-setup';
 import { formatDistanceKm } from '@/lib/geo';
 import type { GeoPoint } from '@/lib/geo';
-import type { TechnicianMapMarker } from '@/lib/technicians/map-markers';
 import { Button } from '@/components/ui/button';
+import type { TechnicianMapMarker } from '@/lib/technicians/map-markers';
 
 export type { TechnicianMapMarker };
 
@@ -18,22 +18,15 @@ export interface TechniciansMapInnerProps {
   className?: string;
 }
 
-
-function FitBounds({ bounds }: { bounds: [[number, number], [number, number]] | null }) {
-  const map = useMap();
-  useEffect(() => {
-    if (bounds) map.fitBounds(bounds, { padding: [40, 40] });
-  }, [bounds, map]);
-  return null;
-}
-
 export function TechniciansMapInner({
   technicians,
   center,
   zoom = 11,
   className,
 }: TechniciansMapInnerProps) {
-  configureLeafletIcons();
+  useEffect(() => {
+    configureLeafletIcons();
+  }, []);
 
   const bounds = useMemo(() => {
     if (technicians.length === 0) return null;
@@ -50,6 +43,7 @@ export function TechniciansMapInner({
       <MapContainer
         center={[center.lat, center.lng]}
         zoom={zoom}
+        bounds={bounds ?? undefined}
         scrollWheelZoom
         className="h-full w-full"
         aria-label="خريطة الصنايعية"
@@ -58,7 +52,6 @@ export function TechniciansMapInner({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <FitBounds bounds={bounds} />
         {technicians.map((tech) => (
           <Marker key={tech.id} position={[tech.position.lat, tech.position.lng]}>
             <Popup>
@@ -72,7 +65,7 @@ export function TechniciansMapInner({
                 )}
                 {tech.bookingHref && (
                   <Button asChild size="sm" className="mt-2 w-full">
-                    <Link href={tech.bookingHref}>احجز مع هذا الفني</Link>
+                    <Link href={tech.bookingHref}>احجز الآن</Link>
                   </Button>
                 )}
               </div>

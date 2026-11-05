@@ -3,10 +3,10 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/api/auth';
 import { parseJsonBody, parseSearchParams } from '@/lib/api/validate';
 import {
+  adminListReviewsQuerySchema,
   createReviewSchema,
   listReviewsQuerySchema,
 } from '@/lib/validations/reviews';
-import { notifyReviewReceived } from '@/lib/notifications/events';
 
 export async function GET(request: NextRequest) {
   const supabase = await createServerSupabaseClient();
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     .select(
       `
       *,
-      customer:profiles!reviews_customer_id_fkey(full_name, avatar_url)
+      customer:profiles!customer_id(full_name, avatar_url)
     `,
       { count: 'exact' },
     )
@@ -102,14 +102,12 @@ export async function POST(request: NextRequest) {
       rating,
       comment: comment?.trim() || null,
     })
-    .select('*, customer:profiles!reviews_customer_id_fkey(full_name, avatar_url)')
+    .select('*, customer:profiles!customer_id(full_name, avatar_url)')
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const customerName =
-    (review.customer as { full_name?: string | null } | null)?.full_name ?? undefined;
-  await notifyReviewReceived(booking.technician_id, review.id, rating, customerName);
-
   return NextResponse.json(review, { status: 201 });
 }
+
+export { adminListReviewsQuerySchema };

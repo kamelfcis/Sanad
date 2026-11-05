@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const emptyQuerySchema = z.object({}).passthrough();
+
 export const uuidSchema = z.string().uuid('Invalid ID format');
 
 export const slugSchema = z
@@ -38,6 +40,3 @@ export const verificationStatusSchema = z.enum([
 ]);
 
 export const priceTypeSchema = z.enum(['fixed', 'hourly', 'estimate']);
-
-/** Routes with no query parameters — rejects unexpected keys */
-export const emptyQuerySchema = z.object({}).strict();

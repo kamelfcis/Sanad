@@ -12,33 +12,16 @@
     "payments": "Payments",
     "auditLogs": "Audit Logs",
     "settings": "Settings",
-    "backToSite": "Back to site",
-    "sections": {
-      "overview": "Overview",
-      "operations": "Operations",
-      "catalog": "Catalog",
-      "system": "System"
-    }
+    "backToSite": "Back to site"
   },
   "header": {
     "languageToggle": "Switch language",
     "english": "English",
-    "arabic": "العربية",
-    "adminPanel": "Admin panel",
-    "searchPlaceholder": "Search admin…",
-    "collapseSidebar": "Collapse sidebar",
-    "expandSidebar": "Expand sidebar",
-    "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "arabic": "العربية"
   },
   "dashboard": {
     "title": "Admin Dashboard",
     "subtitle": "Platform overview and analytics.",
-    "eyebrow": "Overview",
-    "heroMetrics": "Key performance",
-    "heroMetricsDesc": "Revenue, bookings, and platform health at a glance.",
-    "kpiDesc": "Users, catalog, and payment pipeline.",
-    "trendStable": "Stable",
     "loadError": "Failed to load dashboard data.",
     "stats": {
       "totalTechnicians": "Total Technicians",
@@ -51,32 +34,14 @@
       "completedLabel": "Completed",
       "avgRating": "Avg Rating",
       "reviewsCount": "{{count}} reviews",
-      "revenue": "Revenue",
-      "approvedPayments": "{{count}} approved payments",
-      "pendingPayments": "Pending payments",
-      "totalServices": "Services",
-      "categoriesCount": "{{count}} categories",
-      "inProgressSub": "{{count}} in progress"
+      "revenue": "Revenue"
     },
     "recentBookings": "Recent Bookings",
     "topTechnicians": "Top Technicians",
     "jobsRating": "{{jobs}} jobs · {{rating}}★",
     "noBookings": "No bookings yet.",
     "noTechnicians": "No technicians yet.",
-    "noRevenue": "No revenue data yet.",
-    "kpiTitle": "Key metrics",
-    "recentActivity": "Recent activity",
-    "noActivity": "No activity yet.",
-    "viewAllActivity": "View all audit logs",
-    "shortcuts": {
-      "title": "Quick shortcuts",
-      "desc": "Jump to any admin section.",
-      "pendingCount": "{{count}} pending"
-    },
-    "charts": {
-      "bookingsDesc": "Daily booking volume over the last week.",
-      "revenueDesc": "Approved payment totals by month."
-    }
+    "noRevenue": "No revenue data yet."
   },
   "charts": {
     "bookingsLast7Days": "Bookings (Last 7 Days)",
@@ -100,10 +65,6 @@
       "withStatus": "No bookings with status \"{{status}}\".",
       "none": "No bookings have been created yet."
     },
-    "card": {
-      "subtitle": "Service request",
-      "preferredTime": "Preferred time"
-    },
     "detail": {
       "notFound": "Booking not found",
       "notFoundDesc": "This booking doesn't exist or you don't have access to it.",
@@ -124,8 +85,6 @@
       "description": "Description",
       "noDescription": "No description provided.",
       "address": "Address",
-      "apartmentNumber": "Apartment",
-      "floorNumber": "Floor",
       "preferredTime": "Preferred Time",
       "created": "Created"
     },
@@ -145,9 +104,6 @@
     "searchPlaceholder": "Search customers...",
     "empty": "No customers found",
     "unnamed": "Unnamed",
-    "card": {
-      "subtitle": "Registered customer"
-    },
     "detail": {
       "notFound": "Customer not found",
       "back": "Back to customers",
@@ -169,9 +125,6 @@
       "title": "No technicians found",
       "subtitle": "No technicians match your search."
     },
-    "card": {
-      "subtitle": "Service technician"
-    },
     "detail": {
       "notFound": "Technician not found",
       "back": "Back to technicians",
@@ -192,56 +145,10 @@
       "joined": "Joined",
       "bio": "Bio",
       "noBio": "No bio",
-      "applicationDetails": "Application Details",
-      "nationalId": "National ID",
-      "governorate": "Governorate",
-      "area": "Area",
-      "workingHours": "Working Hours",
-      "startingPrice": "Starting Price",
-      "skills": "Skills",
-      "specialty": "Specialty",
-      "noSkills": "No skills listed",
-      "documents": "Documents",
-      "profilePhoto": "Profile Photo",
-      "idCard": "ID Card (Front)",
-      "idCardBack": "ID Card (Back)",
-      "verificationDoc": "Verification Document",
-      "viewDocument": "View Document",
-      "noDocuments": "No documents uploaded",
-      "performance": "Performance",
       "recentBookings": "Recent Bookings ({{count}})",
       "reviews": "Reviews ({{count}})",
       "anonymous": "Anonymous",
-      "booking": "Booking",
-      "confirm": {
-        "cancel": "Cancel",
-        "reasonLabel": "Reason",
-        "reasonPlaceholder": "Enter a reason for this action…",
-        "approve": {
-          "title": "Approve technician?",
-          "description": "Approve {{name}} and grant verified status on the platform.",
-          "confirm": "Approve",
-          "success": "Technician approved"
-        },
-        "reject": {
-          "title": "Reject application?",
-          "description": "Reject {{name}}'s technician application. They will be notified.",
-          "confirm": "Reject",
-          "success": "Application rejected"
-        },
-        "suspend": {
-          "title": "Suspend technician?",
-          "description": "Suspend {{name}}. They will not receive new jobs until reactivated.",
-          "confirm": "Suspend",
-          "success": "Technician suspended"
-        },
-        "reactivate": {
-          "title": "Reactivate technician?",
-          "description": "Restore {{name}} to verified status and allow new jobs.",
-          "confirm": "Reactivate",
-          "success": "Technician reactivated"
-        }
-      }
+      "booking": "Booking"
     },
     "status": {
       "verified": "Verified",
@@ -264,19 +171,9 @@
       "nameEn": "Name (English)",
       "slug": "Slug",
       "description": "Description",
-      "icon": "Icon",
-      "preset": "Preset icons",
-      "upload": "Upload",
-      "iconSearch": "Search icons…",
-      "iconPreview": "Preview",
-      "uploadHint": "PNG, JPEG, WebP or SVG — max 1MB",
-      "uploading": "Uploading…",
-      "removeIcon": "Remove uploaded icon",
+      "icon": "Icon (emoji or icon name)",
       "update": "Update",
       "create": "Create"
-    },
-    "card": {
-      "subtitle": "Service category"
     }
   },
   "services": {
@@ -287,26 +184,9 @@
     "new": "New Service",
     "empty": {
       "title": "No services",
-      "subtitle": "Create your first service to get started.",
-      "filtered": "No services match your filters."
+      "subtitle": "Create your first service to get started."
     },
     "deleteConfirm": "Delete this service?",
-    "searchPlaceholder": "Search by Arabic, English name, or slug…",
-    "filters": {
-      "advanced": "Advanced filters",
-      "reset": "Reset filters",
-      "category": "Category",
-      "categoryAll": "All categories",
-      "status": "Status",
-      "statusAll": "All statuses",
-      "statusActive": "Active only",
-      "statusInactive": "Inactive only",
-      "priceType": "Price type",
-      "priceTypeAll": "All price types"
-    },
-    "card": {
-      "subtitle": "Service offering"
-    },
     "form": {
       "nameAr": "Name (Arabic)",
       "nameEn": "Name (English)",
@@ -373,7 +253,6 @@
   },
   "paymentSettings": {
     "title": "Manual Payment Settings",
-    "description": "Configure InstaPay and Vodafone Cash details shown to customers at checkout.",
     "instapayName": "InstaPay Account Name",
     "instapayNumber": "InstaPay Number",
     "vodafoneNumber": "Vodafone Cash Number",
@@ -390,8 +269,6 @@
     "new": "New Slide",
     "empty": "No hero slides",
     "deleteConfirm": "Delete this slide?",
-    "moveUp": "Move slide up",
-    "moveDown": "Move slide down",
     "form": {
       "slideImage": "Slide Image",
       "pasteUrl": "Or paste image URL",
@@ -422,103 +299,23 @@
       "review": "Review"
     },
     "performed": "{{admin}} performed {{action}} on {{entityType}}",
-    "performedOn": "performed action on",
-    "admin": "Admin",
-    "entity": "Entity",
-    "entityId": "Entity ID",
-    "details": "Details",
-    "actions": {
-      "technician_approve": "Technician approve",
-      "technician_reject": "Technician reject",
-      "technician_suspend": "Technician suspend",
-      "technician_reactivate": "Technician reactivate",
-      "booking_status_update": "Booking status update",
-      "service_create": "Service create",
-      "service_update": "Service update",
-      "service_delete": "Service delete",
-      "category_create": "Category create",
-      "category_update": "Category update",
-      "category_delete": "Category delete",
-      "review_approve": "Review approve",
-      "review_reject": "Review reject",
-      "review_hide": "Review hide",
-      "payment_approved": "Payment approved",
-      "payment_rejected": "Payment rejected",
-      "payment_created": "Payment created",
-      "payment_settings_updated": "Payment settings updated",
-      "site_settings_updated": "Site settings updated",
-      "hero_slide_create": "Hero slide create",
-      "hero_slide_update": "Hero slide update",
-      "hero_slide_delete": "Hero slide delete",
-      "hero_slide_reorder": "Hero slide reorder"
-    },
-    "meta": {
-      "statusChange": "Status change",
-      "noDetails": "No additional details",
-      "itemsCount": "{{count}} items",
-      "from": "Previous status",
-      "to": "New status",
-      "reason": "Reason",
-      "note": "Note",
-      "rejection_reason": "Rejection reason",
-      "booking_id": "Booking ID",
-      "amount": "Amount",
-      "name_ar": "Name (Arabic)",
-      "name_en": "Name (English)",
-      "slug": "Slug",
-      "title_ar": "Title (Arabic)",
-      "description": "Description",
-      "icon": "Icon",
-      "ordered_ids": "Slide order",
-      "soft_delete": "Soft delete",
-      "hard_delete": "Hard delete",
-      "resubmission": "Resubmission",
-      "actor": "Actor",
-      "payment_method": "Payment method",
-      "instapay_name": "InstaPay account name",
-      "instapay_number": "InstaPay number",
-      "vodafone_number": "Vodafone Cash number",
-      "instructions": "Payment instructions",
-      "actors": {
-        "customer": "Customer",
-        "admin": "Admin"
-      }
-    }
+    "details": "Details"
   },
   "settings": {
     "title": "Settings",
     "subtitle": "Platform configuration.",
     "general": "General",
-    "generalDescription": "Basic platform identity and contact details.",
     "platformName": "Platform Name",
     "supportEmail": "Support Email",
     "save": "Save Settings",
     "saved": "Saved!",
     "about": "About",
-    "aboutText": "Sanad v1.0.0 — A home services marketplace platform built with Next.js, Supabase, and TailwindCSS.",
-    "currency": "Currency",
-    "currencyDescription": "Used for dashboard revenue and public service prices.",
-    "currencySaved": "Currency saved!"
-  },
-  "currencySettings": {
-    "title": "Currency settings",
-    "label": "Display currency",
-    "description": "Choose the currency shown in revenue KPIs and service prices.",
-    "save": "Save currency",
-    "saving": "Saving…",
-    "saved": "Saved!"
+    "aboutText": "Sanad v1.0.0 — A home services marketplace platform built with Next.js, Supabase, and TailwindCSS."
   },
   "unauthorized": {
     "title": "Unauthorized",
     "description": "You do not have permission to access this area. Only administrators can view this page.",
     "backHome": "Back to Home"
-  },
-  "view": {
-    "table": "Table",
-    "cards": "Cards",
-    "toggleLabel": "List view mode",
-    "toggleTable": "Switch to table view",
-    "toggleCards": "Switch to card view"
   },
   "common": {
     "loading": "Loading…",
@@ -537,14 +334,8 @@
     "dash": "—",
     "previous": "Previous",
     "next": "Next",
-    "first": "First",
-    "last": "Last",
-    "rowsPerPage": "Rows per page",
-    "pagination": "Pagination",
-    "goToPage": "Go to page {{page}}",
     "pageOf": "Page {{page}} of {{totalPages}} ({{total}} total)",
     "active": "Active",
-    "inactive": "Inactive",
     "confirm": "Confirm"
   },
   "tables": {
@@ -570,8 +361,7 @@
     "order": "Order",
     "preview": "Preview",
     "title": "Title",
-    "subtitle": "Subtitle",
-    "amount": "Amount"
+    "subtitle": "Subtitle"
   },
   "bookingStatus": {
     "pending": "Pending",
@@ -625,20 +415,7 @@
       "ADMIN_APPROVE_PAYMENT_FAILED": "Failed to approve payment",
       "ADMIN_REJECT_PAYMENT_FAILED": "Failed to reject payment",
       "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "Failed to load payment settings",
-      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "Failed to update payment settings",
-      "ADMIN_FETCH_SITE_SETTINGS_FAILED": "Failed to load site settings",
-      "ADMIN_UPDATE_SITE_SETTINGS_FAILED": "Failed to update site settings",
-      "ADMIN_USER_NOT_FOUND": "Account not found",
-      "ADMIN_BLOCK_USER_FAILED": "Could not change the block state",
-      "ADMIN_DELETE_USER_FAILED": "Could not delete the account",
-      "ADMIN_DELETE_USER_BLOCKED_BY_FK": "Could not delete the account because related data still references it. Run the latest database migration (00032).",
-      "ADMIN_DELETE_BOOKING_FAILED": "Could not delete the booking",
-      "ADMIN_BOOKING_NOT_FOUND": "Booking not found",
-      "ADMIN_MODERATE_SELF_FORBIDDEN": "You cannot perform this action on your own account",
-      "ADMIN_MODERATE_ADMIN_FORBIDDEN": "This action cannot be performed on an admin account",
-      "ADMIN_MODERATE_PROTECTED_FORBIDDEN": "This account is protected and cannot be blocked or deleted",
-      "ADMIN_SERVICE_ROLE_REQUIRED": "This operation requires the server service-role key",
-      "ACCOUNT_BLOCKED": "This account has been blocked"
+      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "Failed to update payment settings"
     },
     "generic": "An unexpected error occurred"
   },
@@ -661,7 +438,6 @@
     "security": "Security",
     "notifications": "Notifications",
     "myJobs": "My Jobs",
-    "myReviews": "Reviews",
     "logout": "Log out"
   },
   "logoutModal": {
@@ -676,109 +452,5 @@
     "deleted": "Deleted successfully",
     "updated": "Updated successfully",
     "error": "Something went wrong"
-  },
-  "moderation": {
-    "block": "Block",
-    "unblock": "Unblock",
-    "delete": "Delete",
-    "blockedBadge": "Blocked",
-    "blockedReason": "Block reason",
-    "blockedSince": "Blocked on",
-    "actionsLabel": "Admin actions",
-    "cancel": "Cancel",
-    "reasonLabel": "Block reason (optional)",
-    "reasonPlaceholder": "e.g. violated the terms of use",
-    "confirmPhrase": "DELETE",
-    "confirmPhraseLabel": "Type “{{phrase}}” to confirm",
-    "dialog": {
-      "block": {
-        "title": "Block this account?",
-        "description": "{{name}} will be blocked and cannot sign in or use the platform until unblocked.",
-        "confirm": "Block account"
-      },
-      "unblock": {
-        "title": "Unblock this account?",
-        "description": "{{name}} regains access to sign in and use the platform immediately.",
-        "confirm": "Unblock"
-      },
-      "deleteTechnician": {
-        "title": "Permanently delete this technician?",
-        "description": "{{name}}'s account will be permanently deleted.",
-        "consequences": "This cannot be undone. The technician profile, skills, reviews, notifications and chats are removed. Past bookings stay with the customer, without a linked technician.",
-        "confirm": "Delete permanently"
-      },
-      "deleteCustomer": {
-        "title": "Permanently delete this customer?",
-        "description": "{{name}}'s account will be permanently deleted.",
-        "consequences": "This cannot be undone. The customer account and all of their bookings, reviews, payments, notifications and chats are removed.",
-        "confirm": "Delete permanently"
-      },
-      "deleteBooking": {
-        "title": "Permanently delete this booking?",
-        "description": "Booking {{name}} will be permanently deleted.",
-        "consequences": "This cannot be undone. The booking images, assignments, review, payment and linked conversation are removed.",
-        "confirm": "Delete booking"
-      }
-    },
-    "toast": {
-      "blocked": "Account blocked",
-      "unblocked": "Account unblocked",
-      "userDeleted": "Account permanently deleted",
-      "bookingDeleted": "Booking permanently deleted"
-    },
-    "bulk": {
-      "toolbarLabel": "Bulk actions",
-      "select": "Select",
-      "selectedOne": "Selected",
-      "selected": "{{count}} selected",
-      "selectRow": "Select this row",
-      "selectAll": "Select all rows on this page",
-      "deleteSelected": "Delete selected",
-      "clearSelection": "Clear selection",
-      "protectedRow": "This account is protected and cannot be deleted",
-      "dialog": {
-        "bookings": {
-          "title": "Permanently delete {{count}} bookings?",
-          "description": "The {{count}} selected bookings will be permanently deleted.",
-          "consequences": "This cannot be undone. For every selected booking the images, assignments, review, payment and linked conversation are removed.",
-          "confirm": "Delete {{count}} bookings"
-        },
-        "customers": {
-          "title": "Permanently delete {{count}} customers?",
-          "description": "The {{count}} selected customer accounts will be permanently deleted.",
-          "consequences": "This cannot be undone. Each account and all of its bookings, reviews, payments, notifications and chats are removed.",
-          "confirm": "Delete {{count}} customers"
-        },
-        "technicians": {
-          "title": "Permanently delete {{count}} technicians?",
-          "description": "The {{count}} selected technician accounts will be permanently deleted.",
-          "consequences": "This cannot be undone. Each technician profile, its skills, reviews, notifications and chats are removed. Past bookings stay with the customer, without a linked technician.",
-          "confirm": "Delete {{count}} technicians"
-        },
-        "categories": {
-          "title": "Delete {{count}} categories?",
-          "description": "The {{count}} selected categories will be deleted.",
-          "consequences": "Services linked to these categories may stop appearing in the customer app.",
-          "confirm": "Delete {{count}} categories"
-        },
-        "services": {
-          "title": "Delete {{count}} services?",
-          "description": "The {{count}} selected services will be deleted.",
-          "consequences": "These services stop appearing in the customer app. Existing bookings keep the service they were created with.",
-          "confirm": "Delete {{count}} services"
-        },
-        "heroSlides": {
-          "title": "Delete {{count}} hero slides?",
-          "description": "The {{count}} selected slides will be deleted.",
-          "consequences": "The slides disappear from the customer home carousel immediately.",
-          "confirm": "Delete {{count}} slides"
-        }
-      },
-      "toast": {
-        "allDeleted": "Deleted {{count}} items",
-        "partial": "Deleted {{deleted}}, {{failed}} failed",
-        "allFailed": "Nothing was deleted — {{failed}} failed"
-      }
-    }
   }
 }

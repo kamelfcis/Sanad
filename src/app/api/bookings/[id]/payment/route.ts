@@ -7,7 +7,6 @@ import { createPaymentSchema } from '@/lib/validations/payments';
 import {
   notifyPaymentSubmitted,
 } from '@/lib/notifications/events';
-import { createServiceRoleClient } from '@/lib/supabase/admin';
 
 const PAYMENT_SETTINGS_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -166,21 +165,6 @@ export async function POST(
     payment = data;
   }
 
-  const auditClient = createServiceRoleClient();
-  await auditClient.from('audit_logs').insert({
-    admin_id: auth.user.id,
-    action: 'payment_created',
-    entity_type: 'payment',
-    entity_id: payment.id,
-    metadata: {
-      booking_id: bookingId,
-      amount,
-      payment_method,
-      resubmission: Boolean(existing),
-      actor: 'customer',
-    },
-  });
-
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name')
@@ -195,6 +179,7 @@ export async function POST(
       customerName: profile?.full_name ?? undefined,
       serviceName: (booking.services as { name_ar?: string } | null)?.name_ar,
     },
+    auth.user.id,
   );
 
   return NextResponse.json(payment, { status: existing ? 200 : 201 });

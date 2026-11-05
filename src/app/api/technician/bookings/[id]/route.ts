@@ -1,96 +1,129 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
-import { requireAuth } from '@/lib/api/auth';
-import { parseJsonBody } from '@/lib/api/validate';
-import { adminEntityIdSchema } from '@/lib/validations/admin';
-import {
-  technicianBookingStatusSchema,
-  TECHNICIAN_STATUS_PRECONDITION,
-} from '@/lib/validations/booking';
-import { notifyBookingStatusChange } from '@/lib/notifications/events';
-import { logger } from '@/lib/logger';
+/**
+ * @fileoverview Common propTypes sorting functionality.
+ */
+
+'use strict';
+
+const toSorted = require('array.prototype.tosorted');
+
+const astUtil = require('./ast');
+const eslintUtil = require('./eslint');
+
+const getSourceCode = eslintUtil.getSourceCode;
+const getText = eslintUtil.getText;
 
 /**
- * PATCH /api/technician/bookings/[id]
- * Technician job lifecycle: accepted → in_progress ("Start Job") and
- * in_progress → completed ("Complete Job"). Only the assigned technician may
- * transition their own booking, and only from the required previous status.
- * Notifies the customer on each transition.
+ * Returns the value name of a node.
+ *
+ * @param {ASTNode} node the node to check.
+ * @returns {string} The name of the node.
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const rawParams = await params;
-  const idParsed = adminEntityIdSchema.safeParse(rawParams);
-  if (!idParsed.success) {
-    return NextResponse.json({ error: 'Invalid booking ID' }, { status: 400 });
-  }
-  const { id } = idParsed.data;
-
-  const supabase = await createServerSupabaseClient();
-  const auth = await requireAuth(supabase);
-  if ('response' in auth) return auth.response;
-
-  const parsed = await parseJsonBody(request, technicianBookingStatusSchema);
-  if ('response' in parsed) return parsed.response;
-  const target = parsed.data.status;
-
-  const db = isServiceRoleConfigured() ? createServiceRoleClient() : supabase;
-
-  const { data: booking, error: fetchError } = await db
-    .from('bookings')
-    .select('id, status, customer_id, technician_id, services(name_ar)')
-    .eq('id', id)
-    .eq('technician_id', auth.user.id)
-    .maybeSingle();
-
-  if (fetchError) {
-    logger.error('technician booking status: fetch failed', fetchError, { bookingId: id });
-    return NextResponse.json({ error: fetchError.message }, { status: 500 });
-  }
-  if (!booking) {
-    return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
-  }
-
-  const requiredPrev = TECHNICIAN_STATUS_PRECONDITION[target];
-  if (booking.status !== requiredPrev) {
-    return NextResponse.json(
-      { error: `Cannot move booking from "${booking.status}" to "${target}"` },
-      { status: 409 },
-    );
-  }
-
-  const now = new Date().toISOString();
-  const { error: updateError } = await db
-    .from('bookings')
-    .update({ status: target, updated_at: now })
-    .eq('id', id);
-
-  if (updateError) {
-    logger.error('technician booking status: update failed', updateError, {
-      bookingId: id,
-      target,
-    });
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
-  }
-
-  try {
-    await notifyBookingStatusChange(
-      {
-        bookingId: id,
-        serviceName: (booking.services as { name_ar?: string } | null)?.name_ar,
-        customerId: booking.customer_id,
-        technicianId: booking.technician_id,
-      },
-      target,
-    );
-  } catch (e) {
-    logger.error('technician booking status: notify failed', e instanceof Error ? e : undefined, {
-      bookingId: id,
-    });
-  }
-
-  return NextResponse.json({ success: true, status: target });
+function getValueName(node) {
+  return node.type === 'Property'
+    && node.value.property
+    && node.value.property.name;
 }
+
+/**
+ * Checks if the prop is required or not.
+ *
+ * @param {ASTNode} node the prop to check.
+ * @returns {boolean} true if the prop is required.
+ */
+function isRequiredProp(node) {
+  return getValueName(node) === 'isRequired';
+}
+
+/**
+ * Checks if the proptype is a callback by checking if it starts with 'on'.
+ *
+ * @param {string} propName the name of the proptype to check.
+ * @returns {boolean} true if the proptype is a callback.
+ */
+function isCallbackPropName(propName) {
+  return /^on[A-Z]/.test(propName);
+}
+
+/**
+ * Checks if the prop is PropTypes.shape.
+ *
+ * @param {ASTNode} node the prop to check.
+ * @returns {boolean} true if the prop is PropTypes.shape.
+ */
+function isShapeProp(node) {
+  return !!(
+    node
+    && node.callee
+    && node.callee.property
+    && node.callee.property.name === 'shape'
+  );
+}
+
+/**
+ * Returns the properties of a PropTypes.shape.
+ *
+ * @param {ASTNode} node the prop to check.
+ * @returns {Array} the properties of the PropTypes.shape node.
+ */
+function getShapeProperties(node) {
+  return node.arguments
+    && node.arguments[0]
+    && node.arguments[0].properties;
+}
+
+/**
+ * Compares two elements.
+ *
+ * @param {ASTNode} a the first element to compare.
+ * @param {ASTNode} b the second element to compare.
+ * @param {Context} context The context of the two nodes.
+ * @param {boolean=} ignoreCase whether or not to ignore case when comparing the two elements.
+ * @param {boolean=} requiredFirst whether or not to sort required elements first.
+ * @param {boolean=} callbacksLast whether or not to sort callbacks after everything else.
+ * @param {boolean=} noSortAlphabetically whether or not to disable alphabetical sorting of the elements.
+ * @returns {number} the sort order of the two elements.
+ */
+function sorter(a, b, context, ignoreCase, requiredFirst, callbacksLast, noSortAlphabetically) {
+  const aKey = String(astUtil.getKeyValue(context, a));
+  const bKey = String(astUtil.getKeyValue(context, b));
+
+  if (requiredFirst) {
+    if (isRequiredProp(a) && !isRequiredProp(b)) {
+      return -1;
+    }
+    if (!isRequiredProp(a) && isRequiredProp(b)) {
+      return 1;
+    }
+  }
+
+  if (callbacksLast) {
+    if (isCallbackPropName(aKey) && !isCallbackPropName(bKey)) {
+      return 1;
+    }
+    if (!isCallbackPropName(aKey) && isCallbackPropName(bKey)) {
+      return -1;
+    }
+  }
+
+  if (!noSortAlphabetically) {
+    if (ignoreCase) {
+      return aKey.localeCompare(bKey);
+    }
+
+    if (aKey < bKey) {
+      return -1;
+    }
+    if (aKey > bKey) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+const commentnodeMap = new WeakMap(); // all nodes reference WeakMap for start and end range
+
+/**
+ * Fixes sort order of prop types.
+ *
+ * @param {Context} context the second element to compare.
+ * @param {Fixer} fixer

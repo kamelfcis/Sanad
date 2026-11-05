@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
 import { requireAuth, requireAdmin } from '@/lib/api/auth';
-import { parseJsonBody, errorResponse } from '@/lib/api/validate';
-import { adminBlockUserSchema, adminEntityIdSchema } from '@/lib/validations/admin';
-import { moderationBlocker } from '@/lib/admin/moderation';
+import { parseJsonBody } from '@/lib/api/validate';
+import { adminEntityIdSchema } from '@/lib/validations/admin';
 
-/** Supabase treats a ban this long as permanent; 'none' lifts it. */
-const PERMANENT_BAN = '876000h';
+const blockSchema = z.object({
+  blocked: z.boolean(),
+  reason: z.string().max(1000).optional().nullable(),
+});
 
 export async function PATCH(
   request: NextRequest,
@@ -15,7 +16,9 @@ export async function PATCH(
 ) {
   const rawParams = await params;
   const idParsed = adminEntityIdSchema.safeParse(rawParams);
-  if (!idParsed.success) return errorResponse('Invalid user ID', 400);
+  if (!idParsed.success) {
+    return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+  }
   const { id } = idParsed.data;
 
   const supabase = await createServerSupabaseClient();
@@ -25,82 +28,39 @@ export async function PATCH(
   const admin = await requireAdmin(supabase, auth.user);
   if ('response' in admin) return admin.response;
 
-  const parsed = await parseJsonBody(request, adminBlockUserSchema);
+  if (id === auth.user.id) {
+    return NextResponse.json({ error: 'Cannot block your own account' }, { status: 400 });
+  }
+
+  const parsed = await parseJsonBody(request, blockSchema);
   if ('response' in parsed) return parsed.response;
+
   const { blocked, reason } = parsed.data;
+  const now = new Date().toISOString();
 
-  // Only columns that predate migration 00032, so the guards below still
-  // answer correctly if the migration has not been applied yet.
-  const { data: target } = await supabase
-    .from('profiles')
-    .select('id, role, email, full_name')
-    .eq('id', id)
-    .maybeSingle();
-
-  if (!target) return errorResponse('ADMIN_USER_NOT_FOUND', 404);
-
-  const blocker = moderationBlocker(target, auth.user.id);
-  if (blocker) return errorResponse(blocker, 403);
-
-  // Banning the auth user is what actually stops a login; without the service
-  // role we would only be setting a flag the user could ignore.
-  if (!isServiceRoleConfigured()) {
-    return errorResponse('ADMIN_SERVICE_ROLE_REQUIRED', 503);
-  }
-  const serviceClient = createServiceRoleClient();
-
-  // Auth is the source of truth for the ban, so read the current state from
-  // there — it is what we restore to if the profile update below fails.
-  const { data: existing } = await serviceClient.auth.admin.getUserById(id);
-  const wasBanned = Boolean(
-    (existing?.user as { banned_until?: string | null } | undefined)?.banned_until,
-  );
-
-  const { error: banError } = await serviceClient.auth.admin.updateUserById(id, {
-    ban_duration: blocked ? PERMANENT_BAN : 'none',
-  });
-  if (banError) {
-    return NextResponse.json(
-      { error: 'ADMIN_BLOCK_USER_FAILED', detail: banError.message },
-      { status: 500 },
-    );
-  }
-
-  const { data: updated, error: updateError } = await serviceClient
+  const { data, error } = await supabase
     .from('profiles')
     .update({
       is_blocked: blocked,
-      blocked_at: blocked ? new Date().toISOString() : null,
-      blocked_reason: blocked ? (reason?.trim() || null) : null,
+      blocked_at: blocked ? now : null,
+      blocked_reason: blocked ? reason ?? null : null,
       blocked_by: blocked ? auth.user.id : null,
+      updated_at: now,
     })
     .eq('id', id)
-    .select('id, full_name, email, role, is_blocked, blocked_at, blocked_reason, blocked_by')
-    .single();
+    .select('id, is_blocked')
+    .maybeSingle();
 
-  if (updateError) {
-    // The ban already landed; roll it back so auth and the profile agree.
-    await serviceClient.auth.admin.updateUserById(id, {
-      ban_duration: wasBanned ? PERMANENT_BAN : 'none',
-    });
-    return NextResponse.json(
-      { error: 'ADMIN_BLOCK_USER_FAILED', detail: updateError.message },
-      { status: 500 },
-    );
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!data) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
   await supabase.from('audit_logs').insert({
     admin_id: auth.user.id,
     action: blocked ? 'user_block' : 'user_unblock',
-    entity_type: 'profile',
+    entity_type: 'user',
     entity_id: id,
-    metadata: {
-      role: target.role,
-      email: target.email,
-      full_name: target.full_name,
-      reason: blocked ? (reason?.trim() || null) : null,
-    },
+    metadata: { reason: reason ?? null },
   });
 
-  return NextResponse.json(updated);
+  return NextResponse.json(data);
 }

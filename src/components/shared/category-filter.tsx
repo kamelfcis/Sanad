@@ -2,46 +2,44 @@
 
 import { cn } from '@/lib/utils/cn';
 
-interface Category {
+interface CategoryOption {
+  id: string;
   slug: string;
   name_ar: string;
-  name_en: string;
 }
 
-interface CategoryFilterProps {
-  categories: Category[];
-  selected: string | null;
-  onSelect: (slug: string | null) => void;
-}
-
-export function CategoryFilter({ categories, selected, onSelect }: CategoryFilterProps) {
-  const allSelected = selected === null;
-
+export function CategoryFilter({
+  categories,
+  value,
+  onChange,
+}: {
+  categories: CategoryOption[];
+  value?: string;
+  onChange: (slug: string | undefined) => void;
+}) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2">
+    <div className="flex flex-wrap gap-2">
       <button
-        onClick={() => onSelect(null)}
+        type="button"
+        onClick={() => onChange(undefined)}
         className={cn(
-          'shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
-          allSelected
-            ? 'border-primary bg-primary text-primary-foreground'
-            : 'border-border hover:border-muted-foreground/50',
+          'rounded-full border px-3 py-1 text-sm',
+          !value ? 'border-primary bg-primary text-white' : 'border-border',
         )}
       >
-        All
+        الكل
       </button>
-      {categories.map((cat) => (
+      {categories.map((category) => (
         <button
-          key={cat.slug}
-          onClick={() => onSelect(cat.slug)}
+          key={category.id}
+          type="button"
+          onClick={() => onChange(category.slug)}
           className={cn(
-            'shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
-            selected === cat.slug
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border hover:border-muted-foreground/50',
+            'rounded-full border px-3 py-1 text-sm',
+            value === category.slug ? 'border-primary bg-primary text-white' : 'border-border',
           )}
         >
-          {cat.name_en}
+          {category.name_ar}
         </button>
       ))}
     </div>

@@ -17,7 +17,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('reviews')
-    .select('*, customer:profiles!reviews_customer_id_fkey(full_name, avatar_url)')
+    .select('*, customer:profiles!customer_id(full_name, avatar_url)')
     .eq('booking_id', bookingId)
     .eq('is_hidden', false)
     .maybeSingle();

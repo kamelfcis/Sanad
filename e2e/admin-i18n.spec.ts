@@ -24,8 +24,8 @@ test.describe('Admin dashboard i18n', () => {
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
 
     await expect(page.getByRole('heading', { name: 'لوحة تحكم الإدارة' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'الحجوزات' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'الإعدادات' })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'الحجوزات', exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'الإعدادات', exact: true })).toBeVisible();
 
     const shot = await screenshot(page, 'admin-i18n-ar');
     expect(shot).toContain('admin-i18n-ar.png');
@@ -38,8 +38,8 @@ test.describe('Admin dashboard i18n', () => {
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
 
     await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Bookings' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'Bookings', exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
 
     const shot = await screenshot(page, 'admin-i18n-en');
     expect(shot).toContain('admin-i18n-en.png');
@@ -73,7 +73,7 @@ test.describe('Admin dashboard i18n', () => {
 
     const menuBtn = page.locator('header button').first();
     await menuBtn.click();
-    await expect(page.getByRole('link', { name: 'الحجوزات' })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'الحجوزات', exact: true })).toBeVisible();
 
     await page.getByTestId('admin-mobile-backdrop').click({ position: { x: 20, y: 400 } });
     await expect(page.getByTestId('admin-mobile-backdrop')).not.toBeVisible();

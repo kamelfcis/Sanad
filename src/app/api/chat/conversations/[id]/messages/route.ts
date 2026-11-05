@@ -7,7 +7,6 @@ import {
   listMessagesQuerySchema,
   sendMessageSchema,
 } from '@/lib/validations/messages';
-import { notifyChatMessage } from '@/lib/notifications/events';
 
 export async function GET(
   request: NextRequest,
@@ -111,16 +110,6 @@ export async function POST(
     .from('chat_conversations')
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', conversationId);
-
-  const recipientId =
-    booking.customer_id === auth.user.id ? booking.technician_id : booking.customer_id;
-
-  if (recipientId) {
-    const senderName =
-      (msg.sender as { full_name?: string | null } | null)?.full_name ?? 'مستخدم';
-    const preview = message?.trim() || (file_url ? 'مرفق' : 'رسالة جديدة');
-    await notifyChatMessage(recipientId, senderName, conversationId, preview);
-  }
 
   return NextResponse.json(msg, { status: 201 });
 }

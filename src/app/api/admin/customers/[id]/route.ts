@@ -40,7 +40,7 @@ export async function GET(
 
   const { data: reviews } = await supabase
     .from('reviews')
-    .select('*, technician:profiles!reviews_technician_id_fkey(full_name)')
+    .select('*, technician:profiles!technician_id(full_name)')
     .eq('customer_id', id)
     .order('created_at', { ascending: false })
     .limit(50);

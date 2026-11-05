@@ -19,18 +19,11 @@ import {
 import {
   AdminEmptyState,
   AdminEntityCard,
-  AdminEntityCardActions,
-  AdminEntityCardActionsGroup,
-  AdminEntityCardHeader,
-  AdminEntityCardInfoBox,
-  AdminEntityCardMeta,
-  AdminEntityCardMetaPill,
-  AdminEntityCardPrimaryAction,
   AdminFilterPills,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
-import { Star, Eye, EyeOff, Calendar } from 'lucide-react';
+import { Star, Eye, EyeOff } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 import { cn } from '@/lib/utils/cn';
@@ -47,6 +40,7 @@ function ReviewModerationPanel({
   onCancel,
   isPending,
   t,
+  iconMargin,
 }: {
   review: any;
   note: string;
@@ -55,6 +49,7 @@ function ReviewModerationPanel({
   onCancel: () => void;
   isPending: boolean;
   t: ReturnType<typeof useAdminT>['t'];
+  iconMargin: string;
 }) {
   return (
     <div className="space-y-2">
@@ -116,6 +111,7 @@ function ReviewCard({
   isPending,
   t,
   formatDateTime,
+  iconMargin,
 }: {
   review: any;
   activeModeration: string | null;
@@ -127,46 +123,36 @@ function ReviewCard({
   isPending: boolean;
   t: ReturnType<typeof useAdminT>['t'];
   formatDateTime: ReturnType<typeof useAdminT>['formatDateTime'];
+  iconMargin: string;
 }) {
   return (
-    <AdminEntityCard>
-      <AdminEntityCardHeader
-        title={review.customer?.full_name ?? t('technicians.detail.anonymous')}
-        subtitle={t('reviews.forTechnician', {
-          name: review.technician?.full_name ?? t('common.unknown'),
-        })}
-        badge={
-          review.is_hidden ? (
-            <Badge variant="outline" className="border-0 bg-gray-100 dark:bg-muted text-gray-600 dark:text-muted-foreground">
-              {t('reviews.hidden')}
-            </Badge>
-          ) : (
-            <AdminEntityCardMetaPill variant="success">{t('reviews.filters.visible')}</AdminEntityCardMetaPill>
-          )
-        }
-      />
-
-      <AdminEntityCardMeta className="mt-3">
-        <ReviewRating rating={review.rating} />
-      </AdminEntityCardMeta>
-
-      {review.comment ? (
-        <AdminEntityCardInfoBox className="mt-4" columns={1}>
-          <p className="text-sm leading-relaxed text-[#0F172A] dark:text-foreground" dir="auto">
-            {review.comment}
+    <AdminEntityCard className="text-start">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+            <span className="font-medium text-[#0F172A]">
+              {review.customer?.full_name ?? t('technicians.detail.anonymous')}
+            </span>
+            <ReviewRating rating={review.rating} />
+            {review.is_hidden ? (
+              <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                {t('reviews.hidden')}
+              </Badge>
+            ) : null}
+          </div>
+          <p className="mt-1 text-xs text-[#64748B]">
+            {t('reviews.forTechnician', {
+              name: review.technician?.full_name ?? t('common.unknown'),
+            })}
           </p>
-        </AdminEntityCardInfoBox>
-      ) : null}
-
-      <AdminEntityCardMeta className="mt-3">
-        <AdminEntityCardMetaPill variant="muted">
-          <Calendar className="h-3 w-3 shrink-0" aria-hidden />
-          {formatDateTime(review.created_at)}
-        </AdminEntityCardMetaPill>
-      </AdminEntityCardMeta>
-
-      <AdminEntityCardActions>
-        <AdminEntityCardActionsGroup>
+          {review.comment ? (
+            <p className="mt-2 text-sm text-[#0F172A]" dir="auto">
+              {review.comment}
+            </p>
+          ) : null}
+          <p className="mt-1 text-xs text-[#94A3B8]">{formatDateTime(review.created_at)}</p>
+        </div>
+        <div className="shrink-0">
           {activeModeration === review.id ? (
             <ReviewModerationPanel
               review={review}
@@ -178,17 +164,18 @@ function ReviewCard({
               onCancel={onCancelModeration}
               isPending={isPending}
               t={t}
+              iconMargin={iconMargin}
             />
           ) : (
-            <AdminEntityCardPrimaryAction
+            <ReviewModerateButton
+              review={review}
               onClick={() => onStartModeration(review.id)}
-              icon={review.is_hidden ? Eye : EyeOff}
-            >
-              {t('reviews.moderate')}
-            </AdminEntityCardPrimaryAction>
+              t={t}
+              iconMargin={iconMargin}
+            />
           )}
-        </AdminEntityCardActionsGroup>
-      </AdminEntityCardActions>
+        </div>
+      </div>
     </AdminEntityCard>
   );
 }
@@ -229,7 +216,7 @@ export default function AdminReviewsPage() {
       pageId="reviews"
       title={t('reviews.title')}
       subtitle={t('reviews.subtitle')}
-      defaultView="table"
+      defaultView="cards"
       cardsLayout="stack"
       skeletonClassName="h-24 w-full rounded-2xl"
       filters={
@@ -271,10 +258,10 @@ export default function AdminReviewsPage() {
           <AdminPremiumTableBody>
             {data?.reviews.map((r: any) => (
               <AdminPremiumTableRow key={r.id}>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
+                <AdminPremiumTableCell className="font-medium text-[#0F172A]">
                   {r.customer?.full_name ?? t('technicians.detail.anonymous')}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground">
+                <AdminPremiumTableCell className="text-[#64748B]">
                   {r.technician?.full_name ?? t('common.unknown')}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
@@ -282,14 +269,14 @@ export default function AdminReviewsPage() {
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
                   {r.is_hidden ? (
-                    <Badge variant="outline" className="bg-gray-100 dark:bg-muted text-gray-600 dark:text-muted-foreground">
+                    <Badge variant="outline" className="bg-gray-100 text-gray-600">
                       {t('reviews.hidden')}
                     </Badge>
                   ) : (
-                    <span className="text-[#64748B] dark:text-muted-foreground">{t('reviews.filters.visible')}</span>
+                    <span className="text-[#64748B]">{t('reviews.filters.visible')}</span>
                   )}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
+                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
                   {formatDateTime(r.created_at)}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell>
@@ -305,6 +292,7 @@ export default function AdminReviewsPage() {
                       }}
                       isPending={moderate.isPending}
                       t={t}
+                      iconMargin={iconMargin}
                     />
                   ) : (
                     <ReviewModerateButton
@@ -337,6 +325,7 @@ export default function AdminReviewsPage() {
             isPending={moderate.isPending}
             t={t}
             formatDateTime={formatDateTime}
+            iconMargin={iconMargin}
           />
         )) ?? null
       }

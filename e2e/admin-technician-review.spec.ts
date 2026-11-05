@@ -36,18 +36,18 @@ test.describe('Admin technician review page', () => {
 
     const documentsSection = page.getByTestId('technician-documents-section');
     await expect(documentsSection).toBeVisible();
-    await expect(documentsSection.getByText(/Documents|المستندات/i)).toBeVisible();
+    await expect(documentsSection.getByText(/Documents/i)).toBeVisible();
 
-    await expect(page.getByText(/Application Details|تفاصيل الطلب/i)).toBeVisible();
-    await expect(page.getByText(/Skills|المهارات/i).first()).toBeVisible();
+    await expect(page.getByText(/Application Details/i)).toBeVisible();
+    await expect(page.getByText(/Skills/i).first()).toBeVisible();
 
-    const approveBtn = page.getByRole('button', { name: /Approve|موافقة/i });
+    const approveBtn = page.getByRole('button', { name: /^Approve$/i });
     await expect(approveBtn).toBeEnabled({ timeout: 30_000 });
     await approveBtn.click();
 
     const dialog = page.getByTestId('admin-status-confirm-dialog');
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText(/Approve technician|الموافقة على الفني/i)).toBeVisible();
+    await expect(dialog.getByText(/Approve technician/i)).toBeVisible();
 
     const patchPromise = page.waitForResponse(
       (r) =>

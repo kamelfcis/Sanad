@@ -1,77 +1,64 @@
-'use client';
-
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Star, Wrench } from 'lucide-react';
-
-interface TechnicianMatchCardProps {
-  technician: {
-    id: string;
-    profile: {
-      full_name: string | null;
-      avatar_url: string | null;
-      email: string | null;
-      phone: string | null;
-    };
-    verification_status: string;
-    is_available: boolean;
-    average_rating: number;
-    completed_jobs: number;
-    skills_count: number;
-    years_experience: number | null;
-    max_distance_km: number | null;
-  };
-  onAssign: (technicianId: string) => void;
-  isAssigning?: boolean;
-}
-
-export function TechnicianMatchCard({ technician, onAssign, isAssigning }: TechnicianMatchCardProps) {
-  const initials = (technician.profile.full_name ?? technician.profile.email ?? '??')
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-
-  return (
-    <div className="flex items-center gap-4 rounded-lg border p-4 transition-colors hover:border-primary/50">
-      <Avatar className="h-12 w-12">
-        <AvatarImage src={technician.profile.avatar_url ?? undefined} />
-        <AvatarFallback>{initials}</AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="truncate font-medium">
-            {technician.profile.full_name ?? 'Unnamed Technician'}
-          </p>
-          {technician.verification_status === 'verified' && (
-            <Badge variant="success" className="text-[10px]">Verified</Badge>
-          )}
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          {technician.average_rating > 0 && (
-            <span className="flex items-center gap-1">
-              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              {technician.average_rating.toFixed(1)} ({technician.completed_jobs})
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            <Wrench className="h-3 w-3" />
-            {technician.skills_count} skills
-          </span>
-          {technician.years_experience && (
-            <span>{technician.years_experience} yrs exp</span>
-          )}
-        </div>
-      </div>
-      <Button
-        size="sm"
-        onClick={() => onAssign(technician.id)}
-        disabled={isAssigning}
-      >
-        {isAssigning ? 'Assigning...' : 'Assign'}
-      </Button>
-    </div>
-  );
-}
+.org/docs/Web/CSS/Reference/Properties/bottom
+   */
+  bottom?: Property.Bottom<TLength> | undefined;
+  /**
+   * This feature is not Baseline because it does not work in some of the most widely-used browsers.
+   *
+   * **Syntax**: `slice | clone`
+   *
+   * **Initial value**: `slice`
+   *
+   * |  Chrome  | Firefox |   Safari    |   Edge   | IE  |
+   * | :------: | :-----: | :---------: | :------: | :-: |
+   * | **130**  | **32**  | **7** _-x-_ | **130**  | No  |
+   * | 22 _-x-_ |         |             | 79 _-x-_ |     |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/box-decoration-break
+   */
+  boxDecorationBreak?: Property.BoxDecorationBreak | undefined;
+  /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
+   *
+   * **Syntax**: `none | <shadow>#`
+   *
+   * **Initial value**: `none`
+   *
+   * | Chrome  | Firefox | Safari  |  Edge  |  IE   |
+   * | :-----: | :-----: | :-----: | :----: | :---: |
+   * | **10**  |  **4**  | **5.1** | **12** | **9** |
+   * | 1 _-x-_ |         | 3 _-x-_ |        |       |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/box-shadow
+   */
+  boxShadow?: Property.BoxShadow | undefined;
+  /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
+   *
+   * **Syntax**: `content-box | border-box`
+   *
+   * **Initial value**: `content-box`
+   *
+   * | Chrome  | Firefox | Safari  |  Edge  |  IE   |
+   * | :-----: | :-----: | :-----: | :----: | :---: |
+   * | **10**  | **29**  | **5.1** | **12** | **8** |
+   * | 1 _-x-_ | 1 _-x-_ | 3 _-x-_ |        |       |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/box-sizing
+   */
+  boxSizing?: Property.BoxSizing | undefined;
+  /**
+   * This feature is well established and works across many devices and browser versions. It’s been available across browsers since January 2019.
+   *
+   * **Syntax**: `auto | avoid | always | all | avoid-page | page | left | right | recto | verso | avoid-column | column | avoid-region | region`
+   *
+   * **Initial value**: `auto`
+   *
+   * | Chrome | Firefox | Safari |  Edge  |   IE   |
+   * | :----: | :-----: | :----: | :----: | :----: |
+   * | **50** | **65**  | **10** | **12** | **10** |
+   *
+   * @see https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/break-after
+   */
+  breakAfter?: Property.BreakAfter | undefined;
+  /**
+   * This feature is well established and works across many dev

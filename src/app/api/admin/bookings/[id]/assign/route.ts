@@ -4,7 +4,6 @@ import { requireAuth, requireAdmin } from '@/lib/api/auth';
 import { parseJsonBody } from '@/lib/api/validate';
 import { adminAssignTechnicianSchema } from '@/lib/validations/assignments';
 import { adminEntityIdSchema } from '@/lib/validations/admin';
-import { notifyBookingAssigned, notifyBookingAccepted } from '@/lib/notifications/events';
 
 export async function POST(
   request: NextRequest,
@@ -65,29 +64,8 @@ export async function POST(
       updated_at: new Date().toISOString(),
     })
     .eq('id', bookingId)
-    .select('*, services(name_ar), customer_id')
+    .select()
     .single();
-
-  if (booking) {
-    const serviceName = (booking.services as { name_ar?: string } | null)?.name_ar;
-    await notifyBookingAssigned(technician_id, {
-      bookingId,
-      serviceName,
-      customerId: booking.customer_id,
-    });
-
-    const { data: techUserProfile } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', technician_id)
-      .single();
-
-    await notifyBookingAccepted(
-      booking.customer_id,
-      { bookingId, serviceName },
-      techUserProfile?.full_name ?? undefined,
-    );
-  }
 
   return NextResponse.json({ success: true, booking });
 }

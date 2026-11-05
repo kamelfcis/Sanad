@@ -18,7 +18,9 @@ export function LocationMapInner({
   zoom = 15,
   className,
 }: LocationMapInnerProps) {
-  configureLeafletIcons();
+  useEffect(() => {
+    configureLeafletIcons();
+  }, []);
 
   return (
     <div className={className ?? 'h-[240px] w-full overflow-hidden rounded-xl border border-border'}>

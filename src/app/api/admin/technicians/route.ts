@@ -15,9 +15,7 @@ export async function GET(request: NextRequest) {
   const query = parseSearchParams(request.nextUrl.searchParams, adminTechniciansQuerySchema);
   if ('response' in query) return query.response;
 
-  const { search, status } = query.data;
-  const page = query.data.page ?? 1;
-  const limit = query.data.limit ?? 20;
+  const { search, status, page, limit } = query.data;
   const offset = (page - 1) * limit;
 
   let dbQuery = supabase
@@ -25,7 +23,7 @@ export async function GET(request: NextRequest) {
     .select(
       `
       *,
-      profile:profiles!inner(id, full_name, email, phone, avatar_url, created_at, is_blocked, blocked_reason),
+      profile:profiles!inner(id, full_name, email, phone, avatar_url, created_at),
       skills:technician_skills(count)
     `,
       { count: 'exact' },
@@ -42,36 +40,11 @@ export async function GET(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  type ProfileJoin = {
-    id: string;
-    full_name: string | null;
-    email: string;
-    phone: string | null;
-    avatar_url: string | null;
-    created_at: string;
-    is_blocked: boolean | null;
-    blocked_reason: string | null;
-  };
-
-  const transformed = data?.map((row: Record<string, unknown>) => {
-    const profile = row.profile as ProfileJoin | null;
-    const skills = row.skills as { count: number }[] | undefined;
-    const tech = { ...row };
-    delete tech.profile;
-    delete tech.skills;
-
-    return {
-      ...tech,
-      full_name: profile?.full_name ?? null,
-      email: profile?.email ?? null,
-      phone: profile?.phone ?? null,
-      avatar_url: profile?.avatar_url ?? null,
-      created_at: profile?.created_at ?? tech.created_at,
-      skills_count: skills?.[0]?.count ?? 0,
-      is_blocked: profile?.is_blocked ?? false,
-      blocked_reason: profile?.blocked_reason ?? null,
-    };
-  });
+  const transformed = data?.map((t: Record<string, unknown>) => ({
+    ...t,
+    skills_count: (t.skills as { count: number }[])?.[0]?.count ?? 0,
+    skills: undefined,
+  }));
 
   return NextResponse.json({
     technicians: transformed ?? [],

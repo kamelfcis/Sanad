@@ -13,14 +13,14 @@ import { colors } from '@/lib/design-system';
 
 const tajawal = Tajawal({
   variable: '--font-tajawal',
-  subsets: ['arabic'],
-  weight: ['400', '500', '700', '800'],
+  subsets: ['arabic', 'latin'],
+  weight: ['400', '500', '700'],
   display: 'swap',
 });
 
 const cairo = Cairo({
   variable: '--font-cairo',
-  subsets: ['arabic'],
+  subsets: ['arabic', 'latin'],
   display: 'swap',
 });
 

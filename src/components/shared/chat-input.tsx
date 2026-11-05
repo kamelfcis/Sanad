@@ -1,107 +1,63 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Send, Paperclip, Loader2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2, Send } from 'lucide-react';
 
-interface ChatInputProps {
-  onSend: (text: string) => Promise<void>;
-  onFileUpload: (file: File) => Promise<void>;
+export function ChatInput({
+  onSend,
+  disabled,
+}: {
+  onSend: (message: string) => Promise<void> | void;
   disabled?: boolean;
-}
+}) {
+  const [value, setValue] = useState('');
+  const [sending, setSending] = useState(false);
 
-export function ChatInput({ onSend, onFileUpload, disabled }: ChatInputProps) {
-  const [text, setText] = useState('');
-  const [isSending, setIsSending] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleSend = async () => {
-    if (!text.trim()) return;
-    setIsSending(true);
+  const submit = async () => {
+    const message = value.trim();
+    if (!message || sending || disabled) return;
+    setSending(true);
     try {
-      await onSend(text);
-      setText('');
+      await onSend(message);
+      setValue('');
     } finally {
-      setIsSending(false);
+      setSending(false);
     }
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: 'File too large', description: 'Maximum size is 10MB.', variant: 'destructive' });
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      await onFileUpload(file);
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const isLoading = isSending || isUploading;
 
   return (
-    <div className="flex items-end gap-2 border-t bg-background p-3">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*,.pdf,.doc,.docx"
-        className="hidden"
-        onChange={handleFileSelect}
+    <form
+      className="flex items-end gap-2 border-t bg-background p-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void submit();
+      }}
+    >
+      <label htmlFor="chat-input" className="sr-only">
+        رسالة
+      </label>
+      <Textarea
+        id="chat-input"
+        data-testid="chat-input"
+        name="message"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="اكتب رسالة…"
+        rows={1}
+        disabled={disabled || sending}
+        className="min-h-11 resize-none"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            void submit();
+          }
+        }}
       />
-      <Button
-        type="button"
-        size="icon"
-        variant="ghost"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={disabled || isLoading}
-        className="shrink-0"
-      >
-        {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
+      <Button type="submit" size="icon" disabled={disabled || sending || !value.trim()} aria-label="إرسال">
+        {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
       </Button>
-      <div className="flex-1">
-        <textarea
-          data-testid="chat-input"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          rows={1}
-          disabled={disabled || isLoading}
-          className="w-full resize-none rounded-xl border bg-muted/50 px-3 py-2 text-sm outline-none focus:border-[#FF6B00]/50 focus:ring-1 focus:ring-[#FF6B00]/30 disabled:opacity-50"
-          style={{ minHeight: 36, maxHeight: 120 }}
-          onInput={(e) => {
-            const el = e.currentTarget;
-            el.style.height = 'auto';
-            el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
-          }}
-        />
-      </div>
-      <Button
-        type="button"
-        size="icon"
-        data-testid="chat-send"
-        onClick={handleSend}
-        disabled={disabled || isLoading || !text.trim()}
-        className="shrink-0 bg-[#FF6B00] text-white hover:bg-[#FF8A34] disabled:opacity-50"
-      >
-        {isSending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-      </Button>
-    </div>
+    </form>
   );
 }

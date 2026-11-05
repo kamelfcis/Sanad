@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { HeroSlide, HeroSlideDisplay } from '@/lib/hero-slides/types';
+import type { HeroSlide } from '@/lib/hero-slides/types';
 
 export async function fetchActiveHeroSlides(
   supabase: SupabaseClient,
@@ -26,7 +26,15 @@ export async function fetchAllHeroSlides(
   return (data ?? []) as HeroSlide[];
 }
 
-export function mapHeroSlideToDisplay(slide: HeroSlide, index: number): HeroSlideDisplay {
+export function mapHeroSlideToDisplay(slide: HeroSlide, index: number): {
+  id: string;
+  src: string;
+  alt: string;
+  title: string;
+  subtitle: string;
+  iconKey: string | null;
+  rotate: number;
+} {
   const rotatePattern = [-3, 2, -2, 3, -1];
   return {
     id: slide.id,

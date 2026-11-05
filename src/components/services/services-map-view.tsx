@@ -13,8 +13,7 @@ import {
   ServicesBrowseFilters,
   type ServicesBrowseFiltersState,
 } from '@/components/services/services-browse-filters';
-import { TechniciansMap } from '@/components/maps/technicians-map';
-import { toTechnicianMapMarkers } from '@/lib/technicians/map-markers';
+import { TechniciansMap, toMarkers } from '@/components/maps/technicians-map';
 import { CAIRO_DEFAULT } from '@/lib/geo';
 
 const DEFAULT_FILTERS: ServicesBrowseFiltersState = {
@@ -92,10 +91,7 @@ export function ServicesMapView() {
   );
 
   const { data, isLoading, error, refetch } = useBrowseTechnicians(queryFilters);
-  const markers = useMemo(
-    () => toTechnicianMapMarkers(data?.technicians ?? []),
-    [data?.technicians],
-  );
+  const markers = useMemo(() => toMarkers(data?.technicians ?? []), [data?.technicians]);
 
   const listHref = `/services${buildMapQuery(filters, searchQuery, userLocation.lat, userLocation.lng)}`;
 

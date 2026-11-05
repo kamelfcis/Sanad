@@ -39,8 +39,7 @@ function getServerHashSnapshot() {
 
 export function Navbar() {
   const pathname = usePathname();
-  const { user, isLoading } = useAuthStore();
-  const isLoggedIn = Boolean(user);
+  const { profile } = useAuthStore();
   const [scrolled, setScrolled] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -69,7 +68,7 @@ export function Navbar() {
     return pathname === href;
   };
 
-  const bookHref = isLoggedIn ? '/customer/bookings/new' : '/auth/register';
+  const bookHref = profile ? '/customer/bookings/new' : '/auth/register';
 
   return (
     <>
@@ -84,7 +83,7 @@ export function Navbar() {
       >
         <div
           className={cn(
-            'mx-auto grid w-full max-w-[1400px] grid-cols-[auto_1fr] items-center gap-x-3 px-4 transition-all duration-300 sm:gap-x-4 md:px-6 lg:px-8 2xl:grid-cols-[auto_minmax(0,1fr)_auto]',
+            'mx-auto grid w-full max-w-[1400px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-4 transition-all duration-300 sm:gap-x-4 md:px-6 lg:px-8',
             'h-16 md:h-[72px] lg:h-20',
           )}
         >
@@ -96,18 +95,18 @@ export function Navbar() {
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-sm transition-shadow duration-200 group-hover:shadow-md group-hover:shadow-primary/20 lg:h-10 lg:w-10">
               <Wrench className="h-[18px] w-[18px] text-primary-foreground lg:h-5 lg:w-5" />
             </div>
-            <div className="flex min-w-0 flex-col leading-tight">
+            <div className="hidden min-w-0 flex-col leading-tight xs:flex">
               <span className="truncate text-lg font-bold text-text-primary -mb-0.5 lg:text-xl">سند</span>
               <span className="text-[9px] font-bold tracking-[0.25em] text-text-muted lg:text-[10px]">SANAD</span>
             </div>
           </Link>
 
-          {/* Desktop navigation — center column, 2xl+ only (hamburger below) */}
+          {/* Desktop navigation — center column, xl+ only */}
           <nav
             aria-label="التنقل الرئيسي"
-            className="hidden items-center justify-center px-2 2xl:flex"
+            className="hidden min-w-0 items-center justify-center px-1 xl:flex xl:px-3"
           >
-            <div className="flex items-center justify-center gap-x-4">
+            <div className="flex max-w-full items-center justify-center gap-x-2 2xl:gap-x-5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {navItems.map((item) => (
                 <div
                   key={item.href}
@@ -143,25 +142,28 @@ export function Navbar() {
               <ThemeToggle />
             </div>
 
-            {isLoggedIn && (
-              <div className="hidden sm:block">
+            {profile && (
+              <div className="hidden md:block">
                 <NotificationBell variant="light" />
               </div>
             )}
 
-            {isLoggedIn && <UserNav size="sm" showLogoutLabel />}
-
-            {!isLoggedIn && !isLoading && (
-              <div className="hidden items-center gap-1 lg:flex lg:gap-2">
+            {profile ? (
+              <div className="hidden lg:block">
+                <UserNav />
+              </div>
+            ) : (
+              <div className="hidden items-center gap-1 lg:flex xl:gap-2">
                 <Link href="/auth/login">
                   <Button
                     variant="ghost"
-                    className="shrink-0 px-2 font-semibold text-text-secondary hover:bg-muted hover:text-primary lg:px-4"
+                    className="shrink-0 px-2 font-semibold text-text-secondary hover:bg-muted hover:text-primary xl:px-4"
                   >
-                    تسجيل الدخول
+                    <span className="hidden xl:inline">تسجيل الدخول</span>
+                    <span className="xl:hidden">دخول</span>
                   </Button>
                 </Link>
-                <Link href="/auth/register" className="hidden lg:block">
+                <Link href="/auth/register" className="hidden xl:block">
                   <Button
                     variant="outline"
                     className="shrink-0 whitespace-nowrap border-border font-semibold text-text-primary hover:bg-muted"
@@ -178,7 +180,7 @@ export function Navbar() {
               </Button>
             </Link>
 
-            <div className="hidden shrink-0 items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 min-[1400px]:flex">
+            <div className="hidden shrink-0 items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 2xl:flex">
               <Star className="h-3.5 w-3.5 shrink-0 fill-warning text-warning" />
               <span className="whitespace-nowrap text-xs font-bold text-text-secondary">
                 4.9
@@ -191,7 +193,7 @@ export function Navbar() {
               aria-label="فتح القائمة"
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(true)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-text-secondary transition-all duration-200 hover:bg-muted hover:text-text-primary 2xl:hidden"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-text-secondary transition-all duration-200 hover:bg-muted hover:text-text-primary xl:hidden"
             >
               <Menu className="h-5 w-5" aria-hidden />
             </button>

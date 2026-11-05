@@ -36,6 +36,8 @@ yarn-error.log*
 
 # vercel
 .vercel
+.cursor/*token*
+.cursor/*secret*
 
 # typescript
 *.tsbuildinfo
@@ -59,3 +61,4 @@ e2e/run-state.json
 
 
 supabase/.temp/
+.env*.local

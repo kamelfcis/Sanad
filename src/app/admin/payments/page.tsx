@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { format } from 'date-fns';
 import {
   useAdminPayments,
   useAdminApprovePayment,
@@ -9,195 +10,127 @@ import {
 import { PaymentStatusBadge } from '@/components/payments/payment-status-badge';
 import type { AdminPayment, PaymentStatus } from '@/types/payments';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  AdminPremiumTable,
-  AdminPremiumTableBody,
-  AdminPremiumTableCell,
-  AdminPremiumTableHead,
-  AdminPremiumTableHeaderCell,
-  AdminPremiumTableRow,
-} from '@/components/admin/admin-premium-table';
-import {
-  AdminEmptyState,
-  AdminEntityCard,
-  AdminEntityCardActions,
-  AdminEntityCardActionsGroup,
-  AdminEntityCardHeader,
-  AdminEntityCardInfoBox,
-  AdminEntityCardInfoRow,
-  AdminEntityCardMeta,
-  AdminEntityCardMetaPill,
-  AdminEntityCardPrimaryAction,
-  AdminEntityCardTagPill,
-  AdminFilterPills,
-} from '@/components/admin/admin-list-chrome';
-import { AdminListShell } from '@/components/admin/admin-list-shell';
-import { AdminPagination } from '@/components/admin/admin-pagination';
-import { Banknote, ExternalLink, Calendar } from 'lucide-react';
-import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
-import { translateAdminError } from '@/lib/i18n/admin/translate-error';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { ChevronLeft, ChevronRight, Banknote, ExternalLink } from 'lucide-react';
 
-function PaymentActions({
+const FILTERS: { label: string; value: PaymentStatus | undefined }[] = [
+  { label: 'All', value: undefined },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Approved', value: 'approved' },
+  { label: 'Rejected', value: 'rejected' },
+];
+
+function PaymentRow({
   payment,
   onApprove,
   onReject,
   isApproving,
   isRejecting,
-  t,
 }: {
   payment: AdminPayment;
   onApprove: (id: string) => void;
   onReject: (id: string, reason: string) => void;
   isApproving: boolean;
   isRejecting: boolean;
-  t: ReturnType<typeof useAdminT>['t'];
 }) {
   const [showReject, setShowReject] = useState(false);
   const [reason, setReason] = useState('');
 
-  if (payment.status !== 'pending') return null;
-
-  if (showReject) {
-    return (
-      <div className="space-y-2">
-        <div>
-          <Label htmlFor={`reason-${payment.id}`} className="text-xs">
-            {t('payments.rejectionReason')}
-          </Label>
-          <Input
-            id={`reason-${payment.id}`}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder={t('payments.reasonPlaceholder')}
-            className="h-8 w-full text-xs sm:w-48"
-          />
-        </div>
-        <div className="flex gap-1">
-          <Button
-            size="sm"
-            variant="destructive"
-            disabled={!reason.trim() || isRejecting}
-            onClick={() => {
-              onReject(payment.id, reason.trim());
-              setShowReject(false);
-              setReason('');
-            }}
-          >
-            {t('payments.confirmReject')}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              setShowReject(false);
-              setReason('');
-            }}
-          >
-            {t('common.cancel')}
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const methodLabel = payment.payment_method === 'instapay' ? 'InstaPay' : 'Vodafone Cash';
 
   return (
-    <div className="flex gap-2">
-      <Button size="sm" onClick={() => onApprove(payment.id)} disabled={isApproving}>
-        {t('payments.approve')}
-      </Button>
-      <Button size="sm" variant="outline" onClick={() => setShowReject(true)}>
-        {t('payments.reject')}
-      </Button>
-    </div>
-  );
-}
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex-1 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-medium">{payment.customer?.full_name ?? 'Customer'}</span>
+              <Badge variant="outline">{methodLabel}</Badge>
+              <PaymentStatusBadge status={payment.status} />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {payment.booking?.services?.name_ar ?? 'Booking'} · {Number(payment.amount).toFixed(2)} EGP
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {format(new Date(payment.created_at), "MMM d, yyyy 'at' h:mm a")}
+            </p>
+            {payment.rejection_reason && (
+              <p className="text-xs text-destructive">Reason: {payment.rejection_reason}</p>
+            )}
+            <a
+              href={payment.screenshot_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-primary underline"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              View screenshot
+            </a>
+          </div>
 
-function PaymentCard({
-  payment,
-  onApprove,
-  onReject,
-  isApproving,
-  isRejecting,
-  t,
-  formatDateTime,
-  formatCurrency,
-}: {
-  payment: AdminPayment;
-  onApprove: (id: string) => void;
-  onReject: (id: string, reason: string) => void;
-  isApproving: boolean;
-  isRejecting: boolean;
-  t: ReturnType<typeof useAdminT>['t'];
-  formatDateTime: ReturnType<typeof useAdminT>['formatDateTime'];
-  formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
-}) {
-  return (
-    <AdminEntityCard>
-      <AdminEntityCardHeader
-        title={payment.customer?.full_name ?? t('payments.customer')}
-        subtitle={formatCurrency(Number(payment.amount))}
-        badge={<PaymentStatusBadge status={payment.status} context="admin" />}
-      />
-
-      <AdminEntityCardMeta className="mt-3">
-        <AdminEntityCardTagPill>
-          {payment.payment_method === 'instapay'
-            ? t('payments.methods.instapay')
-            : t('payments.methods.vodafoneCash')}
-        </AdminEntityCardTagPill>
-      </AdminEntityCardMeta>
-
-      <AdminEntityCardInfoBox className="mt-4">
-        <AdminEntityCardInfoRow label={t('tables.service')} fullWidth>
-          <span className="text-[#64748B] dark:text-muted-foreground">
-            {payment.booking?.services?.name_ar ?? t('payments.booking')}
-          </span>
-        </AdminEntityCardInfoRow>
-        {payment.rejection_reason ? (
-          <AdminEntityCardInfoRow label={t('payments.rejectionReason')} fullWidth>
-            <span className="text-destructive">{payment.rejection_reason}</span>
-          </AdminEntityCardInfoRow>
-        ) : null}
-      </AdminEntityCardInfoBox>
-
-      <AdminEntityCardMeta className="mt-3">
-        <AdminEntityCardMetaPill variant="muted">
-          <Calendar className="h-3 w-3 shrink-0" aria-hidden />
-          {formatDateTime(payment.created_at)}
-        </AdminEntityCardMetaPill>
-        <AdminEntityCardPrimaryAction
-          href={payment.screenshot_url}
-          icon={ExternalLink}
-          ariaLabel={t('payments.viewScreenshot')}
-          external
-          className="px-3 py-1 text-xs"
-        >
-          {t('payments.viewScreenshot')}
-        </AdminEntityCardPrimaryAction>
-      </AdminEntityCardMeta>
-
-      {payment.status === 'pending' ? (
-        <AdminEntityCardActions>
-          <AdminEntityCardActionsGroup>
-            <PaymentActions
-              payment={payment}
-              onApprove={onApprove}
-              onReject={onReject}
-              isApproving={isApproving}
-              isRejecting={isRejecting}
-              t={t}
-            />
-          </AdminEntityCardActionsGroup>
-        </AdminEntityCardActions>
-      ) : null}
-    </AdminEntityCard>
+          {payment.status === 'pending' && (
+            <div className="shrink-0 space-y-2">
+              {showReject ? (
+                <>
+                  <div>
+                    <Label htmlFor={`reason-${payment.id}`} className="text-xs">Rejection reason</Label>
+                    <Input
+                      id={`reason-${payment.id}`}
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      placeholder="Reason..."
+                      className="h-8 w-48 text-xs"
+                    />
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={!reason.trim() || isRejecting}
+                      onClick={() => {
+                        onReject(payment.id, reason.trim());
+                        setShowReject(false);
+                        setReason('');
+                      }}
+                    >
+                      Confirm Reject
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setShowReject(false); setReason(''); }}>
+                      Cancel
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => onApprove(payment.id)}
+                    disabled={isApproving}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowReject(true)}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
 export default function AdminPaymentsPage() {
-  const { t, formatDateTime, formatCurrency } = useAdminT();
   const [filter, setFilter] = useState<PaymentStatus | undefined>('pending');
   const [page, setPage] = useState(1);
 
@@ -205,111 +138,77 @@ export default function AdminPaymentsPage() {
   const approve = useAdminApprovePayment();
   const reject = useAdminRejectPayment();
 
-  const filters: { label: string; value: string }[] = [
-    { label: t('payments.filters.all'), value: '' },
-    { label: t('payments.filters.pending'), value: 'pending' },
-    { label: t('payments.filters.approved'), value: 'approved' },
-    { label: t('payments.filters.rejected'), value: 'rejected' },
-  ];
-
-  const filterValue = filter ?? '';
-
   return (
-    <AdminListShell
-      pageId="payments"
-      title={t('payments.title')}
-      subtitle={t('payments.subtitle')}
-      defaultView="table"
-      cardsLayout="stack"
-      skeletonClassName="h-28 w-full rounded-2xl"
-      filters={
-        <AdminFilterPills
-          filters={filters}
-          value={filterValue}
-          onChange={(value) => {
-            setFilter((value as PaymentStatus) || undefined);
-            setPage(1);
-          }}
-        />
-      }
-      isLoading={isLoading}
-      error={error ? translateAdminError(error.message, t) : null}
-      isEmpty={!data?.payments.length}
-      empty={<AdminEmptyState icon={Banknote} title={t('payments.empty')} />}
-      pagination={
-        data ? (
-          <AdminPagination
-            page={page}
-            totalPages={Math.max(1, Math.ceil(data.total / data.limit))}
-            total={data.total}
-            onPageChange={setPage}
-          />
-        ) : null
-      }
-      table={
-        <AdminPremiumTable>
-          <AdminPremiumTableHead>
-            <AdminPremiumTableHeaderCell>{t('tables.customer')}</AdminPremiumTableHeaderCell>
-            <AdminPremiumTableHeaderCell>{t('tables.service')}</AdminPremiumTableHeaderCell>
-            <AdminPremiumTableHeaderCell>{t('tables.amount')}</AdminPremiumTableHeaderCell>
-            <AdminPremiumTableHeaderCell>{t('tables.status')}</AdminPremiumTableHeaderCell>
-            <AdminPremiumTableHeaderCell className="hidden md:table-cell">
-              {t('tables.date')}
-            </AdminPremiumTableHeaderCell>
-            <AdminPremiumTableHeaderCell>{t('tables.action')}</AdminPremiumTableHeaderCell>
-          </AdminPremiumTableHead>
-          <AdminPremiumTableBody>
-            {data?.payments.map((payment) => (
-              <AdminPremiumTableRow key={payment.id}>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
-                  {payment.customer?.full_name ?? t('payments.customer')}
-                </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="text-[#64748B] dark:text-muted-foreground">
-                  {payment.booking?.services?.name_ar ?? t('payments.booking')}
-                </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="tabular-nums text-[#0F172A] dark:text-foreground" dir="ltr">
-                  {formatCurrency(Number(payment.amount))}
-                </AdminPremiumTableCell>
-                <AdminPremiumTableCell>
-                  <PaymentStatusBadge status={payment.status} context="admin" />
-                </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
-                  {formatDateTime(payment.created_at)}
-                </AdminPremiumTableCell>
-                <AdminPremiumTableCell>
-                  <PaymentActions
-                    payment={payment}
-                    onApprove={(id) => approve.mutate(id)}
-                    onReject={(id, rejection_reason) =>
-                      reject.mutate({ paymentId: id, rejection_reason })
-                    }
-                    isApproving={approve.isPending}
-                    isRejecting={reject.isPending}
-                    t={t}
-                  />
-                </AdminPremiumTableCell>
-              </AdminPremiumTableRow>
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
+        <p className="mt-1 text-muted-foreground">Review manual InstaPay and Vodafone Cash payments.</p>
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={String(f.value)}
+            onClick={() => { setFilter(f.value); setPage(1); }}
+            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+              filter === f.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-muted-foreground/50'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
+          Failed to load payments.
+        </div>
+      ) : !data?.payments.length ? (
+        <div className="flex flex-col items-center gap-4 py-16 text-center">
+          <Banknote className="h-12 w-12 text-muted-foreground/50" />
+          <h2 className="text-lg font-semibold">No payments found</h2>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-3">
+            {data.payments.map((payment) => (
+              <PaymentRow
+                key={payment.id}
+                payment={payment}
+                onApprove={(id) => approve.mutate(id)}
+                onReject={(id, rejection_reason) => reject.mutate({ paymentId: id, rejection_reason })}
+                isApproving={approve.isPending}
+                isRejecting={reject.isPending}
+              />
             ))}
-          </AdminPremiumTableBody>
-        </AdminPremiumTable>
-      }
-      cards={
-        data?.payments.map((payment) => (
-          <PaymentCard
-            key={payment.id}
-            payment={payment}
-            onApprove={(id) => approve.mutate(id)}
-            onReject={(id, rejection_reason) =>
-              reject.mutate({ paymentId: id, rejection_reason })
-            }
-            isApproving={approve.isPending}
-            isRejecting={reject.isPending}
-            t={t}
-            formatDateTime={formatDateTime}
-            formatCurrency={formatCurrency}
-          />
-        )) ?? null
-      }
-    />
+          </div>
+
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Page {data.page} of {Math.max(1, Math.ceil(data.total / data.limit))} ({data.total} total)
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                <ChevronLeft className="h-4 w-4" /> Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page * data.limit >= data.total}
+                onClick={() => setPage(page + 1)}
+              >
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }

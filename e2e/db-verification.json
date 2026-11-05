@@ -1,7 +1,7 @@
 {
-  "verifiedAt": "2026-06-26T11:59:58.445Z",
-  "customerId": "9ec56ba6-77d3-4e0b-a793-b962a148999f",
-  "techId": "621214f3-0917-4326-bc88-e75cd987a83e",
+  "verifiedAt": "2026-07-25T19:32:27.079Z",
+  "customerId": "61484e37-2cf2-420c-893a-d6988adad6af",
+  "techId": "241780c1-bc0e-4969-9797-426e7b187a28",
   "results": {
     "profiles": {
       "data": [
@@ -12,7 +12,7 @@
           "full_name": "Sanad Admin"
         },
         {
-          "id": "9ec56ba6-77d3-4e0b-a793-b962a148999f",
+          "id": "61484e37-2cf2-420c-893a-d6988adad6af",
           "email": "test-customer@sanad.app",
           "role": "customer",
           "full_name": "E2E Test Customer"
@@ -22,7 +22,7 @@
     },
     "technicianProfile": {
       "data": {
-        "id": "621214f3-0917-4326-bc88-e75cd987a83e",
+        "id": "241780c1-bc0e-4969-9797-426e7b187a28",
         "verification_status": "verified",
         "is_available": true
       },
@@ -31,44 +31,44 @@
     "bookings": {
       "data": [
         {
-          "id": "e61aaa6a-b226-479b-aacd-c5f05183f9f5",
+          "id": "422b1e7e-c294-473f-8e9a-9a80f028ae50",
           "status": "matched",
-          "customer_id": "9ec56ba6-77d3-4e0b-a793-b962a148999f",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
-          "price_quote": null,
-          "created_at": "2026-06-26T11:52:26.313231+00:00"
-        },
-        {
-          "id": "4e9ca2eb-e096-40ca-a2ee-47eb4cb5affb",
-          "status": "matched",
-          "customer_id": "9ec56ba6-77d3-4e0b-a793-b962a148999f",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
-          "price_quote": null,
-          "created_at": "2026-06-26T11:49:10.8787+00:00"
-        },
-        {
-          "id": "15e45e27-4bc7-4018-8e05-d6f0f1de6a85",
-          "status": "pending",
-          "customer_id": "9ec56ba6-77d3-4e0b-a793-b962a148999f",
+          "customer_id": "61484e37-2cf2-420c-893a-d6988adad6af",
           "technician_id": null,
           "price_quote": null,
-          "created_at": "2026-06-26T11:38:53.306273+00:00"
+          "created_at": "2026-07-25T19:30:35.888672+00:00"
         },
         {
-          "id": "77eb755c-42d8-4cf6-ac03-7e365479a1c9",
-          "status": "completed",
-          "customer_id": "9ec56ba6-77d3-4e0b-a793-b962a148999f",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
+          "id": "9b1d3fb0-ae36-4db6-9e17-07c1a14d8142",
+          "status": "matched",
+          "customer_id": "61484e37-2cf2-420c-893a-d6988adad6af",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
           "price_quote": null,
-          "created_at": "2026-06-26T11:38:34.030923+00:00"
+          "created_at": "2026-07-25T19:30:20.612743+00:00"
         },
         {
-          "id": "fcadde4c-e0bf-4b98-871d-97a063c82dd8",
-          "status": "pending",
-          "customer_id": "9ec56ba6-77d3-4e0b-a793-b962a148999f",
-          "technician_id": null,
+          "id": "d0e3e8ff-de85-4b15-930b-8fc003398d29",
+          "status": "in_progress",
+          "customer_id": "61484e37-2cf2-420c-893a-d6988adad6af",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
           "price_quote": null,
-          "created_at": "2026-06-26T11:33:19.702179+00:00"
+          "created_at": "2026-07-25T19:29:06.396013+00:00"
+        },
+        {
+          "id": "1100e1f8-04db-4d20-b3b3-70028e1aa681",
+          "status": "cancelled",
+          "customer_id": "61484e37-2cf2-420c-893a-d6988adad6af",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
+          "price_quote": null,
+          "created_at": "2026-07-25T19:28:39.057211+00:00"
+        },
+        {
+          "id": "3eceaec3-b175-48f6-9595-838ab23e25df",
+          "status": "cancelled",
+          "customer_id": "61484e37-2cf2-420c-893a-d6988adad6af",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
+          "price_quote": null,
+          "created_at": "2026-07-25T19:28:06.661126+00:00"
         }
       ],
       "error": null
@@ -76,74 +76,74 @@
     "assignments": {
       "data": [
         {
-          "id": "0fc69c3d-34d4-44f1-a52f-8ecf661ce4b4",
-          "booking_id": "e61aaa6a-b226-479b-aacd-c5f05183f9f5",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
+          "id": "6534e415-98f1-435f-8f4c-af7ce5b14ae6",
+          "booking_id": "9b1d3fb0-ae36-4db6-9e17-07c1a14d8142",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
           "status": "pending",
           "response_at": null
         },
         {
-          "id": "8572fa34-1d47-42a6-b3ff-31ed4287bc24",
-          "booking_id": "4e9ca2eb-e096-40ca-a2ee-47eb4cb5affb",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
-          "status": "pending",
-          "response_at": null
-        },
-        {
-          "id": "ab963af7-3825-4fa8-ab1e-11b91fa3fd09",
-          "booking_id": "77eb755c-42d8-4cf6-ac03-7e365479a1c9",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
+          "id": "9aa58916-efad-4928-9a85-a5f9f1bd0601",
+          "booking_id": "d0e3e8ff-de85-4b15-930b-8fc003398d29",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
           "status": "accepted",
-          "response_at": "2026-06-26T11:40:46.413+00:00"
+          "response_at": "2026-07-25T19:29:16.553+00:00"
         },
         {
-          "id": "4b60c95f-fd73-4693-929e-4890ab94ec4d",
-          "booking_id": "72e7221a-bdc1-4cc7-a0b5-c10995b46e13",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
+          "id": "fc0dd348-656c-42e1-9638-c3b4f9205096",
+          "booking_id": "1100e1f8-04db-4d20-b3b3-70028e1aa681",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
+          "status": "cancelled",
+          "response_at": "2026-07-25T19:28:57.551+00:00"
+        },
+        {
+          "id": "1e101188-8a15-4727-bf25-fcc4ac134142",
+          "booking_id": "3eceaec3-b175-48f6-9595-838ab23e25df",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
+          "status": "cancelled",
+          "response_at": "2026-07-25T19:28:22.087+00:00"
+        },
+        {
+          "id": "ceb2d5ca-2c46-4eab-bd7d-0615c1a8e651",
+          "booking_id": "140999c5-5cbc-4331-b07c-991711c94830",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
+          "status": "cancelled",
+          "response_at": "2026-07-25T19:27:30.716+00:00"
+        },
+        {
+          "id": "fcd3807c-16d0-46ea-bbb4-ab45e0daea19",
+          "booking_id": "bc18d6c2-3dc3-4176-9ad2-b950f97dae14",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
+          "status": "pending",
+          "response_at": null
+        },
+        {
+          "id": "3a720f92-e5a2-4684-bf9a-cf8276290a99",
+          "booking_id": "9df99ac8-9362-4acd-bf61-f535d37f9552",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
           "status": "accepted",
-          "response_at": "2026-06-26T11:41:43.846+00:00"
+          "response_at": "2026-07-25T15:55:00.677+00:00"
         },
         {
-          "id": "7f18b518-c758-46f1-a075-82af6f641a61",
-          "booking_id": "8f67ea40-afaf-4544-819e-8645b970d6c9",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
+          "id": "120ecb35-cb47-410e-bb90-962edc51c234",
+          "booking_id": "16fa6ca5-fa1e-4599-817a-13064d4e2628",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
           "status": "pending",
           "response_at": null
         },
         {
-          "id": "e9e9deba-6433-4383-8c1a-476fe466ec25",
-          "booking_id": "e97d77ab-831f-4b53-bd50-3a112910dd13",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
-          "status": "pending",
-          "response_at": null
-        },
-        {
-          "id": "7315af87-3234-4a22-982d-9ae06f0623ff",
-          "booking_id": "83f4c7ed-0ee6-4b8b-8e73-c0c917e7177b",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
+          "id": "2c7bf5c9-3f05-4168-9b19-4bef5ebda7c9",
+          "booking_id": "7d05a8c1-c769-4c92-9b19-57fdec0fa7bf",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
           "status": "accepted",
-          "response_at": "2026-06-26T10:32:21.235+00:00"
+          "response_at": "2026-07-25T13:37:10.284+00:00"
         },
         {
-          "id": "b3a8ae92-23c9-4e75-b13e-80afdc3d1edb",
-          "booking_id": "660bfa37-96f6-4c10-989a-c18da43cd3a2",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
+          "id": "10641a15-e761-4369-9bd9-72c1ded819d0",
+          "booking_id": "b6890373-78a5-47c9-81eb-f7f7c822e4b0",
+          "technician_id": "241780c1-bc0e-4969-9797-426e7b187a28",
           "status": "accepted",
-          "response_at": "2026-06-26T10:32:55.208+00:00"
-        },
-        {
-          "id": "46c31ca6-7f91-4fa8-bbe7-1c4400cab6b1",
-          "booking_id": "e167702c-96bb-488a-9167-fbc8e78f5edf",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
-          "status": "pending",
-          "response_at": null
-        },
-        {
-          "id": "756c0649-d34d-452f-8c51-f76597c288ea",
-          "booking_id": "ceac5a3d-4f4b-42e2-af18-786812adb97e",
-          "technician_id": "621214f3-0917-4326-bc88-e75cd987a83e",
-          "status": "pending",
-          "response_at": null
+          "response_at": "2026-07-25T13:19:24.375+00:00"
         }
       ],
       "error": null
@@ -157,22 +157,7 @@
       "error": "column chat_messages.content does not exist"
     },
     "payments": {
-      "data": [
-        {
-          "id": "bd0b0e75-682b-4a38-944c-e8c7fd1a224e",
-          "booking_id": "77eb755c-42d8-4cf6-ac03-7e365479a1c9",
-          "status": "approved",
-          "amount": 250,
-          "payment_method": "vodafone_cash"
-        },
-        {
-          "id": "41cc8c42-4811-41d5-ad84-d153257a02ee",
-          "booking_id": "83f4c7ed-0ee6-4b8b-8e73-c0c917e7177b",
-          "status": "approved",
-          "amount": 250,
-          "payment_method": "vodafone_cash"
-        }
-      ],
+      "data": [],
       "error": null
     },
     "notifications": {
@@ -186,74 +171,67 @@
     "auditLogs": {
       "data": [
         {
-          "id": "39fc5541-8d7a-41fc-ae00-d8f5b6c74f0d",
-          "action": "technician_approve",
-          "entity_type": "technician",
-          "entity_id": "621214f3-0917-4326-bc88-e75cd987a83e",
-          "created_at": "2026-06-26T11:46:18.623062+00:00"
-        },
-        {
-          "id": "fe1528bf-304c-473d-827b-4d5e07151680",
-          "action": "payment_approved",
-          "entity_type": "payment",
-          "entity_id": "bd0b0e75-682b-4a38-944c-e8c7fd1a224e",
-          "created_at": "2026-06-26T11:45:23.332979+00:00"
-        },
-        {
-          "id": "9019cf97-231d-4d13-9b01-e6638d2966de",
-          "action": "payment_created",
-          "entity_type": "payment",
-          "entity_id": "bd0b0e75-682b-4a38-944c-e8c7fd1a224e",
-          "created_at": "2026-06-26T11:45:05.891752+00:00"
-        },
-        {
-          "id": "c198c1fb-c5ab-409d-a88e-a8eb9cb3a2f0",
+          "id": "08ad8e49-18d3-4fcc-989a-944c864a5dab",
           "action": "booking_status_update",
           "entity_type": "booking",
-          "entity_id": "77eb755c-42d8-4cf6-ac03-7e365479a1c9",
-          "created_at": "2026-06-26T11:44:09.581118+00:00"
+          "entity_id": "d0e3e8ff-de85-4b15-930b-8fc003398d29",
+          "created_at": "2026-07-25T19:29:28.189489+00:00"
         },
         {
-          "id": "918afe3e-e737-4786-93cc-0a763d661dec",
-          "action": "technician_approve",
-          "entity_type": "technician",
-          "entity_id": "621214f3-0917-4326-bc88-e75cd987a83e",
-          "created_at": "2026-06-26T10:33:52.681401+00:00"
-        },
-        {
-          "id": "6f5dfdc0-9744-4acd-a9ff-5bd0f4a2ee51",
-          "action": "payment_approved",
-          "entity_type": "payment",
-          "entity_id": "41cc8c42-4811-41d5-ad84-d153257a02ee",
-          "created_at": "2026-06-26T10:33:46.486622+00:00"
-        },
-        {
-          "id": "4e8d1c49-b716-45ac-8057-9e09dd571d67",
-          "action": "payment_created",
-          "entity_type": "payment",
-          "entity_id": "41cc8c42-4811-41d5-ad84-d153257a02ee",
-          "created_at": "2026-06-26T10:33:35.760066+00:00"
-        },
-        {
-          "id": "f0e277fb-774d-48bd-9a80-ddc429a2302b",
+          "id": "3fe0528a-648f-4197-9d66-7283fef50af2",
           "action": "booking_status_update",
           "entity_type": "booking",
-          "entity_id": "83f4c7ed-0ee6-4b8b-8e73-c0c917e7177b",
-          "created_at": "2026-06-26T10:33:29.195546+00:00"
+          "entity_id": "1b9953ef-ec68-4d8a-bd4f-eaba33e1f1ba",
+          "created_at": "2026-07-24T19:59:44.919081+00:00"
         },
         {
-          "id": "149c7a8b-1396-4dd9-8d3c-aab429333232",
-          "action": "technician_approve",
-          "entity_type": "technician",
-          "entity_id": "621214f3-0917-4326-bc88-e75cd987a83e",
-          "created_at": "2026-06-26T10:10:38.721105+00:00"
+          "id": "897edb00-c925-473d-af75-db010ecc94f9",
+          "action": "booking_status_update",
+          "entity_type": "booking",
+          "entity_id": "4eff173d-3c61-48c7-88e3-1bfa4b6d41b3",
+          "created_at": "2026-07-24T19:55:46.439411+00:00"
         },
         {
-          "id": "ca7e23b8-42bd-405b-b7c0-f8b523bd52d8",
+          "id": "98dd6702-ff9a-40db-a9cd-6d99687485b2",
+          "action": "booking_status_update",
+          "entity_type": "booking",
+          "entity_id": "c6420376-bf6e-4530-9286-039c06535028",
+          "created_at": "2026-07-24T19:30:55.047462+00:00"
+        },
+        {
+          "id": "36489f32-243d-478f-9d34-142761ac5b8d",
           "action": "technician_approve",
           "entity_type": "technician",
-          "entity_id": "75fa181f-0c59-4f5f-90d5-9c8fc5e71756",
-          "created_at": "2026-06-25T22:08:59.913627+00:00"
+          "entity_id": "3f1ad4c1-dd00-4618-a6c8-76631c84fdd3",
+          "created_at": "2026-07-03T21:27:16.640348+00:00"
+        },
+        {
+          "id": "9fe6e8c8-8a5c-473d-9629-ba66e8270a5c",
+          "action": "hero_slide_reorder",
+          "entity_type": "hero_slide",
+          "entity_id": null,
+          "created_at": "2026-06-28T20:50:43.871624+00:00"
+        },
+        {
+          "id": "19257361-79c7-4d85-94af-916be43f2658",
+          "action": "hero_slide_reorder",
+          "entity_type": "hero_slide",
+          "entity_id": null,
+          "created_at": "2026-06-28T20:50:41.351115+00:00"
+        },
+        {
+          "id": "6c9627ba-6543-4240-81f1-819cf9cd4fde",
+          "action": "technician_approve",
+          "entity_type": "technician",
+          "entity_id": "612b8b2a-050a-4d84-9c50-42ba123240de",
+          "created_at": "2026-06-28T20:45:05.18471+00:00"
+        },
+        {
+          "id": "794511c1-f058-4a80-a045-ea9159103c0f",
+          "action": "technician_approve",
+          "entity_type": "technician",
+          "entity_id": "241780c1-bc0e-4969-9797-426e7b187a28",
+          "created_at": "2026-06-28T09:15:46.088199+00:00"
         }
       ],
       "error": null

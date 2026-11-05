@@ -15,9 +15,6 @@ export function usePushNotifications(enabled = true) {
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
-    // SSR-safe one-time read of a browser capability; a lazy initializer would
-    // cause a hydration mismatch since the server cannot read Notification.permission.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPermission(Notification.permission);
   }, []);
 

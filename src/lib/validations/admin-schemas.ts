@@ -46,7 +46,7 @@ export function createAdminPaymentRejectSchema(t: AdminTranslator) {
   });
 }
 
-export function createAdminReviewModerationSchema(_t: AdminTranslator) {
+export function createAdminReviewModerationSchema(t: AdminTranslator) {
   return z.object({
     note: z.string().optional(),
   });

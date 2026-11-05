@@ -15,12 +15,16 @@ async function saveAuthState(
   const context = await browser.newContext({ baseURL, locale: 'ar-EG' });
   const page = await context.newPage();
 
-  await page.goto('/auth/login', { waitUntil: 'domcontentloaded', timeout: 120_000 });
-  await page.locator('#email').waitFor({ state: 'visible', timeout: 120_000 });
+  await page.goto('/auth/login', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+  await page.locator('#email').waitFor({ state: 'attached', timeout: 60_000 });
+  await page.waitForTimeout(2500);
   await page.fill('#email', email);
   await page.fill('#password', password);
   await page.getByRole('button', { name: 'تسجيل الدخول' }).click();
-  await page.waitForURL((url) => url.pathname.includes(expectedPathPart), { timeout: 120_000 });
+  await page.waitForURL((url) => url.pathname.includes(expectedPathPart), {
+    timeout: 60_000,
+    waitUntil: 'domcontentloaded',
+  });
 
   await context.storageState({ path: path.join(authDir, file) });
   await browser.close();

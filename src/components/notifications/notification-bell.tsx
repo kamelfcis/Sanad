@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Bell,
-  Banknote,
   Calendar,
   Check,
   CheckCheck,
@@ -12,7 +11,6 @@ import {
   Star,
   UserCheck,
   Wrench,
-  XCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +20,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/store/auth-store';
-import { useAdminI18nOptional } from '@/lib/i18n/admin/use-admin-t';
 import {
   useNotifications,
   useUnreadCount,
@@ -40,16 +37,12 @@ const TYPE_ICONS: Record<NotificationType, typeof Bell> = {
   booking_started: Wrench,
   booking_completed: CheckCheck,
   booking_cancelled: Calendar,
-  booking_unassigned: Calendar,
   chat_message: MessageSquare,
   review_received: Star,
   technician_approved: UserCheck,
   technician_rejected: UserCheck,
   technician_suspended: UserCheck,
   technician_application: UserCheck,
-  payment_submitted: Banknote,
-  payment_approved: Check,
-  payment_rejected: XCircle,
 };
 
 function NotificationIcon({ type, unread }: { type: NotificationType; unread: boolean }) {
@@ -70,12 +63,10 @@ function NotificationItem({
   notification,
   role,
   onRead,
-  textAlign,
 }: {
   notification: Notification;
   role?: string;
   onRead: (id: string) => void;
-  textAlign: string;
 }) {
   const router = useRouter();
   const href = getNotificationLink(notification, role);
@@ -92,8 +83,7 @@ function NotificationItem({
       type="button"
       onClick={handleClick}
       className={cn(
-        'flex w-full gap-3 px-4 py-3 transition-colors hover:bg-muted/60',
-        textAlign,
+        'flex w-full gap-3 px-4 py-3 text-right transition-colors hover:bg-muted/60',
         !notification.is_read && 'bg-primary/[0.03]',
       )}
     >
@@ -123,14 +113,11 @@ function NotificationItem({
 
 interface NotificationBellProps {
   className?: string;
-  variant?: 'light' | 'default' | 'admin';
+  variant?: 'light' | 'default';
 }
 
 export function NotificationBell({ className, variant = 'default' }: NotificationBellProps) {
   const { profile } = useAuthStore();
-  const adminI18n = useAdminI18nOptional();
-  const isAdmin = variant === 'admin' && !!adminI18n;
-
   const { data: unreadCount = 0 } = useUnreadCount(!!profile);
   const { data, isLoading } = useNotifications({ isRead: 'all', enabled: !!profile });
   const markRead = useMarkNotificationRead();
@@ -143,36 +130,6 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
 
   if (!profile) return null;
 
-  const labels = isAdmin
-    ? {
-        title: adminI18n.t('notifications.title'),
-        unread: adminI18n.t('notifications.unread', { count: unreadCount }),
-        markAllRead: adminI18n.t('notifications.markAllRead'),
-        empty: adminI18n.t('notifications.empty'),
-        emptyHint: adminI18n.t('notifications.emptyHint'),
-        viewAll: adminI18n.t('notifications.viewAll'),
-        aria: adminI18n.t('notifications.unreadAria', {
-          suffix: unreadCount > 0 ? adminI18n.t('notifications.unreadSuffix', { count: unreadCount }) : '',
-        }),
-        align: adminI18n.dir === 'ltr' ? ('end' as const) : ('end' as const),
-        textAlign: adminI18n.dir === 'ltr' ? 'text-left' : 'text-right',
-        badgePosition: adminI18n.dir === 'ltr' ? '-right-0.5' : '-left-0.5',
-        iconMargin: adminI18n.dir === 'ltr' ? 'mr-1' : 'ml-1',
-      }
-    : {
-        title: 'الإشعارات',
-        unread: `${unreadCount} غير مقروء`,
-        markAllRead: 'قراءة الكل',
-        empty: 'لا توجد إشعارات',
-        emptyHint: 'ستظهر التحديثات هنا',
-        viewAll: 'عرض كل الإشعارات',
-        aria: `الإشعارات${unreadCount > 0 ? `، ${unreadCount} غير مقروء` : ''}`,
-        align: 'end' as const,
-        textAlign: 'text-right',
-        badgePosition: '-left-0.5',
-        iconMargin: 'ml-1',
-      };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -183,34 +140,29 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
             'relative rounded-full',
             variant === 'light'
               ? 'text-text-secondary hover:bg-muted hover:text-text-primary'
-              : 'text-[#64748B] dark:text-muted-foreground hover:text-[#0F172A]',
+              : 'text-[#64748B] hover:text-[#0F172A]',
             className,
           )}
-          aria-label={labels.aria}
+          aria-label={`الإشعارات${unreadCount > 0 ? `، ${unreadCount} غير مقروء` : ''}`}
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span
-              className={cn(
-                'absolute -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-sm',
-                labels.badgePosition,
-              )}
-            >
+            <span className="absolute -left-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-sm">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align={labels.align}
+        align="end"
         className="w-[min(100vw-2rem,380px)] overflow-hidden rounded-2xl border-border/60 p-0 shadow-xl"
         sideOffset={8}
       >
         <div className="flex items-center justify-between border-b border-border/60 bg-muted/30 px-4 py-3">
-          <div className={labels.textAlign}>
-            <h3 className="text-sm font-semibold">{labels.title}</h3>
+          <div>
+            <h3 className="text-sm font-semibold">الإشعارات</h3>
             {unreadCount > 0 && (
-              <p className="text-xs text-muted-foreground">{labels.unread}</p>
+              <p className="text-xs text-muted-foreground">{unreadCount} غير مقروء</p>
             )}
           </div>
           {unreadCount > 0 && (
@@ -221,8 +173,8 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
               onClick={() => markAllRead.mutate()}
               disabled={markAllRead.isPending}
             >
-              <CheckCheck className={cn('h-3.5 w-3.5', labels.iconMargin)} />
-              {labels.markAllRead}
+              <CheckCheck className="ml-1 h-3.5 w-3.5" />
+              قراءة الكل
             </Button>
           )}
         </div>
@@ -245,8 +197,8 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
               <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                 <Bell className="h-5 w-5 text-muted-foreground" />
               </div>
-              <p className="text-sm font-medium">{labels.empty}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{labels.emptyHint}</p>
+              <p className="text-sm font-medium">لا توجد إشعارات</p>
+              <p className="mt-1 text-xs text-muted-foreground">ستظهر التحديثات هنا</p>
             </div>
           ) : (
             <div className="divide-y divide-border/40">
@@ -256,7 +208,6 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
                   notification={notification}
                   role={profile.role}
                   onRead={(id) => markRead.mutate(id)}
-                  textAlign={labels.textAlign}
                 />
               ))}
             </div>
@@ -265,7 +216,7 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
 
         <div className="border-t border-border/60 bg-muted/20 p-2">
           <Button variant="ghost" className="w-full text-sm font-medium" asChild>
-            <Link href="/notifications">{labels.viewAll}</Link>
+            <Link href="/notifications">عرض كل الإشعارات</Link>
           </Button>
         </div>
       </DropdownMenuContent>

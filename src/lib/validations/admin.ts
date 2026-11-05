@@ -14,12 +14,3 @@ export const auditLogsQuerySchema = paginationPageSchema.extend({
 export const adminEntityIdSchema = z.object({
   id: uuidSchema,
 });
-
-export const adminBookingsQuerySchema = paginationPageSchema.extend({
-  status: bookingStatusSchema.optional(),
-});
-
-export const adminBlockUserSchema = z.object({
-  blocked: z.boolean(),
-  reason: z.string().trim().max(500, 'Reason must not exceed 500 characters').optional().nullable(),
-});

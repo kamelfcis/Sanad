@@ -8,7 +8,7 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: [['list'], ['json', { outputFile: 'e2e/test-results.json' }]],
-  timeout: 180_000,
+  timeout: 120_000,
   expect: { timeout: 30_000 },
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
@@ -20,14 +20,4 @@ export default defineConfig({
   globalSetup: path.join(__dirname, 'e2e/global-setup.ts'),
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   outputDir: 'e2e/playwright-output',
-  // In CI, auto-start the built app. Locally, developers run their own server
-  // (npm run dev / start) so behavior is unchanged.
-  webServer: process.env.CI
-    ? {
-        command: 'npm run start',
-        url: 'http://localhost:3000',
-        timeout: 180_000,
-        reuseExistingServer: false,
-      }
-    : undefined,
 });

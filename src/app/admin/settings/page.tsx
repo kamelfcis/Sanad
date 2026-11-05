@@ -108,7 +108,6 @@ function SettingsCard({
 function SaveButton({
   onClick,
   disabled,
-  isPending,
   saved,
   savingLabel,
   savedLabel,
@@ -117,7 +116,6 @@ function SaveButton({
 }: {
   onClick: () => void;
   disabled?: boolean;
-  isPending?: boolean;
   saved: boolean;
   savingLabel: string;
   savedLabel: string;
@@ -125,7 +123,6 @@ function SaveButton({
   dir: 'ltr' | 'rtl';
 }) {
   const iconMargin = dir === 'ltr' ? 'mr-1.5' : 'ml-1.5';
-  const label = saved ? savedLabel : isPending ? savingLabel : saveLabel;
 
   return (
     <Button
@@ -134,7 +131,7 @@ function SaveButton({
       className="rounded-full bg-gradient-to-r from-[#FF6B00] to-[#FF8A34] px-5 shadow-sm shadow-orange-500/20 hover:from-[#E86200] hover:to-[#FF7A24]"
     >
       <Save className={cn('h-4 w-4', iconMargin)} />
-      {label}
+      {saved ? savedLabel : disabled && savingLabel.includes('…') ? savingLabel : saveLabel}
     </Button>
   );
 }
@@ -170,12 +167,11 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
       icon={Banknote}
       title={t('paymentSettings.title')}
       description={t('paymentSettings.description')}
-      className="md:col-span-2 xl:col-span-3"
+      className="md:col-span-2"
       footer={
         <SaveButton
           onClick={handlePaymentSave}
           disabled={updateSettings.isPending}
-          isPending={updateSettings.isPending}
           saved={paymentSaved}
           savingLabel={t('paymentSettings.saving')}
           savedLabel={t('paymentSettings.saved')}
@@ -191,7 +187,7 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
             id="instapay-name"
             value={instapayName}
             onChange={(e) => setInstapayName(e.target.value)}
-            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
           />
         </div>
         <div className="space-y-2">
@@ -200,7 +196,7 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
             id="instapay-number"
             value={instapayNumber}
             onChange={(e) => setInstapayNumber(e.target.value)}
-            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
             dir="ltr"
           />
         </div>
@@ -210,7 +206,7 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
             id="vodafone-number"
             value={vodafoneNumber}
             onChange={(e) => setVodafoneNumber(e.target.value)}
-            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
             dir="ltr"
           />
         </div>
@@ -222,7 +218,7 @@ function PaymentSettingsForm({ settings }: { settings: PaymentSettings }) {
             onChange={(e) => setInstructions(e.target.value)}
             rows={4}
             dir="auto"
-            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
           />
         </div>
       </div>
@@ -258,7 +254,6 @@ function CurrencySettingsForm({ settings }: { settings: SiteSettings }) {
         <SaveButton
           onClick={handleSave}
           disabled={updateSettings.isPending || currency === settings.currency}
-          isPending={updateSettings.isPending}
           saved={saved}
           savingLabel={t('currencySettings.saving')}
           savedLabel={t('currencySettings.saved')}
@@ -335,7 +330,7 @@ function GeneralSettingsForm() {
             id="name"
             value={platformName}
             onChange={(e) => setPlatformName(e.target.value)}
-            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
           />
         </div>
         <div className="space-y-2">
@@ -345,7 +340,7 @@ function GeneralSettingsForm() {
             type="email"
             value={supportEmail}
             onChange={(e) => setSupportEmail(e.target.value)}
-            className="border-zinc-200/80 bg-white dark:bg-card shadow-sm focus-visible:ring-[#FF6B00]/30"
+            className="border-zinc-200/80 bg-white shadow-sm focus-visible:ring-[#FF6B00]/30"
             dir="ltr"
           />
         </div>
@@ -395,7 +390,7 @@ export default function AdminSettingsPage() {
         <AboutCard />
 
         {paymentLoading ? (
-          <Skeleton className="h-72 w-full rounded-2xl md:col-span-2 xl:col-span-3" aria-hidden />
+          <Skeleton className="h-72 w-full rounded-2xl md:col-span-2 xl:col-span-3" />
         ) : paymentSettings ? (
           <PaymentSettingsForm key={paymentSettings.updated_at} settings={paymentSettings} />
         ) : null}

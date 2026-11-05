@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAdminAuditLogs, type AdminAuditLogEntry } from '@/hooks/use-admin';
+import { useAdminAuditLogs } from '@/hooks/use-admin';
 import { Badge } from '@/components/ui/badge';
 import {
   AdminPremiumTable,
@@ -14,39 +14,27 @@ import {
 import {
   AdminEmptyState,
   AdminEntityCard,
-  AdminEntityCardHeader,
-  AdminEntityCardInfoBox,
-  AdminEntityCardMeta,
-  AdminEntityCardMetaPill,
-  AdminEntityCardTagPill,
   AdminFilterPills,
 } from '@/components/admin/admin-list-chrome';
 import { AdminListShell } from '@/components/admin/admin-list-shell';
 import { AdminPagination } from '@/components/admin/admin-pagination';
-import { AdminAuditLogDetails, type MetadataValue } from '@/components/admin/admin-audit-log-details';
-import { History, Calendar } from 'lucide-react';
+import { AdminAuditLogDetails } from '@/components/admin/admin-audit-log-details';
+import { History } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
+import { cn } from '@/lib/utils/cn';
 
 const entityFilters = ['', 'booking', 'technician', 'customer', 'service', 'category', 'review'] as const;
 
-type AuditLogEntry = AdminAuditLogEntry;
-
-/** Short form of a UUID, or a neutral dash when the column is null. */
-function ShortId({ id, dash }: { id: string | null | undefined; dash: string }) {
-  if (!id) {
-    return <span className="text-[#94A3B8] dark:text-muted-foreground">{dash}</span>;
-  }
-  return (
-    <code className="rounded-md bg-[#F1F5F9] px-1.5 py-0.5 font-mono text-xs text-[#64748B] dark:bg-muted dark:text-muted-foreground">
-      {id.slice(0, 8)}…
-    </code>
-  );
-}
-
-/** Display name for the acting admin; falls back to a short id, then a dash. */
-function adminLabel(log: AuditLogEntry, dash: string) {
-  return log.admin?.full_name?.trim() || (log.admin_id ? log.admin_id.slice(0, 8) : dash);
+interface AuditLogEntry {
+  id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  admin_id: string;
+  created_at: string;
+  metadata?: Record<string, unknown> | null;
+  admin?: { full_name?: string | null; email?: string | null } | null;
 }
 
 function useAuditLogLabels(t: ReturnType<typeof useAdminT>['t']) {
@@ -65,6 +53,37 @@ function useAuditLogLabels(t: ReturnType<typeof useAdminT>['t']) {
   return { actionLabel, entityLabel };
 }
 
+function AuditLogSummary({
+  log,
+  t,
+  actionLabel,
+  entityLabel,
+}: {
+  log: AuditLogEntry;
+  t: ReturnType<typeof useAdminT>['t'];
+  actionLabel: (action: string) => string;
+  entityLabel: (type: string) => string;
+}) {
+  return (
+    <p className="text-sm leading-relaxed text-[#0F172A]">
+      <span className="font-semibold text-[#FF6B00]">
+        {log.admin?.full_name ?? log.admin_id.slice(0, 8)}
+      </span>{' '}
+      <span className="text-[#64748B]">{t('auditLogs.performedOn')}</span>{' '}
+      <span className="inline-flex rounded-md bg-[#F1F5F9] px-1.5 py-0.5 text-xs font-medium capitalize text-[#64748B]">
+        {entityLabel(log.entity_type)}
+      </span>{' '}
+      <code
+        className="rounded-md bg-[#F1F5F9] px-1.5 py-0.5 text-xs font-mono text-[#64748B]"
+        dir="ltr"
+        title={log.entity_id}
+      >
+        {log.entity_id.slice(0, 8)}…
+      </code>
+    </p>
+  );
+}
+
 function AuditLogCard({
   log,
   t,
@@ -79,53 +98,42 @@ function AuditLogCard({
   entityLabel: (type: string) => string;
 }) {
   return (
-    <AdminEntityCard>
-      <AdminEntityCardHeader
-        title={actionLabel(log.action)}
-        subtitle={
-          <>
-            <span className="font-semibold text-[#FF6B00]">
-              {adminLabel(log, t('common.dash'))}
-            </span>{' '}
-            <span>{t('auditLogs.performedOn')}</span>{' '}
-            <span className="capitalize">{entityLabel(log.entity_type)}</span>
-          </>
-        }
-        badge={
-          <AdminEntityCardMetaPill variant="orange" className="capitalize">
-            {entityLabel(log.entity_type)}
-          </AdminEntityCardMetaPill>
-        }
-      />
+    <AdminEntityCard className="text-start">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+        <Badge
+          variant="outline"
+          className="w-fit shrink-0 border-0 bg-[#FF6B00]/10 px-2.5 py-1 text-xs font-semibold capitalize text-[#FF6B00] ring-1 ring-[#FF6B00]/20"
+        >
+          {actionLabel(log.action)}
+        </Badge>
 
-      <AdminEntityCardMeta className="mt-3">
-        <AdminEntityCardTagPill>
-          <span className="font-mono text-[11px]" dir="ltr">
-            {log.entity_id ? `${log.entity_id.slice(0, 8)}…` : t('common.dash')}
-          </span>
-        </AdminEntityCardTagPill>
-      </AdminEntityCardMeta>
-
-      {log.metadata && Object.keys(log.metadata).length > 0 ? (
-        <AdminEntityCardInfoBox className="mt-4" columns={1}>
-          <AdminAuditLogDetails
-            metadata={log.metadata as Record<string, MetadataValue>}
-            entityType={log.entity_type}
-            action={log.action}
+        <div className="min-w-0 flex-1">
+          <AuditLogSummary
+            log={log}
+            t={t}
+            actionLabel={actionLabel}
+            entityLabel={entityLabel}
           />
-        </AdminEntityCardInfoBox>
-      ) : null}
 
-      <AdminEntityCardMeta className="mt-3">
-        <AdminEntityCardMetaPill variant="muted">
-          <Calendar className="h-3 w-3 shrink-0" aria-hidden />
-          {log.created_at ? (
-            <time dateTime={log.created_at}>{formatDateTime(log.created_at)}</time>
-          ) : (
-            <span>{t('common.dash')}</span>
+          {log.metadata && Object.keys(log.metadata).length > 0 ? (
+            <AdminAuditLogDetails
+              metadata={log.metadata as Record<string, unknown>}
+              entityType={log.entity_type}
+              action={log.action}
+            />
+          ) : null}
+        </div>
+
+        <time
+          className={cn(
+            'shrink-0 text-xs tabular-nums text-[#94A3B8]',
+            'sm:max-w-[9rem] sm:text-end',
           )}
-        </AdminEntityCardMetaPill>
-      </AdminEntityCardMeta>
+          dateTime={log.created_at}
+        >
+          {formatDateTime(log.created_at)}
+        </time>
+      </div>
     </AdminEntityCard>
   );
 }
@@ -145,7 +153,7 @@ export default function AdminAuditLogsPage() {
       pageId="audit-logs"
       title={t('auditLogs.title')}
       subtitle={t('auditLogs.subtitle')}
-      defaultView="table"
+      defaultView="cards"
       cardsLayout="stack"
       skeletonCount={10}
       skeletonClassName="h-24 w-full rounded-2xl"
@@ -170,7 +178,7 @@ export default function AdminAuditLogsPage() {
             totalPages={Math.ceil(data.total / data.limit)}
             total={data.total}
             onPageChange={setPage}
-            summaryClassName="text-[#64748B] dark:text-muted-foreground"
+            summaryClassName="text-[#64748B]"
           />
         ) : null
       }
@@ -196,17 +204,19 @@ export default function AdminAuditLogsPage() {
                     {actionLabel(log.action)}
                   </Badge>
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="font-medium text-[#0F172A] dark:text-foreground">
-                  {adminLabel(log, t('common.dash'))}
+                <AdminPremiumTableCell className="font-medium text-[#0F172A]">
+                  {log.admin?.full_name ?? log.admin_id.slice(0, 8)}
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="capitalize text-[#64748B] dark:text-muted-foreground">
+                <AdminPremiumTableCell className="capitalize text-[#64748B]">
                   {entityLabel(log.entity_type)}
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell dir="ltr">
-                  <ShortId id={log.entity_id} dash={t('common.dash')} />
+                  <code className="rounded-md bg-[#F1F5F9] px-1.5 py-0.5 text-xs font-mono text-[#64748B]">
+                    {log.entity_id.slice(0, 8)}…
+                  </code>
                 </AdminPremiumTableCell>
-                <AdminPremiumTableCell className="hidden text-[#64748B] dark:text-muted-foreground md:table-cell">
-                  {log.created_at ? formatDateTime(log.created_at) : t('common.dash')}
+                <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
+                  {formatDateTime(log.created_at)}
                 </AdminPremiumTableCell>
               </AdminPremiumTableRow>
             ))}

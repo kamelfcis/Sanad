@@ -1,53 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
-import { parseSearchParams } from '@/lib/api/validate';
-import { emptyQuerySchema } from '@/lib/validations/common';
+import { requireAuth } from '@/lib/api/auth';
 
-export async function GET(request: NextRequest) {
-  const query = parseSearchParams(request.nextUrl.searchParams, emptyQuerySchema);
-  if ('response' in query) return query.response;
-
+export async function GET() {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await requireAuth(supabase);
+  if ('response' in auth) return auth.response;
 
-  const db = isServiceRoleConfigured() ? createServiceRoleClient() : supabase;
-
-  const { data, error } = await db
+  const { data, error } = await supabase
     .from('chat_conversations')
-    .select(`
-      *,
-      booking:bookings(
-        id,
-        status,
-        service_id,
-        customer_id,
-        technician_id,
-        services(name_ar, name_en, slug),
-        customer:profiles!bookings_customer_id_fkey(full_name, avatar_url, phone),
-        technician:profiles!bookings_technician_id_fkey(full_name, avatar_url, phone)
-      ),
-      last_message:chat_messages(
-        id, message, file_url, file_type, sender_id, created_at
+    .select(
+      `
+      id,
+      booking_id,
+      created_at,
+      customer_last_read_at,
+      technician_last_read_at,
+      last_message:chat_messages(sender_id, created_at, message),
+      booking:bookings!booking_id(
+        services(name_ar, name_en),
+        profiles:profiles!bookings_customer_id_fkey(full_name, avatar_url, phone),
+        technician:profiles!bookings_technician_id_fkey(full_name, phone)
       )
-    `)
-    .order('last_message_at', { ascending: false });
+    `,
+    )
+    .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const scoped =
-    data?.filter((conv) => {
-      const booking = conv.booking as { customer_id?: string; technician_id?: string } | null;
-      return booking?.customer_id === user.id || booking?.technician_id === user.id;
-    }) ?? [];
-
-  // Attach only the most recent message as last_message
-  const result = scoped.map((conv: Record<string, unknown>) => {
-    const messages = conv.last_message as Record<string, unknown>[];
-    const lastMsg = messages?.[0] ?? null;
-    return { ...conv, last_message: lastMsg };
+  const conversations = (data ?? []).map((row) => {
+    const last = Array.isArray(row.last_message) ? row.last_message[0] : row.last_message;
+    return { ...row, last_message: last ?? null };
   });
 
-  return NextResponse.json(result ?? []);
+  return NextResponse.json(conversations);
 }

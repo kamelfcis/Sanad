@@ -1,118 +1,176 @@
-# API Validation Coverage — Sanad Platform
+import functools
+import os
+import pkgutil
+import sys
+from argparse import (
+    _AppendConstAction,
+    _CountAction,
+    _StoreConstAction,
+    _SubParsersAction,
+)
+from collections import defaultdict
+from difflib import get_close_matches
+from importlib import import_module
 
-**Audit date:** 2025-06-25  
-**Target:** 100% Zod coverage on all API routes (body, query, params)  
-**Helpers:** `src/lib/api/validate.ts` — `parseJsonBody`, `parseSearchParams`; params via `*.safeParse(await params)`
+import django
+from django.apps import apps
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management.base import (
+    BaseCommand,
+    CommandError,
+    CommandParser,
+    handle_default_options,
+)
+from django.core.management.color import color_style
+from django.utils import autoreload
 
-## Summary
 
-| Metric | Value |
-|--------|-------|
-| Route files | 32 |
-| HTTP handlers | 38 |
-| Validated handlers | 38 |
-| **Coverage** | **100%** |
+def find_commands(management_dir):
+    """
+    Given a path to a management directory, return a list of all the command
+    names that are available.
+    """
+    command_dir = os.path.join(management_dir, "commands")
+    return [
+        name
+        for _, name, is_pkg in pkgutil.iter_modules([command_dir])
+        if not is_pkg and not name.startswith("_")
+    ]
 
----
 
-## Route Matrix
+def load_command_class(app_name, name):
+    """
+    Given a command name and an application name, return the Command
+    class instance. Allow all errors raised by the import process
+    (ImportError, AttributeError) to propagate.
+    """
+    module = import_module("%s.management.commands.%s" % (app_name, name))
+    return module.Command()
 
-| Route | Method | Body Schema | Query Schema | Params Schema | Status |
-|-------|--------|-------------|--------------|---------------|--------|
-| `/api/auth/callback` | GET | — | `authCallbackQuerySchema` | — | ✅ |
-| `/api/categories` | GET | — | `emptyQuerySchema` | — | ✅ |
-| `/api/services` | GET | — | `listServicesQuerySchema` | — | ✅ |
-| `/api/bookings` | GET | — | `listBookingsQuerySchema` | — | ✅ |
-| `/api/bookings` | POST | `createBookingSchema` | — | — | ✅ |
-| `/api/bookings/[id]` | GET | — | — | `adminEntityIdSchema` | ✅ |
-| `/api/bookings/[id]` | PATCH | `updateBookingStatusSchema` | — | `adminEntityIdSchema` | ✅ |
-| `/api/upload` | POST | `uploadRequestSchema` | — | — | ✅ |
-| `/api/reviews` | GET | — | `listReviewsQuerySchema` | — | ✅ |
-| `/api/reviews` | POST | `createReviewSchema` | — | — | ✅ |
-| `/api/reviews/booking/[id]` | GET | — | — | `adminEntityIdSchema` | ✅ |
-| `/api/chat/conversations` | GET | — | `emptyQuerySchema` | — | ✅ |
-| `/api/chat/conversations/[id]/messages` | GET | — | `listMessagesQuerySchema` | `conversationIdSchema` | ✅ |
-| `/api/chat/conversations/[id]/messages` | POST | `sendMessageSchema` | — | `conversationIdSchema` | ✅ |
-| `/api/chat/conversations/[id]/read` | PATCH | — | — | `conversationIdSchema` | ✅ |
-| `/api/technician/profile` | GET | — | `emptyQuerySchema` | — | ✅ |
-| `/api/technician/profile` | PUT | `updateTechnicianProfileSchema` | — | — | ✅ |
-| `/api/technician/skills` | GET | — | `emptyQuerySchema` | — | ✅ |
-| `/api/technician/skills` | PUT | `updateTechnicianSkillsSchema` | — | — | ✅ |
-| `/api/technician/bookings` | GET | — | `technicianBookingsQuerySchema` | — | ✅ |
-| `/api/technician/assignments` | GET | — | `listAssignmentsQuerySchema` | — | ✅ |
-| `/api/technician/assignments/[id]` | GET | — | — | `adminEntityIdSchema` | ✅ |
-| `/api/technician/assignments/[id]/respond` | POST | `assignmentRespondSchema` | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/dashboard` | GET | — | `emptyQuerySchema` | — | ✅ |
-| `/api/admin/categories` | GET | — | `emptyQuerySchema` | — | ✅ |
-| `/api/admin/categories` | POST | `createCategorySchema` | — | — | ✅ |
-| `/api/admin/categories/[id]` | PUT | `updateCategorySchema` | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/categories/[id]` | DELETE | — | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/services` | GET | — | `listServicesQuerySchema` | — | ✅ |
-| `/api/admin/services` | POST | `createServiceSchema` | — | — | ✅ |
-| `/api/admin/services/[id]` | PUT | `updateServiceSchema` | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/services/[id]` | DELETE | — | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/customers` | GET | — | `adminCustomersQuerySchema` | — | ✅ |
-| `/api/admin/customers/[id]` | GET | — | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/technicians` | GET | — | `adminTechniciansQuerySchema` | — | ✅ |
-| `/api/admin/technicians/[id]` | GET | — | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/technicians/[id]/status` | PATCH | `adminTechnicianStatusSchema` | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/bookings/[id]/status` | PATCH | `adminBookingStatusSchema` | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/bookings/[id]/assign` | POST | `adminAssignTechnicianSchema` | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/reviews` | GET | — | `adminListReviewsQuerySchema` | — | ✅ |
-| `/api/admin/reviews/[id]/moderate` | PATCH | `moderateReviewSchema` | — | `adminEntityIdSchema` | ✅ |
-| `/api/admin/audit-logs` | GET | — | `auditLogsQuerySchema` | — | ✅ |
 
----
+@functools.cache
+def get_commands():
+    """
+    Return a dictionary mapping command names to their callback applications.
 
-## Schema Locations
+    Look for a management.commands package in django.core, and in each
+    installed application -- if a commands package exists, register all
+    commands in that package.
 
-| File | Schemas |
-|------|---------|
-| `src/lib/validations/auth.ts` | `authCallbackQuerySchema`, login/register (client forms) |
-| `src/lib/validations/common.ts` | `emptyQuerySchema`, `uuidSchema`, pagination, enums |
-| `src/lib/validations/booking.ts` | `createBookingSchema`, `listBookingsQuerySchema`, `updateBookingStatusSchema` |
-| `src/lib/validations/upload.ts` | `uploadRequestSchema` |
-| `src/lib/validations/reviews.ts` | `createReviewSchema`, `listReviewsQuerySchema`, `moderateReviewSchema` |
-| `src/lib/validations/messages.ts` | `sendMessageSchema`, `listMessagesQuerySchema`, `conversationIdSchema` |
-| `src/lib/validations/technicians.ts` | Profile, skills, admin technician queries |
-| `src/lib/validations/assignments.ts` | `assignmentRespondSchema`, `listAssignmentsQuerySchema` |
-| `src/lib/validations/services.ts` | `createServiceSchema`, `updateServiceSchema`, `listServicesQuerySchema` |
-| `src/lib/validations/categories.ts` | `createCategorySchema`, `updateCategorySchema` |
-| `src/lib/validations/admin.ts` | `adminEntityIdSchema`, `adminBookingStatusSchema`, `auditLogsQuerySchema` |
+    Core commands are always included. If a settings module has been
+    specified, also include user-defined commands.
 
----
+    The dictionary is in the format {command_name: app_name}. Key-value
+    pairs from this dictionary can then be used in calls to
+    load_command_class(app_name, command_name)
 
-## Validation Error Format
+    The dictionary is cached on the first call and reused on subsequent
+    calls.
+    """
+    commands = {name: "django.core" for name in find_commands(__path__[0])}
 
-Invalid input returns HTTP **400**:
+    if not settings.configured:
+        return commands
 
-```json
-{
-  "error": {
-    "fieldName": ["Human-readable message"]
-  }
-}
-```
+    for app_config in reversed(apps.get_app_configs()):
+        path = os.path.join(app_config.path, "management")
+        commands.update({name: app_config.name for name in find_commands(path)})
 
----
+    return commands
 
-## Phase 9 Changes
 
-- Added `emptyQuerySchema` for GET routes with no parameters (rejects unexpected query keys)
-- Added `authCallbackQuerySchema` with open-redirect protection on `next`
-- All 38 handlers now validated
+def call_command(command_name, *args, **options):
+    """
+    Call the given command, with the given options and args/kwargs.
 
-## Verification
+    This is the primary API you should use for calling specific commands.
 
-```bash
-npm run build   # TypeScript checks schema usage
-npm run lint    # 0 ESLint errors
-```
+    `command_name` may be a string or a command object. Using a string is
+    preferred unless the command object is required for further processing or
+    testing.
 
-Live spot check (2025-06-25):
+    Some examples:
+        call_command('migrate')
+        call_command('shell', plain=True)
+        call_command('sqlmigrate', 'myapp')
 
-| Test | Expected | Result |
-|------|----------|--------|
-| `GET /api/categories?foo=bar` | 400 | ✅ 400 |
-| `GET /api/auth/callback?next=//evil.com` | 400 | ✅ 400 |
-| `POST /api/upload` invalid MIME (no auth) | 401 | ✅ 401 |
+        from django.core.management.commands import flush
+        cmd = flush.Command()
+        call_command(cmd, verbosity=0, interactive=False)
+        # Do something with cmd ...
+    """
+    if isinstance(command_name, BaseCommand):
+        # Command object passed in.
+        command = command_name
+        command_name = command.__class__.__module__.split(".")[-1]
+    else:
+        # Load the command object by name.
+        try:
+            app_name = get_commands()[command_name]
+        except KeyError:
+            raise CommandError("Unknown command: %r" % command_name)
+
+        if isinstance(app_name, BaseCommand):
+            # If the command is already loaded, use it directly.
+            command = app_name
+        else:
+            command = load_command_class(app_name, command_name)
+
+    # Simulate argument parsing to get the option defaults (see #10080 for details).
+    parser = command.create_parser("", command_name)
+    # Use the `dest` option name from the parser option
+    opt_mapping = {
+        min(s_opt.option_strings).lstrip("-").replace("-", "_"): s_opt.dest
+        for s_opt in parser._actions
+        if s_opt.option_strings
+    }
+    arg_options = {opt_mapping.get(key, key): value for key, value in options.items()}
+    parse_args = []
+    for arg in args:
+        if isinstance(arg, (list, tuple)):
+            parse_args += map(str, arg)
+        else:
+            parse_args.append(str(arg))
+
+    def get_actions(parser):
+        # Parser actions and actions from sub-parser choices.
+        for opt in parser._actions:
+            if isinstance(opt, _SubParsersAction):
+                for sub_opt in opt.choices.values():
+                    yield from get_actions(sub_opt)
+            else:
+                yield opt
+
+    parser_actions = list(get_actions(parser))
+    mutually_exclusive_required_options = {
+        opt
+        for group in parser._mutually_exclusive_groups
+        for opt in group._group_actions
+        if group.required
+    }
+    # Any required arguments which are passed in via **options must be passed
+    # to parse_args().
+    for opt in parser_actions:
+        if opt.dest in options and (
+            opt.required or opt in mutually_exclusive_required_options
+        ):
+            opt_dest_count = sum(v == opt.dest for v in opt_mapping.values())
+            if opt_dest_count > 1:
+                raise TypeError(
+                    f"Cannot pass the dest {opt.dest!r} that matches multiple "
+                    f"arguments via **options."
+                )
+            parse_args.append(min(opt.option_strings))
+            if isinstance(opt, (_AppendConstAction, _CountAction, _StoreConstAction)):
+                continue
+            value = arg_options[opt.dest]
+            if isinstance(value, (list, tuple)):
+                parse_args += map(str, value)
+            else:
+                parse_args.append(str(value))
+    defaults = parser.parse_args(args=parse_args)
+    defaults = dict(defaults._get_kwargs(), **arg_options)
+    # Raise an error if any unknown options were passed.
+    stealth_options = set(command.base_stealth_options + command.stealth_options)
+    dest_parameters =

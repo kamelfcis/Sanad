@@ -1,5 +1,4 @@
 import type { GeoPoint } from '@/lib/geo';
-import { buildNewBookingHref } from '@/lib/booking/booking-links';
 import type { BrowseTechnician } from '@/types/technician-browse';
 
 export interface TechnicianMapMarker {
@@ -20,9 +19,10 @@ export function toTechnicianMapMarkers(technicians: BrowseTechnician[]): Technic
       specialty: tech.specialty_label,
       position: { lat: tech.location_lat!, lng: tech.location_lng! },
       distanceKm: tech.distance_km,
-      bookingHref: buildNewBookingHref({
-        serviceId: tech.primary_service_id,
-        technicianId: tech.id,
-      }),
+      bookingHref: tech.primary_service_id
+        ? `/customer/bookings/new?service_id=${tech.primary_service_id}`
+        : '/customer/bookings/new',
     }));
 }
+
+export const toMarkers = toTechnicianMapMarkers;

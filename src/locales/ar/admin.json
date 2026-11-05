@@ -7,38 +7,21 @@
     "customers": "العملاء",
     "services": "الخدمات",
     "categories": "التصنيفات",
-    "heroSlides": "شرائح الصفحة الرئيسية",
+    "heroSlides": "شرائح البanner",
     "reviews": "التقييمات",
     "payments": "المدفوعات",
     "auditLogs": "سجل التدقيق",
     "settings": "الإعدادات",
-    "backToSite": "العودة للموقع",
-    "sections": {
-      "overview": "نظرة عامة",
-      "operations": "العمليات",
-      "catalog": "الفهرس",
-      "system": "النظام"
-    }
+    "backToSite": "العودة للموقع"
   },
   "header": {
     "languageToggle": "تبديل اللغة",
     "english": "English",
-    "arabic": "العربية",
-    "adminPanel": "لوحة الإدارة",
-    "searchPlaceholder": "البحث في الإدارة…",
-    "collapseSidebar": "طي الشريط الجانبي",
-    "expandSidebar": "توسيع الشريط الجانبي",
-    "openMenu": "فتح القائمة",
-    "closeMenu": "إغلاق القائمة"
+    "arabic": "العربية"
   },
   "dashboard": {
     "title": "لوحة تحكم الإدارة",
     "subtitle": "نظرة عامة على المنصة والتحليلات.",
-    "eyebrow": "نظرة عامة",
-    "heroMetrics": "مؤشرات الأداء الرئيسية",
-    "heroMetricsDesc": "الإيرادات والحجوزات وصحة المنصة في لمحة.",
-    "kpiDesc": "المستخدمون والفهرس وخط المدفوعات.",
-    "trendStable": "مستقر",
     "loadError": "فشل تحميل بيانات لوحة التحكم.",
     "stats": {
       "totalTechnicians": "إجمالي الفنيين",
@@ -51,32 +34,14 @@
       "completedLabel": "مكتمل",
       "avgRating": "متوسط التقييم",
       "reviewsCount": "{{count}} تقييم",
-      "revenue": "الإيرادات",
-      "approvedPayments": "{{count}} دفعة معتمدة",
-      "pendingPayments": "مدفوعات معلّقة",
-      "totalServices": "الخدمات",
-      "categoriesCount": "{{count}} تصنيف",
-      "inProgressSub": "{{count}} قيد التنفيذ"
+      "revenue": "الإيرادات"
     },
     "recentBookings": "أحدث الحجوزات",
     "topTechnicians": "أفضل الفنيين",
     "jobsRating": "{{jobs}} مهمة · {{rating}}★",
     "noBookings": "لا توجد حجوزات بعد.",
     "noTechnicians": "لا يوجد فنيون بعد.",
-    "noRevenue": "لا توجد بيانات إيرادات بعد.",
-    "kpiTitle": "مؤشرات الأداء",
-    "recentActivity": "آخر النشاطات",
-    "noActivity": "لا توجد نشاطات بعد.",
-    "viewAllActivity": "عرض كل سجل التدقيق",
-    "shortcuts": {
-      "title": "اختصارات سريعة",
-      "desc": "انتقل إلى أي قسم في الإدارة.",
-      "pendingCount": "{{count}} معلّق"
-    },
-    "charts": {
-      "bookingsDesc": "حجم الحجوزات اليومي خلال الأسبوع الماضي.",
-      "revenueDesc": "إجمالي المدفوعات المعتمدة شهرياً."
-    }
+    "noRevenue": "لا توجد بيانات إيرادات بعد."
   },
   "charts": {
     "bookingsLast7Days": "الحجوزات (آخر 7 أيام)",
@@ -100,10 +65,6 @@
       "withStatus": "لا توجد حجوزات بحالة \"{{status}}\".",
       "none": "لم يتم إنشاء أي حجوزات بعد."
     },
-    "card": {
-      "subtitle": "طلب خدمة",
-      "preferredTime": "الوقت المفضل"
-    },
     "detail": {
       "notFound": "الحجز غير موجود",
       "notFoundDesc": "هذا الحجز غير موجود أو ليس لديك صلاحية الوصول إليه.",
@@ -124,8 +85,6 @@
       "description": "الوصف",
       "noDescription": "لم يتم تقديم وصف.",
       "address": "العنوان",
-      "apartmentNumber": "رقم الشقة",
-      "floorNumber": "الدور",
       "preferredTime": "الوقت المفضل",
       "created": "تاريخ الإنشاء"
     },
@@ -145,9 +104,6 @@
     "searchPlaceholder": "البحث عن عملاء...",
     "empty": "لم يتم العثور على عملاء",
     "unnamed": "بدون اسم",
-    "card": {
-      "subtitle": "عميل مسجّل"
-    },
     "detail": {
       "notFound": "العميل غير موجود",
       "back": "العودة للعملاء",
@@ -169,9 +125,6 @@
       "title": "لم يتم العثور على فنيين",
       "subtitle": "لا يوجد فنيون يطابقون بحثك."
     },
-    "card": {
-      "subtitle": "فني خدمة"
-    },
     "detail": {
       "notFound": "الفني غير موجود",
       "back": "العودة للفنيين",
@@ -192,56 +145,10 @@
       "joined": "تاريخ الانضمام",
       "bio": "نبذة",
       "noBio": "لا توجد نبذة",
-      "applicationDetails": "تفاصيل الطلب",
-      "nationalId": "الرقم القومي",
-      "governorate": "المحافظة",
-      "area": "المنطقة",
-      "workingHours": "ساعات العمل",
-      "startingPrice": "سعر البداية",
-      "skills": "المهارات",
-      "specialty": "التخصص",
-      "noSkills": "لا توجد مهارات",
-      "documents": "المستندات",
-      "profilePhoto": "صورة الملف",
-      "idCard": "وش البطاقة",
-      "idCardBack": "ضهر البطاقة",
-      "verificationDoc": "مستند التحقق",
-      "viewDocument": "عرض المستند",
-      "noDocuments": "لم يتم رفع مستندات",
-      "performance": "الأداء",
       "recentBookings": "أحدث الحجوزات ({{count}})",
       "reviews": "التقييمات ({{count}})",
       "anonymous": "مجهول",
-      "booking": "حجز",
-      "confirm": {
-        "cancel": "إلغاء",
-        "reasonLabel": "السبب",
-        "reasonPlaceholder": "أدخل سبب هذا الإجراء…",
-        "approve": {
-          "title": "الموافقة على الفني؟",
-          "description": "الموافقة على {{name}} ومنحه حالة موثّق على المنصة.",
-          "confirm": "موافقة",
-          "success": "تمت الموافقة على الفني"
-        },
-        "reject": {
-          "title": "رفض الطلب؟",
-          "description": "رفض طلب {{name}} كفني. سيتم إشعاره.",
-          "confirm": "رفض",
-          "success": "تم رفض الطلب"
-        },
-        "suspend": {
-          "title": "تعليق الفني؟",
-          "description": "تعليق {{name}}. لن يتلقى وظائف جديدة حتى إعادة التفعيل.",
-          "confirm": "تعليق",
-          "success": "تم تعليق الفني"
-        },
-        "reactivate": {
-          "title": "إعادة تفعيل الفني؟",
-          "description": "استعادة {{name}} إلى حالة موثّق والسماح بالوظائف الجديدة.",
-          "confirm": "إعادة تفعيل",
-          "success": "تمت إعادة تفعيل الفني"
-        }
-      }
+      "booking": "حجز"
     },
     "status": {
       "verified": "موثّق",
@@ -264,19 +171,9 @@
       "nameEn": "الاسم (إنجليزي)",
       "slug": "المعرّف",
       "description": "الوصف",
-      "icon": "الأيقونة",
-      "preset": "أيقونات جاهزة",
-      "upload": "رفع",
-      "iconSearch": "بحث في الأيقونات…",
-      "iconPreview": "معاينة",
-      "uploadHint": "PNG أو JPEG أو WebP أو SVG — بحد أقصى 1MB",
-      "uploading": "جاري الرفع…",
-      "removeIcon": "إزالة الأيقونة المرفوعة",
+      "icon": "الأيقونة (رمز تعبيري أو اسم)",
       "update": "تحديث",
       "create": "إنشاء"
-    },
-    "card": {
-      "subtitle": "تصنيف خدمة"
     }
   },
   "services": {
@@ -287,26 +184,9 @@
     "new": "خدمة جديدة",
     "empty": {
       "title": "لا توجد خدمات",
-      "subtitle": "أنشئ أول خدمة للبدء.",
-      "filtered": "لا توجد خدمات تطابق الفلاتر."
+      "subtitle": "أنشئ أول خدمة للبدء."
     },
     "deleteConfirm": "حذف هذه الخدمة؟",
-    "searchPlaceholder": "البحث بالاسم العربي أو الإنجليزي أو المعرّف…",
-    "filters": {
-      "advanced": "فلاتر متقدمة",
-      "reset": "إعادة تعيين الفلاتر",
-      "category": "التصنيف",
-      "categoryAll": "جميع التصنيفات",
-      "status": "الحالة",
-      "statusAll": "جميع الحالات",
-      "statusActive": "نشط فقط",
-      "statusInactive": "غير نشط فقط",
-      "priceType": "نوع السعر",
-      "priceTypeAll": "جميع أنواع الأسعار"
-    },
-    "card": {
-      "subtitle": "عرض خدمة"
-    },
     "form": {
       "nameAr": "الاسم (عربي)",
       "nameEn": "الاسم (إنجليزي)",
@@ -373,7 +253,6 @@
   },
   "paymentSettings": {
     "title": "إعدادات الدفع اليدوي",
-    "description": "إعداد بيانات InstaPay و Vodafone Cash المعروضة للعملاء عند الدفع.",
     "instapayName": "اسم حساب InstaPay",
     "instapayNumber": "رقم InstaPay",
     "vodafoneNumber": "رقم Vodafone Cash",
@@ -383,15 +262,13 @@
     "saved": "تم الحفظ!"
   },
   "heroSlides": {
-    "title": "شرائح الصفحة الرئيسية",
+    "title": "شرائح البanner",
     "subtitle": "إدارة صور عرض الصفحة الرئيسية والنصوص.",
     "add": "إضافة شريحة",
     "edit": "تعديل الشريحة",
     "new": "شريحة جديدة",
     "empty": "لا توجد شرائح",
     "deleteConfirm": "حذف هذه الشريحة؟",
-    "moveUp": "نقل الشريحة لأعلى",
-    "moveDown": "نقل الشريحة لأسفل",
     "form": {
       "slideImage": "صورة الشريحة",
       "pasteUrl": "أو الصق رابط الصورة",
@@ -422,103 +299,23 @@
       "review": "تقييم"
     },
     "performed": "{{admin}} نفّذ {{action}} على {{entityType}}",
-    "performedOn": "نفّذ إجراءً على",
-    "admin": "المسؤول",
-    "entity": "الكيان",
-    "entityId": "معرف الكيان",
-    "details": "التفاصيل",
-    "actions": {
-      "technician_approve": "اعتماد فني",
-      "technician_reject": "رفض فني",
-      "technician_suspend": "تعليق فني",
-      "technician_reactivate": "إعادة تفعيل فني",
-      "booking_status_update": "تحديث حالة الحجز",
-      "service_create": "إنشاء خدمة",
-      "service_update": "تحديث خدمة",
-      "service_delete": "حذف خدمة",
-      "category_create": "إنشاء تصنيف",
-      "category_update": "تحديث تصنيف",
-      "category_delete": "حذف تصنيف",
-      "review_approve": "اعتماد تقييم",
-      "review_reject": "رفض تقييم",
-      "review_hide": "إخفاء تقييم",
-      "payment_approved": "اعتماد دفعة",
-      "payment_rejected": "رفض دفعة",
-      "payment_created": "إنشاء دفعة",
-      "payment_settings_updated": "تحديث إعدادات الدفع",
-      "site_settings_updated": "تحديث إعدادات الموقع",
-      "hero_slide_create": "إنشاء شريحة",
-      "hero_slide_update": "تحديث شريحة",
-      "hero_slide_delete": "حذف شريحة",
-      "hero_slide_reorder": "إعادة ترتيب الشرائح"
-    },
-    "meta": {
-      "statusChange": "تغيير الحالة",
-      "noDetails": "لا توجد تفاصيل إضافية",
-      "itemsCount": "{{count}} عنصر",
-      "from": "الحالة السابقة",
-      "to": "الحالة الجديدة",
-      "reason": "السبب",
-      "note": "ملاحظة",
-      "rejection_reason": "سبب الرفض",
-      "booking_id": "معرّف الحجز",
-      "amount": "المبلغ",
-      "name_ar": "الاسم (عربي)",
-      "name_en": "الاسم (إنجليزي)",
-      "slug": "المعرّف",
-      "title_ar": "العنوان (عربي)",
-      "description": "الوصف",
-      "icon": "الأيقونة",
-      "ordered_ids": "ترتيب الشرائح",
-      "soft_delete": "حذف مؤقت",
-      "hard_delete": "حذف نهائي",
-      "resubmission": "إعادة إرسال",
-      "actor": "الفاعل",
-      "payment_method": "طريقة الدفع",
-      "instapay_name": "اسم حساب InstaPay",
-      "instapay_number": "رقم InstaPay",
-      "vodafone_number": "رقم Vodafone Cash",
-      "instructions": "تعليمات الدفع",
-      "actors": {
-        "customer": "عميل",
-        "admin": "مسؤول"
-      }
-    }
+    "details": "التفاصيل"
   },
   "settings": {
     "title": "الإعدادات",
     "subtitle": "إعدادات المنصة.",
     "general": "عام",
-    "generalDescription": "هوية المنصة وبيانات التواصل الأساسية.",
     "platformName": "اسم المنصة",
     "supportEmail": "بريد الدعم",
     "save": "حفظ الإعدادات",
     "saved": "تم الحفظ!",
     "about": "حول",
-    "aboutText": "سند v1.0.0 — منصة خدمات منزلية مبنية بـ Next.js و Supabase و TailwindCSS.",
-    "currency": "العملة",
-    "currencyDescription": "تُستخدم في لوحة التحكم وأسعار الخدمات على الموقع.",
-    "currencySaved": "تم حفظ العملة!"
-  },
-  "currencySettings": {
-    "title": "إعدادات العملة",
-    "label": "عملة العرض",
-    "description": "اختر العملة المعروضة في الإيرادات وأسعار الخدمات.",
-    "save": "حفظ العملة",
-    "saving": "جاري الحفظ…",
-    "saved": "تم الحفظ!"
+    "aboutText": "سند v1.0.0 — منصة خدمات منزلية مبنية بـ Next.js و Supabase و TailwindCSS."
   },
   "unauthorized": {
     "title": "غير مصرح",
     "description": "ليس لديك صلاحية للوصول إلى هذه المنطقة. يمكن للمسؤولين فقط عرض هذه الصفحة.",
     "backHome": "العودة للرئيسية"
-  },
-  "view": {
-    "table": "جدول",
-    "cards": "بطاقات",
-    "toggleLabel": "نمط عرض القائمة",
-    "toggleTable": "التبديل إلى عرض الجدول",
-    "toggleCards": "التبديل إلى عرض البطاقات"
   },
   "common": {
     "loading": "جاري التحميل…",
@@ -537,14 +334,8 @@
     "dash": "—",
     "previous": "السابق",
     "next": "التالي",
-    "first": "الأولى",
-    "last": "الأخيرة",
-    "rowsPerPage": "صفوف لكل صفحة",
-    "pagination": "التصفح",
-    "goToPage": "الانتقال إلى الصفحة {{page}}",
     "pageOf": "صفحة {{page}} من {{totalPages}} ({{total}} إجمالي)",
     "active": "نشط",
-    "inactive": "غير نشط",
     "confirm": "تأكيد"
   },
   "tables": {
@@ -570,8 +361,7 @@
     "order": "الترتيب",
     "preview": "معاينة",
     "title": "العنوان",
-    "subtitle": "العنوان الفرعي",
-    "amount": "المبلغ"
+    "subtitle": "العنوان الفرعي"
   },
   "bookingStatus": {
     "pending": "قيد الانتظار",
@@ -610,7 +400,7 @@
       "ADMIN_CREATE_CATEGORY_FAILED": "فشل إنشاء التصنيف",
       "ADMIN_UPDATE_CATEGORY_FAILED": "فشل تحديث التصنيف",
       "ADMIN_DELETE_CATEGORY_FAILED": "فشل حذف التصنيف",
-      "ADMIN_FETCH_BOOKINGS_FAILED": "فشل تحميل الحجوزات",
+      "ADMIN_FETCH_BOOKINGS_FAILED": "فشل تحميل الحjوزات",
       "ADMIN_FETCH_BOOKING_FAILED": "فشل تحميل الحجز",
       "ADMIN_UPDATE_BOOKING_STATUS_FAILED": "فشل تحديث حالة الحجز",
       "ADMIN_FETCH_REVIEWS_FAILED": "فشل تحميل التقييمات",
@@ -625,20 +415,7 @@
       "ADMIN_APPROVE_PAYMENT_FAILED": "فشل الموافقة على الدفع",
       "ADMIN_REJECT_PAYMENT_FAILED": "فشل رفض الدفع",
       "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "فشل تحميل إعدادات الدفع",
-      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "فشل تحديث إعدادات الدفع",
-      "ADMIN_FETCH_SITE_SETTINGS_FAILED": "فشل تحميل إعدادات الموقع",
-      "ADMIN_UPDATE_SITE_SETTINGS_FAILED": "فشل تحديث إعدادات الموقع",
-      "ADMIN_USER_NOT_FOUND": "الحساب غير موجود",
-      "ADMIN_BLOCK_USER_FAILED": "تعذّر تغيير حالة الحظر",
-      "ADMIN_DELETE_USER_FAILED": "تعذّر حذف الحساب",
-      "ADMIN_DELETE_USER_BLOCKED_BY_FK": "تعذّر حذف الحساب لوجود بيانات مرتبطة به. يلزم تشغيل أحدث ترحيل لقاعدة البيانات (00032).",
-      "ADMIN_DELETE_BOOKING_FAILED": "تعذّر حذف الحجز",
-      "ADMIN_BOOKING_NOT_FOUND": "الحجز غير موجود",
-      "ADMIN_MODERATE_SELF_FORBIDDEN": "لا يمكنك تنفيذ هذا الإجراء على حسابك الشخصي",
-      "ADMIN_MODERATE_ADMIN_FORBIDDEN": "لا يمكن تنفيذ هذا الإجراء على حساب مسؤول",
-      "ADMIN_MODERATE_PROTECTED_FORBIDDEN": "هذا الحساب محمي ولا يمكن حظره أو حذفه",
-      "ADMIN_SERVICE_ROLE_REQUIRED": "هذه العملية تتطلب إعداد مفتاح الخدمة على الخادم",
-      "ACCOUNT_BLOCKED": "تم حظر هذا الحساب"
+      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "فشل تحديث إعدادات الدفع"
     },
     "generic": "حدث خطأ غير متوقع"
   },
@@ -661,7 +438,6 @@
     "security": "الأمان",
     "notifications": "الإشعارات",
     "myJobs": "مهامي",
-    "myReviews": "التقييمات",
     "logout": "تسجيل الخروج"
   },
   "logoutModal": {
@@ -676,109 +452,5 @@
     "deleted": "تم الحذف بنجاح",
     "updated": "تم التحديث بنجاح",
     "error": "حدث خطأ"
-  },
-  "moderation": {
-    "block": "حظر",
-    "unblock": "إلغاء الحظر",
-    "delete": "حذف",
-    "blockedBadge": "محظور",
-    "blockedReason": "سبب الحظر",
-    "blockedSince": "تاريخ الحظر",
-    "actionsLabel": "إجراءات الإدارة",
-    "cancel": "إلغاء",
-    "reasonLabel": "سبب الحظر (اختياري)",
-    "reasonPlaceholder": "مثال: مخالفة شروط الاستخدام",
-    "confirmPhrase": "حذف",
-    "confirmPhraseLabel": "اكتب «{{phrase}}» للتأكيد",
-    "dialog": {
-      "block": {
-        "title": "حظر هذا الحساب؟",
-        "description": "سيتم حظر {{name}} ولن يتمكن من تسجيل الدخول أو استخدام المنصة حتى يُلغى الحظر.",
-        "confirm": "حظر الحساب"
-      },
-      "unblock": {
-        "title": "إلغاء حظر هذا الحساب؟",
-        "description": "سيستعيد {{name}} إمكانية تسجيل الدخول واستخدام المنصة فوراً.",
-        "confirm": "إلغاء الحظر"
-      },
-      "deleteTechnician": {
-        "title": "حذف هذا الفني نهائياً؟",
-        "description": "سيتم حذف حساب {{name}} نهائياً.",
-        "consequences": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف ملف الفني ومهاراته وتقييماته وإشعاراته ومحادثاته. الحجوزات السابقة ستبقى محفوظة للعميل بدون فني مرتبط.",
-        "confirm": "حذف نهائياً"
-      },
-      "deleteCustomer": {
-        "title": "حذف هذا العميل نهائياً؟",
-        "description": "سيتم حذف حساب {{name}} نهائياً.",
-        "consequences": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف حساب العميل وجميع حجوزاته وتقييماته ومدفوعاته وإشعاراته ومحادثاته.",
-        "confirm": "حذف نهائياً"
-      },
-      "deleteBooking": {
-        "title": "حذف هذا الحجز نهائياً؟",
-        "description": "سيتم حذف الحجز {{name}} نهائياً.",
-        "consequences": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف صور الحجز وتعييناته وتقييمه ودفعته والمحادثة المرتبطة به.",
-        "confirm": "حذف الحجز"
-      }
-    },
-    "toast": {
-      "blocked": "تم حظر الحساب",
-      "unblocked": "تم إلغاء حظر الحساب",
-      "userDeleted": "تم حذف الحساب نهائياً",
-      "bookingDeleted": "تم حذف الحجز نهائياً"
-    },
-    "bulk": {
-      "toolbarLabel": "إجراءات جماعية",
-      "select": "تحديد",
-      "selectedOne": "محدد",
-      "selected": "{{count}} محدد",
-      "selectRow": "تحديد هذا الصف",
-      "selectAll": "تحديد كل الصفوف في هذه الصفحة",
-      "deleteSelected": "حذف المحدد",
-      "clearSelection": "إلغاء التحديد",
-      "protectedRow": "هذا الحساب محمي ولا يمكن حذفه",
-      "dialog": {
-        "bookings": {
-          "title": "حذف {{count}} حجز نهائياً؟",
-          "description": "سيتم حذف {{count}} حجز محدد نهائياً.",
-          "consequences": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف صور كل حجز وتعييناته وتقييمه ودفعته والمحادثة المرتبطة به.",
-          "confirm": "حذف {{count}} حجز"
-        },
-        "customers": {
-          "title": "حذف {{count}} عميل نهائياً؟",
-          "description": "سيتم حذف {{count}} حساب عميل محدد نهائياً.",
-          "consequences": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف كل حساب وجميع حجوزاته وتقييماته ومدفوعاته وإشعاراته ومحادثاته.",
-          "confirm": "حذف {{count}} عميل"
-        },
-        "technicians": {
-          "title": "حذف {{count}} فني نهائياً؟",
-          "description": "سيتم حذف {{count}} حساب فني محدد نهائياً.",
-          "consequences": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف ملف كل فني ومهاراته وتقييماته وإشعاراته ومحادثاته. الحجوزات السابقة ستبقى محفوظة للعميل بدون فني مرتبط.",
-          "confirm": "حذف {{count}} فني"
-        },
-        "categories": {
-          "title": "حذف {{count}} تصنيف؟",
-          "description": "سيتم حذف {{count}} تصنيف محدد.",
-          "consequences": "قد تتوقف الخدمات المرتبطة بهذه التصنيفات عن الظهور في تطبيق العميل.",
-          "confirm": "حذف {{count}} تصنيف"
-        },
-        "services": {
-          "title": "حذف {{count}} خدمة؟",
-          "description": "سيتم حذف {{count}} خدمة محددة.",
-          "consequences": "لن تظهر هذه الخدمات في تطبيق العميل. الحجوزات الحالية تحتفظ بالخدمة التي أُنشئت بها.",
-          "confirm": "حذف {{count}} خدمة"
-        },
-        "heroSlides": {
-          "title": "حذف {{count}} شريحة؟",
-          "description": "سيتم حذف {{count}} شريحة محددة.",
-          "consequences": "ستختفي الشرائح من كاروسيل الصفحة الرئيسية للعميل فوراً.",
-          "confirm": "حذف {{count}} شريحة"
-        }
-      },
-      "toast": {
-        "allDeleted": "تم حذف {{count}} عنصر",
-        "partial": "تم حذف {{deleted}}، وفشل {{failed}}",
-        "allFailed": "لم يتم حذف أي عنصر — فشل {{failed}}"
-      }
-    }
   }
 }

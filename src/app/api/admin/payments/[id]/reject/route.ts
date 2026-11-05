@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireAuth, requireAdmin } from '@/lib/api/auth';
 import { parseJsonBody } from '@/lib/api/validate';
-import { paymentIdParamsSchema, rejectPaymentSchema } from '@/lib/validations/payments';
-import { notifyPaymentRejected } from '@/lib/notifications/events';
+import { paymentIdParamsSchema } from '@/lib/validations/payments';
+import { z } from 'zod';
+
+const rejectBodySchema = z.object({
+  rejection_reason: z.string().min(3).max(500),
+});
 
 export async function PATCH(
   request: NextRequest,
@@ -23,21 +27,12 @@ export async function PATCH(
   const admin = await requireAdmin(supabase, auth.user);
   if ('response' in admin) return admin.response;
 
-  const parsed = await parseJsonBody(request, rejectPaymentSchema);
+  const parsed = await parseJsonBody(request, rejectBodySchema);
   if ('response' in parsed) return parsed.response;
-
-  const { rejection_reason } = parsed.data;
 
   const { data: existing, error: fetchError } = await supabase
     .from('payments')
-    .select(`
-      *,
-      booking:bookings!booking_id(
-        id,
-        customer_id,
-        services(name_ar)
-      )
-    `)
+    .select('*')
     .eq('id', paymentId)
     .single();
 
@@ -49,14 +44,13 @@ export async function PATCH(
     return NextResponse.json({ error: 'Only pending payments can be rejected' }, { status: 409 });
   }
 
-  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('payments')
     .update({
       status: 'rejected',
       verified_by: auth.user.id,
-      verified_at: now,
-      rejection_reason,
+      verified_at: new Date().toISOString(),
+      rejection_reason: parsed.data.rejection_reason,
     })
     .eq('id', paymentId)
     .select()
@@ -69,27 +63,8 @@ export async function PATCH(
     action: 'payment_rejected',
     entity_type: 'payment',
     entity_id: paymentId,
-    metadata: { booking_id: existing.booking_id, amount: existing.amount, rejection_reason },
+    metadata: { reason: parsed.data.rejection_reason },
   });
-
-  const booking = existing.booking as {
-    id: string;
-    customer_id: string;
-    services?: { name_ar?: string } | null;
-  } | null;
-
-  if (booking) {
-    await notifyPaymentRejected(
-      booking.customer_id,
-      {
-        paymentId,
-        bookingId: booking.id,
-        amount: Number(existing.amount),
-        serviceName: booking.services?.name_ar,
-      },
-      rejection_reason,
-    );
-  }
 
   return NextResponse.json(data);
 }

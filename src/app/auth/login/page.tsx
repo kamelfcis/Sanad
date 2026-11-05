@@ -151,7 +151,15 @@ function LoginForm() {
           <Separator className="flex-1 bg-border" />
         </div>
 
-        <form onSubmit={handleSubmit(onEmailLogin)} className="space-y-4">
+        <form
+          method="post"
+          action="/auth/login"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleSubmit(onEmailLogin)(event);
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="email" className="text-text-primary">البريد الإلكتروني أو رقم الموبايل</Label>
             <Input

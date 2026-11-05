@@ -1,5 +1,12 @@
--- Optional free-text reason when a customer (or admin flow) cancels a booking
-ALTER TABLE public.bookings
-  ADD COLUMN IF NOT EXISTS cancellation_reason TEXT;
-
-COMMENT ON COLUMN public.bookings.cancellation_reason IS 'Optional reason provided when the booking was cancelled';
+",
+  "exports": {
+    ".": {
+      "react-server": "./react.react-server.js",
+      "default": "./index.js"
+    },
+    "./package.json": "./package.json",
+    "./jsx-runtime": {
+      "react-server": "./jsx-runtime.react-server.js",
+      "default": "./jsx-runtime.js"
+    },
+ 

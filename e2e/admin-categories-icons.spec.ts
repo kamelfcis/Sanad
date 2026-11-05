@@ -50,7 +50,7 @@ test.describe('Admin category icons', () => {
     await expect(page.getByTestId(`category-card-${slug}`)).toBeVisible({ timeout: 30_000 });
 
     const card = page.getByTestId(`category-card-${slug}`);
-    await expect(card.getByText(nameAr)).toBeVisible();
+    await expect(card.getByText(nameEn)).toBeVisible();
     await expect(card.locator('[data-category-icon="snowflake"]')).toBeVisible();
   });
 });

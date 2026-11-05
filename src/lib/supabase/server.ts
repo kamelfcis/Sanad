@@ -12,13 +12,13 @@ export async function createServerSupabaseClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[]) {
+        setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options),
             );
           } catch {
-            // Called from Server Component — ignore
+            /* Server Components cannot always set cookies; middleware refreshes the session. */
           }
         },
       },

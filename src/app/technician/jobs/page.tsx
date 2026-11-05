@@ -1,27 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  useTechnicianBookings,
-  useTechnicianAssignments,
-  useTechnicianProfile,
-  useUpdateTechnicianProfile,
-  useTechnicianAssignmentsRealtime,
-} from '@/hooks/use-technician';
+import { useState } from 'react';
+import { useTechnicianBookings, useTechnicianAssignments, useTechnicianProfile } from '@/hooks/use-technician';
 import { TechnicianJobCard } from '@/components/shared/technician-job-card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Briefcase, AlertCircle, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
-import { toast } from '@/hooks/use-toast';
 
 const statusFilters = [
-  { label: 'المتاحة', value: 'pending' },
-  { label: 'قيد التنفيذ', value: 'in_progress' },
-  { label: 'المكتملة', value: 'completed' },
-  { label: 'الكل', value: '' },
+  { label: 'Available', value: 'pending' },
+  { label: 'Active', value: 'in_progress' },
+  { label: 'Completed', value: 'completed' },
+  { label: 'All', value: '' },
 ];
 
 export default function TechnicianJobsPage() {
@@ -33,36 +26,6 @@ export default function TechnicianJobsPage() {
   const { data: bookings, isLoading: bookingsLoading, error: bookingsError } =
     useTechnicianBookings(isPendingFilter ? undefined : (statusFilter || undefined));
   const { data: techProfile } = useTechnicianProfile();
-  const updateProfile = useUpdateTechnicianProfile();
-
-  // Live-push newly matched assignments into the list (see migration 00031).
-  useTechnicianAssignmentsRealtime(techProfile?.id);
-
-  const [isAvailable, setIsAvailable] = useState(techProfile?.is_available ?? false);
-  useEffect(() => {
-    // Sync the quick toggle to the loaded server value.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (techProfile) setIsAvailable(techProfile.is_available);
-  }, [techProfile]);
-
-  const toggleAvailability = async () => {
-    const newVal = !isAvailable;
-    setIsAvailable(newVal);
-    try {
-      await updateProfile.mutateAsync({ is_available: newVal });
-      toast({
-        title: newVal ? 'أنت متاح الآن' : 'أنت غير متاح الآن',
-        description: newVal ? 'يمكن للعملاء تعيينك لطلبات جديدة.' : 'لن تصلك طلبات عمل جديدة.',
-      });
-    } catch {
-      setIsAvailable(!newVal);
-      toast({
-        title: 'تعذّر تحديث الحالة',
-        description: 'يرجى المحاولة مرة أخرى.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const isLoading = isPendingFilter ? assignmentsLoading : bookingsLoading;
   const error = isPendingFilter ? assignmentsError : bookingsError;
@@ -78,30 +41,24 @@ export default function TechnicianJobsPage() {
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">الطلبات</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>
           <p className="mt-1 text-muted-foreground">
-            تابع طلبات الخدمة الخاصة بك وأدرها.
+            Find and manage your service requests.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {techProfile && (
-            <div className="flex min-h-[44px] items-center gap-2 rounded-full border border-border px-3">
-              <span id="jobs-availability-label" className="text-sm font-medium">
-                {isAvailable ? 'متاح' : 'غير متصل'}
-              </span>
-              <Switch
-                checked={isAvailable}
-                onCheckedChange={toggleAvailability}
-                disabled={updateProfile.isPending}
-                aria-labelledby="jobs-availability-label"
-                aria-label="متاح للعمل"
-              />
-            </div>
+            <Badge
+              variant={techProfile.is_available ? 'success' : 'secondary'}
+              className="text-xs"
+            >
+              {techProfile.is_available ? 'Available' : 'Offline'}
+            </Badge>
           )}
           <Button variant="outline" size="sm" asChild>
-            <Link href="/technician/profile" className="gap-1.5">
-              <Settings className="h-4 w-4" />
-              الملف الشخصي
+            <Link href="/technician/profile">
+              <Settings className="mr-1 h-4 w-4" />
+              Profile
             </Link>
           </Button>
         </div>
@@ -112,9 +69,9 @@ export default function TechnicianJobsPage() {
         <div className="mb-6 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
           <div className="flex-1">
-            <p className="font-medium text-amber-800 dark:text-amber-200">أكمل ملفك الشخصي</p>
+            <p className="font-medium text-amber-800 dark:text-amber-200">Complete your profile</p>
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              أكمل ملفك الشخصي وأضف مهاراتك لتبدأ باستقبال طلبات العمل.
+              Set up your profile and add your skills to start receiving job requests.
             </p>
           </div>
           <Button size="sm" asChild>
@@ -130,7 +87,7 @@ export default function TechnicianJobsPage() {
             key={f.value}
             onClick={() => setStatusFilter(f.value)}
             className={cn(
-              'flex min-h-[44px] shrink-0 items-center rounded-full border px-4 text-sm font-medium transition-colors',
+              'shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
               statusFilter === f.value
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border hover:border-muted-foreground/50',
@@ -159,7 +116,7 @@ export default function TechnicianJobsPage() {
         </div>
       ) : error ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
-          تعذّر تحميل الطلبات. يرجى تحديث الصفحة.
+          Failed to load jobs. Please refresh the page.
         </div>
       ) : isPendingFilter ? (
         assignments?.length === 0 ? (
@@ -168,9 +125,9 @@ export default function TechnicianJobsPage() {
               <Briefcase className="h-8 w-8 text-muted-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">لا توجد طلبات متاحة</h2>
+              <h2 className="text-lg font-semibold">No available jobs</h2>
               <p className="text-sm text-muted-foreground">
-                لا توجد طلبات عمل معلّقة معيّنة لك في الوقت الحالي.
+                There are no pending job requests assigned to you right now.
               </p>
             </div>
           </div>
@@ -191,9 +148,11 @@ export default function TechnicianJobsPage() {
             <Briefcase className="h-8 w-8 text-muted-foreground" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold">لا توجد طلبات</h2>
+            <h2 className="text-lg font-semibold">No jobs found</h2>
             <p className="text-sm text-muted-foreground">
-              {statusFilter ? 'لا توجد طلبات في هذه الحالة.' : 'لا توجد طلبات عمل بعد.'}
+              {statusFilter
+                ? `No jobs with status "${statusFilter}".`
+                : 'No job requests yet.'}
             </p>
           </div>
         </div>
