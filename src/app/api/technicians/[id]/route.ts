@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
 import { uuidSchema } from '@/lib/validations/common';
-import { transformBrowseTechnician, type RawTechnicianRow } from '@/lib/technicians/browse';
+import {
+  resolveCategorySlug,
+  transformBrowseTechnician,
+  type RawTechnicianRow,
+} from '@/lib/technicians/browse';
+import { resolveTechnicianServicePrice } from '@/lib/pricing/technician-service-price';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
+  const serviceId = request.nextUrl.searchParams.get('service_id') ?? undefined;
+  const category = request.nextUrl.searchParams.get('category') ?? undefined;
   const { id } = await context.params;
   const parsed = uuidSchema.safeParse(id);
   if (!parsed.success) {
@@ -19,21 +25,6 @@ export async function GET(
       { error: 'خدمة البحث غير متاحة حالياً. يرجى المحاولة لاحقاً.' },
       { status: 503 },
     );
-  }
-
-  const supabaseAuth = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabaseAuth.auth.getUser();
-
-  let includePhone = false;
-  if (user) {
-    const { data: profile } = await supabaseAuth
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
-    includePhone = profile?.role === 'customer' || profile?.role === 'admin';
   }
 
   const supabase = createServiceRoleClient();
@@ -49,6 +40,7 @@ export async function GET(
       starting_price,
       is_available,
       verification_status,
+      is_demo,
       average_rating,
       completed_jobs,
       profile_photo_url,
@@ -66,6 +58,7 @@ export async function GET(
     )
     .eq('id', parsed.data)
     .eq('verification_status', 'verified')
+    .eq('is_demo', false)
     .maybeSingle();
 
   if (error) {
@@ -85,10 +78,18 @@ export async function GET(
     profile: Array.isArray(record.profile) ? record.profile[0] ?? null : record.profile,
   };
 
-  const technician = transformBrowseTechnician(row, { includePhone });
+  const categorySlug = resolveCategorySlug(undefined, category);
+  const technician = transformBrowseTechnician(row, { categorySlug });
   if (!technician) {
     return NextResponse.json({ error: 'Technician not found' }, { status: 404 });
   }
 
-  return NextResponse.json(technician);
+  const activeSkills = (row.skills ?? []).filter((skill) => skill.is_active !== false);
+  const quotedPrice = resolveTechnicianServicePrice(
+    activeSkills,
+    serviceId ?? technician.primary_service_id,
+    categorySlug,
+  );
+
+  return NextResponse.json({ ...technician, quoted_price: quotedPrice });
 }

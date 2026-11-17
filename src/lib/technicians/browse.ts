@@ -3,9 +3,10 @@ import {
   TECHNICIAN_SPECIALTIES,
   type TechnicianSpecialtyValue,
 } from '@/lib/constants/technician-registration';
+import { resolveTechnicianServicePrice } from '@/lib/pricing/technician-service-price';
 import type { BrowseTechnician, TechnicianBrowseBadge } from '@/types/technician-browse';
 
-interface RawSkill {
+export interface RawSkill {
   is_active: boolean | null;
   price_override: number | null;
   services: {
@@ -15,16 +16,22 @@ interface RawSkill {
   } | null;
 }
 
-interface RawTechnicianRow {
+export interface RawTechnicianRow {
   id: string;
   governorate: string | null;
   area: string | null;
+  location_lat?: number | null;
+  location_lng?: number | null;
   starting_price: number | null;
   is_available: boolean | null;
   verification_status: string;
   average_rating: number | null;
   completed_jobs: number | null;
   profile_photo_url: string | null;
+  provider_role?: string | null;
+  contractor_kind?: string | null;
+  capacity_tier?: string | null;
+  team_size?: number | null;
   profile: {
     full_name: string | null;
     avatar_url: string | null;
@@ -47,15 +54,15 @@ function mockResponseMinutes(isAvailable: boolean, completedJobs: number, id: st
   return 16 + (completedJobs % 45);
 }
 
-function resolveStartingPrice(row: RawTechnicianRow, activeSkills: RawSkill[]): number {
-  if (row.starting_price != null) return Number(row.starting_price);
-
-  const prices = activeSkills
-    .map((skill) => skill.price_override ?? skill.services?.price ?? null)
-    .filter((price): price is number => price != null);
-
-  if (prices.length === 0) return 0;
-  return Math.min(...prices);
+function resolveStartingPrice(
+  activeSkills: RawSkill[],
+  options: { categorySlug?: string; primaryServiceId?: string | null },
+): number {
+  return resolveTechnicianServicePrice(
+    activeSkills,
+    options.primaryServiceId,
+    options.categorySlug,
+  );
 }
 
 function resolvePrimarySkill(
@@ -96,12 +103,16 @@ function buildBadges(
 
 export function transformBrowseTechnician(
   row: RawTechnicianRow,
-  options: { categorySlug?: string; includePhone?: boolean },
+  options: { categorySlug?: string } = {},
 ): BrowseTechnician | null {
   if (!row.profile) return null;
 
   const activeSkills = (row.skills ?? []).filter((skill) => skill.is_active !== false);
   const primary = resolvePrimarySkill(activeSkills, options.categorySlug);
+  const startingPrice = resolveStartingPrice(activeSkills, {
+    categorySlug: options.categorySlug,
+    primaryServiceId: primary.serviceId,
+  });
   const averageRating = Number(row.average_rating ?? 0);
   const completedJobs = Number(row.completed_jobs ?? 0);
   const isAvailable = Boolean(row.is_available);
@@ -111,7 +122,7 @@ export function transformBrowseTechnician(
     id: row.id,
     full_name: row.profile.full_name,
     avatar_url: row.profile_photo_url ?? row.profile.avatar_url,
-    phone: options.includePhone ? row.profile.phone : null,
+    phone: row.profile.phone,
     specialty_label: primary.label,
     specialty_slug: primary.slug,
     area: row.area,
@@ -120,11 +131,17 @@ export function transformBrowseTechnician(
     is_available: isAvailable,
     average_rating: averageRating,
     completed_jobs: completedJobs,
-    starting_price: resolveStartingPrice(row, activeSkills),
+    starting_price: startingPrice,
     distance_km: mockDistanceKm(row.id),
     response_time_minutes: responseMinutes,
+    location_lat: row.location_lat ?? null,
+    location_lng: row.location_lng ?? null,
     badges: buildBadges(row, averageRating, responseMinutes),
     primary_service_id: primary.serviceId,
+    provider_role: row.provider_role === 'contractor' ? 'contractor' : 'technician',
+    contractor_kind: row.contractor_kind ?? null,
+    capacity_tier: row.capacity_tier ?? null,
+    team_size: row.team_size ?? null,
   };
 }
 
@@ -138,6 +155,10 @@ export function resolveCategorySlug(
 }
 
 export function technicianMatchesCategory(row: RawTechnicianRow, categorySlug: string): boolean {
+  if (categorySlug === 'general-contractor') {
+    if (row.contractor_kind === 'integrated') return true;
+  }
+
   const activeSkills = (row.skills ?? []).filter((skill) => skill.is_active !== false);
   return activeSkills.some((skill) => skill.services?.service_categories?.slug === categorySlug);
 }

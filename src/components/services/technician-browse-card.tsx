@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useFormatMoney } from '@/hooks/use-site-settings';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { Heart, Phone, Star, CalendarCheck, ShieldCheck, WifiOff } from 'lucide-react';
+import { Heart, Phone, Star, CalendarCheck, ShieldCheck, WifiOff, FileText } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,9 @@ import { formatDistanceKm } from '@/lib/geo';
 import { buildNewBookingHref } from '@/lib/booking/booking-links';
 import { buildLoginHrefWithNext } from '@/lib/auth/safe-redirect';
 import { createClient } from '@/lib/supabase/client';
+import { toTelHref } from '@/lib/utils/phone';
+import { capacityTierLabel, teamSizeLabel } from '@/lib/constants/technician-registration';
+import type { CapacityTier } from '@/lib/constants/technician-registration';
 import type { BrowseTechnician, TechnicianBrowseBadge } from '@/types/technician-browse';
 
 const BADGE_LABELS: Record<
@@ -35,7 +38,12 @@ export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) 
   const { formatMoney } = useFormatMoney();
 
   const isOffline = !technician.is_available;
+  const isContractor = technician.provider_role === 'contractor';
+  const quoteBlocked = isContractor && technician.capacity_tier === 'none';
   const displayName = technician.full_name ?? 'صنايعي';
+  const quoteHref = `/customer/quotes/new?contractor_id=${technician.id}${
+    technician.specialty_slug ? `&specialty=${encodeURIComponent(technician.specialty_slug)}` : ''
+  }`;
 
   const initials = useMemo(() => {
     return (technician.full_name ?? 'ص')
@@ -46,6 +54,7 @@ export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) 
       .toUpperCase();
   }, [technician.full_name]);
 
+  const profileHref = `/technicians/${technician.id}`;
   const bookingHref = buildNewBookingHref({
     serviceId: technician.primary_service_id,
     technicianId: technician.id,
@@ -66,23 +75,16 @@ export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) 
     router.push(bookingHref);
   };
 
-  const handleCall = async () => {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      router.push(buildLoginHrefWithNext(bookingHref));
-      return;
-    }
-    if (technician.phone) {
-      window.location.href = `tel:${technician.phone}`;
-    }
-  };
-
+  const phone = technician.phone?.trim() ?? '';
   const ratingLabel = technician.average_rating > 0 ? technician.average_rating.toFixed(1) : '—';
 
   return (
     <article
       dir="rtl"
+      data-provider-role={technician.provider_role ?? 'technician'}
+      data-capacity={technician.capacity_tier ?? ''}
+      data-team-size={technician.team_size ?? ''}
+      data-specialty={technician.specialty_slug ?? ''}
       aria-label={`${displayName} — ${isOffline ? 'غير متاح' : 'متاح'}`}
       className={cn(
         'group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card bg-gradient-to-br from-card via-card to-muted/20 p-5 shadow-sm transition-all duration-200',
@@ -91,7 +93,7 @@ export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) 
     >
       <div className="mb-4 flex items-start gap-4">
         <div className="relative shrink-0">
-          <Link href={bookingHref} className="block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+          <Link href={profileHref} className="block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
             <Avatar
               className={cn(
                 'h-14 w-14 ring-2 ring-offset-2 ring-offset-background',
@@ -131,8 +133,8 @@ export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) 
             </Badge>
           )}
 
-          <Link href={bookingHref} className="block">
-            <div className={cn(!isOffline && 'border-s-2 border-primary ps-2')}>
+          <div className={cn(!isOffline && 'border-s-2 border-primary ps-2')}>
+            <Link href={profileHref} className="block">
               <h3
                 className="truncate text-lg font-bold text-text-primary transition-colors group-hover:text-primary"
                 style={{ fontFamily: 'var(--font-cairo)' }}
@@ -140,11 +142,27 @@ export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) 
                 {displayName}
               </h3>
               <p className="mt-0.5 truncate text-sm text-text-secondary">
-                {technician.specialty_label}
-                {technician.area ? ` · ${technician.area}` : ''}
+                {[technician.specialty_label, technician.governorate, technician.area].filter(Boolean).join(' · ')}
               </p>
-            </div>
-          </Link>
+              {isContractor && (
+                <p className="mt-1 truncate text-xs text-text-muted">
+                  {capacityTierLabel((technician.capacity_tier ?? 'none') as CapacityTier)}
+                  {technician.team_size ? ` · ${teamSizeLabel(technician.team_size)}` : ''}
+                </p>
+              )}
+            </Link>
+            {phone ? (
+              <a
+                href={toTelHref(phone)}
+                dir="ltr"
+                className="mt-1 inline-flex max-w-full items-center gap-1.5 rounded-md text-sm font-semibold text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                aria-label={`اتصل بـ ${displayName} على ${phone}`}
+              >
+                <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">{phone}</span>
+              </a>
+            ) : null}
+          </div>
 
           {visibleBadges.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -199,26 +217,40 @@ export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) 
       </div>
 
       <div className={cn('mt-auto flex flex-col gap-2', isOffline && 'cursor-not-allowed')}>
+        {isContractor ? (
+          <Button
+            type="button"
+            className="h-11 w-full gap-2 rounded-xl bg-primary-strong font-bold text-white hover:bg-primary-strong/90 touch-manipulation"
+            onClick={() => {
+              if (quoteBlocked) return;
+              void (async () => {
+                const supabase = createClient();
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session?.user) {
+                  router.push(buildLoginHrefWithNext(quoteHref));
+                  return;
+                }
+                router.push(quoteHref);
+              })();
+            }}
+            disabled={quoteBlocked}
+            aria-disabled={quoteBlocked}
+            data-testid={quoteBlocked ? 'quote-unavailable' : 'request-quote'}
+          >
+            <FileText className="h-4 w-4" />
+            {quoteBlocked ? 'غير متاح لشغل جديد' : 'اطلب عرض سعر'}
+          </Button>
+        ) : (
         <Button
           type="button"
-          className="h-11 w-full gap-2 rounded-xl font-bold touch-manipulation"
+          className="h-11 w-full gap-2 rounded-xl bg-primary-strong font-bold text-white hover:bg-primary-strong/90 touch-manipulation"
           onClick={handleBook}
           disabled={isOffline}
           aria-disabled={isOffline}
         >
           <CalendarCheck className="h-4 w-4" />
-          {isOffline ? 'غير متاح حالياً' : 'احجز مع هذا الفني'}
+          {isOffline ? 'غير متاح الآن' : 'احجز مع هذا الفني'}
         </Button>
-        {!isOffline && technician.phone && (
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 w-full gap-2 rounded-xl font-bold touch-manipulation"
-            onClick={handleCall}
-          >
-            <Phone className="h-4 w-4" />
-            اتصل
-          </Button>
         )}
       </div>
     </article>

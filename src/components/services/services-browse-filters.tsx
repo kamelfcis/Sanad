@@ -2,8 +2,13 @@
 
 import Link from 'next/link';
 import {
+  CAPACITY_TIERS,
+  CONTRACTOR_KINDS,
   EGYPT_GOVERNORATES,
+  PROVIDER_ROLES,
   SPECIALTY_CHIP_ICONS,
+  TEAM_SIZES,
+  teamSizeLabel,
   TECHNICIAN_SPECIALTIES,
 } from '@/lib/constants/technician-registration';
 import type { browseTechniciansSortSchema } from '@/lib/validations/technicians';
@@ -23,6 +28,10 @@ type SortValue = z.infer<typeof browseTechniciansSortSchema>;
 
 export interface ServicesBrowseFiltersState {
   specialty: string | null;
+  providerRole: string | null;
+  contractorKind: string | null;
+  capacityTier: string | null;
+  teamSize: number | null;
   governorate: string | null;
   sort: SortValue;
   maxPrice: number;
@@ -70,6 +79,8 @@ function SpecialtyChip({
 }
 
 export function ServicesBrowseFilters({ filters, onChange }: ServicesBrowseFiltersProps) {
+  const showContractorFilters = filters.providerRole === 'contractor';
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-end">
@@ -104,6 +115,111 @@ export function ServicesBrowseFilters({ filters, onChange }: ServicesBrowseFilte
       <div
         className="flex flex-col gap-4 rounded-2xl border border-border/70 bg-white dark:bg-card px-4 py-4 shadow-sm md:flex-row md:flex-wrap md:items-end md:gap-5 md:px-5 md:py-5"
       >
+        <div className="min-w-[140px] flex-1 space-y-2">
+          <Label htmlFor="provider-role-filter" className="text-sm font-semibold text-text-primary">
+            الدور
+          </Label>
+          <Select
+            value={filters.providerRole ?? 'all'}
+            onValueChange={(value) =>
+              onChange({
+                providerRole: value === 'all' ? null : value,
+                ...(value === 'contractor'
+                  ? {}
+                  : { contractorKind: null, capacityTier: null, teamSize: null }),
+              })
+            }
+          >
+            <SelectTrigger id="provider-role-filter" className="h-10 rounded-xl border-border/80 bg-white dark:bg-card shadow-none">
+              <SelectValue placeholder="الكل" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">الكل</SelectItem>
+              {PROVIDER_ROLES.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {showContractorFilters ? (
+          <>
+            <div className="min-w-[140px] flex-1 space-y-2">
+          <Label htmlFor="contractor-kind-filter" className="text-sm font-semibold text-text-primary">
+            نوع المقاول
+          </Label>
+          <Select
+            value={filters.contractorKind ?? 'all'}
+            onValueChange={(value) =>
+              onChange({ contractorKind: value === 'all' ? null : value })
+            }
+          >
+            <SelectTrigger id="contractor-kind-filter" className="h-10 rounded-xl border-border/80 bg-white dark:bg-card shadow-none">
+              <SelectValue placeholder="الكل" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">الكل</SelectItem>
+              {CONTRACTOR_KINDS.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="min-w-[140px] flex-1 space-y-2">
+          <Label htmlFor="capacity-tier-filter" className="text-sm font-semibold text-text-primary">
+            السعة الحالية
+          </Label>
+          <Select
+            value={filters.capacityTier ?? 'all'}
+            onValueChange={(value) =>
+              onChange({ capacityTier: value === 'all' ? null : value })
+            }
+          >
+            <SelectTrigger id="capacity-tier-filter" className="h-10 rounded-xl border-border/80 bg-white dark:bg-card shadow-none">
+              <SelectValue placeholder="الكل" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">الكل</SelectItem>
+              {CAPACITY_TIERS.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="min-w-[140px] flex-1 space-y-2">
+          <Label htmlFor="team-size-filter" className="text-sm font-semibold text-text-primary">
+            حجم الفريق
+          </Label>
+          <Select
+            value={filters.teamSize ? String(filters.teamSize) : 'all'}
+            onValueChange={(value) =>
+              onChange({ teamSize: value === 'all' ? null : Number(value) })
+            }
+          >
+            <SelectTrigger id="team-size-filter" className="h-10 rounded-xl border-border/80 bg-white dark:bg-card shadow-none">
+              <SelectValue placeholder="الكل" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">الكل</SelectItem>
+              {TEAM_SIZES.map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {teamSizeLabel(size)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+            </div>
+          </>
+        ) : null}
+
         <div className="min-w-[140px] flex-1 space-y-2">
           <Label htmlFor="governorate-filter" className="text-sm font-semibold text-text-primary">
             المحافظة

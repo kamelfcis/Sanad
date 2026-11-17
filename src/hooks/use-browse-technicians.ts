@@ -11,6 +11,10 @@ export interface BrowseTechniciansFilters {
   search?: string;
   specialty?: string;
   category?: string;
+  providerRole?: string;
+  contractorKind?: string;
+  capacityTier?: string;
+  teamSize?: number;
   governorate?: string;
   sort?: z.infer<typeof browseTechniciansSortSchema>;
   maxPrice?: number;
@@ -29,6 +33,10 @@ async function fetchBrowseTechnicians(
   if (filters.search) params.set('search', filters.search);
   if (filters.specialty) params.set('specialty', filters.specialty);
   if (filters.category) params.set('category', filters.category);
+  if (filters.providerRole) params.set('providerRole', filters.providerRole);
+  if (filters.contractorKind) params.set('contractorKind', filters.contractorKind);
+  if (filters.capacityTier) params.set('capacityTier', filters.capacityTier);
+  if (filters.teamSize) params.set('teamSize', String(filters.teamSize));
   if (filters.governorate) params.set('governorate', filters.governorate);
   if (filters.sort) params.set('sort', filters.sort);
   if (filters.maxPrice != null) params.set('maxPrice', String(filters.maxPrice));
@@ -49,11 +57,24 @@ async function fetchBrowseTechnicians(
   return res.json();
 }
 
-export function useBrowseTechnicians(filters: BrowseTechniciansFilters) {
+export function useBrowseTechnicians(
+  filters: BrowseTechniciansFilters,
+  initialData?: BrowseTechniciansResponse,
+) {
+  const defaultFiltersKey = JSON.stringify({ page: 1, limit: 24, sort: 'rating', maxPrice: 500 });
+  const isDefaultQuery =
+    JSON.stringify({
+      page: filters.page ?? 1,
+      limit: filters.limit ?? 24,
+      sort: filters.sort ?? 'rating',
+      maxPrice: filters.maxPrice ?? 500,
+    }) === defaultFiltersKey && !filters.search && !filters.specialty && !filters.governorate;
+
   return useQuery({
     queryKey: ['browse-technicians', filters],
     queryFn: () => fetchBrowseTechnicians(filters),
     staleTime: 60_000,
+    initialData: isDefaultQuery && initialData ? initialData : undefined,
   });
 }
 

@@ -20,6 +20,10 @@ export interface BrowseTechnician {
   response_time_minutes: number;
   badges: TechnicianBrowseBadge[];
   primary_service_id: string | null;
+  provider_role?: 'technician' | 'contractor' | null;
+  contractor_kind?: string | null;
+  capacity_tier?: string | null;
+  team_size?: number | null;
 }
 
 export interface BrowseTechniciansResponse {

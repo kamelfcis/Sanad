@@ -1,9 +1,19 @@
 import { z } from 'zod';
 import { paginationPageSchema, uuidSchema, verificationStatusSchema } from '@/lib/validations/common';
-import { EGYPT_GOVERNORATES, TECHNICIAN_SPECIALTIES } from '@/lib/constants/technician-registration';
+import {
+  CAPACITY_TIERS,
+  CONTRACTOR_KINDS,
+  EGYPT_GOVERNORATES,
+  PROVIDER_ROLES,
+  TEAM_SIZES,
+  TECHNICIAN_SPECIALTIES,
+} from '@/lib/constants/technician-registration';
 
 const specialtyValues = TECHNICIAN_SPECIALTIES.map((s) => s.value) as [string, ...string[]];
 const governorateValues = [...EGYPT_GOVERNORATES] as [string, ...string[]];
+const contractorKindValues = CONTRACTOR_KINDS.map((s) => s.value) as [string, ...string[]];
+const capacityTierValues = CAPACITY_TIERS.map((s) => s.value) as [string, ...string[]];
+const providerRoleValues = PROVIDER_ROLES.map((s) => s.value) as [string, ...string[]];
 
 export const browseTechniciansSortSchema = z.enum(['rating', 'price', 'distance', 'response']);
 
@@ -11,6 +21,13 @@ export const browseTechniciansQuerySchema = paginationPageSchema.extend({
   search: z.string().max(100).optional(),
   specialty: z.enum(specialtyValues).optional(),
   category: z.string().max(100).optional(),
+  providerRole: z.enum(providerRoleValues).optional(),
+  contractorKind: z.enum(contractorKindValues).optional(),
+  capacityTier: z.enum(capacityTierValues).optional(),
+  teamSize: z.coerce
+    .number()
+    .refine((value) => (TEAM_SIZES as readonly number[]).includes(value), 'حجم الفريق غير صالح')
+    .optional(),
   governorate: z.enum(governorateValues).optional(),
   sort: browseTechniciansSortSchema.optional().default('rating'),
   maxPrice: z.coerce.number().min(0).max(10000).optional(),
@@ -60,6 +77,31 @@ export const adminTechniciansQuerySchema = paginationPageSchema.extend({
   search: z.string().max(100).optional(),
   status: verificationStatusSchema.optional(),
 });
+
+export const adminTechnicianContractorSchema = z
+  .object({
+    provider_role: z.enum(providerRoleValues),
+    contractor_kind: z.enum(contractorKindValues).optional(),
+    capacity_tier: z.enum(capacityTierValues),
+    team_size: z.union([z.literal(5), z.literal(10), z.literal(20), z.null()]).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.provider_role === 'technician') return;
+    if (!data.contractor_kind) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'اختر نوع المقاول',
+        path: ['contractor_kind'],
+      });
+    }
+    if (data.team_size !== 5 && data.team_size !== 10 && data.team_size !== 20) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'حجم الفريق 5 أو 10 أو 20',
+        path: ['team_size'],
+      });
+    }
+  });
 
 export const adminTechnicianStatusSchema = z.object({
   action: z.enum(['approve', 'reject', 'suspend', 'reactivate'], {

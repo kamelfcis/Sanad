@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Map, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -10,23 +11,45 @@ import { ErrorState } from '@/components/shared/error-state';
 import { useBrowseTechnicians } from '@/hooks/use-browse-technicians';
 import { ServicesBrowseFilters, type ServicesBrowseFiltersState } from '@/components/services/services-browse-filters';
 import { TechnicianBrowseCard } from '@/components/services/technician-browse-card';
+import { TECHNICIAN_SPECIALTIES } from '@/lib/constants/technician-registration';
+import type { BrowseTechniciansResponse } from '@/types/technician-browse';
 
 const DEFAULT_FILTERS: ServicesBrowseFiltersState = {
   specialty: null,
+  providerRole: null,
+  contractorKind: null,
+  capacityTier: null,
+  teamSize: null,
   governorate: null,
   sort: 'rating',
   maxPrice: 500,
   availableOnly: false,
 };
 
-export function ServicesBrowseView() {
+type ServicesBrowseViewProps = {
+  initialBrowse?: BrowseTechniciansResponse;
+};
+
+export function ServicesBrowseView({ initialBrowse }: ServicesBrowseViewProps) {
+  const searchParams = useSearchParams();
+  const initialRole = searchParams.get('providerRole');
+  const initialSpecialty = searchParams.get('specialty');
+  const knownSpecialty = TECHNICIAN_SPECIALTIES.some((item) => item.value === initialSpecialty);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<ServicesBrowseFiltersState>(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<ServicesBrowseFiltersState>({
+    ...DEFAULT_FILTERS,
+    providerRole: initialRole === 'technician' || initialRole === 'contractor' ? initialRole : null,
+    specialty: knownSpecialty ? initialSpecialty : null,
+  });
 
   const queryFilters = useMemo(
     () => ({
       search: searchQuery.trim() || undefined,
       specialty: filters.specialty ?? undefined,
+      providerRole: filters.providerRole ?? undefined,
+      contractorKind: filters.contractorKind ?? undefined,
+      capacityTier: filters.providerRole === 'contractor' ? filters.capacityTier ?? undefined : undefined,
+      teamSize: filters.providerRole === 'contractor' ? filters.teamSize ?? undefined : undefined,
       governorate: filters.governorate ?? undefined,
       sort: filters.sort,
       maxPrice: filters.maxPrice,
@@ -36,7 +59,7 @@ export function ServicesBrowseView() {
     [filters, searchQuery],
   );
 
-  const { data, isLoading, error, refetch } = useBrowseTechnicians(queryFilters);
+  const { data, isLoading, error, refetch } = useBrowseTechnicians(queryFilters, initialBrowse);
 
   const handleFilterChange = (patch: Partial<ServicesBrowseFiltersState>) => {
     setFilters((current) => ({ ...current, ...patch }));
@@ -58,8 +81,12 @@ export function ServicesBrowseView() {
         </div>
 
         <div className="relative w-full md:max-w-sm">
-          <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+          <label htmlFor="services-search" className="sr-only">
+            بحث عن صنايعي
+          </label>
+          <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" aria-hidden />
           <Input
+            id="services-search"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="ابحث عن صنايعي أو منطقة..."
