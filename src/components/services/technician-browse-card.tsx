@@ -208,7 +208,9 @@ export function TechnicianBrowseCard({ technician }: TechnicianBrowseCardProps) 
         </div>
         <div className="px-1 text-center">
           <p className="text-xl font-black text-text-primary">{formatDistanceKm(technician.distance_km)}</p>
-          <p className="mt-0.5 text-[11px] text-text-muted">المسافة</p>
+          <p className="mt-0.5 text-[11px] text-text-muted">
+            {technician.distance_is_estimated ? 'المسافة التقريبية' : 'المسافة المباشرة'}
+          </p>
         </div>
         <div className="px-1 text-center">
           <p className="text-xl font-black text-text-primary">{technician.response_time_minutes} د</p>

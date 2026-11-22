@@ -4,7 +4,12 @@ import {
   type TechnicianSpecialtyValue,
 } from '@/lib/constants/technician-registration';
 import { resolveTechnicianServicePrice } from '@/lib/pricing/technician-service-price';
-import { haversineDistanceKm, type GeoPoint } from '@/lib/geo';
+import {
+  CAIRO_DEFAULT,
+  getGovernorateCentroid,
+  haversineDistanceKm,
+  type GeoPoint,
+} from '@/lib/geo';
 import type { BrowseTechnician, TechnicianBrowseBadge } from '@/types/technician-browse';
 
 export interface RawSkill {
@@ -110,17 +115,27 @@ export function transformBrowseTechnician(
   const completedJobs = Number(row.completed_jobs ?? 0);
   const isAvailable = Boolean(row.is_available);
   const responseMinutes = mockResponseMinutes(isAvailable, completedJobs, row.id);
-  const distanceKm =
-    options.userLocation && row.location_lat != null && row.location_lng != null
-      ? Math.round(
-          haversineDistanceKm(
-            options.userLocation.lat,
-            options.userLocation.lng,
-            Number(row.location_lat),
-            Number(row.location_lng),
-          ) * 10,
-        ) / 10
-      : null;
+  const storedLat = row.location_lat == null ? NaN : Number(row.location_lat);
+  const storedLng = row.location_lng == null ? NaN : Number(row.location_lng);
+  const hasExactTechnicianLocation =
+    Number.isFinite(storedLat) &&
+    Number.isFinite(storedLng) &&
+    Math.abs(storedLat) <= 90 &&
+    Math.abs(storedLng) <= 180;
+  const technicianLocation = hasExactTechnicianLocation
+    ? { lat: storedLat, lng: storedLng }
+    : getGovernorateCentroid(row.governorate);
+  const distanceOrigin = options.userLocation ?? CAIRO_DEFAULT;
+  const distanceKm = technicianLocation
+    ? Math.round(
+        haversineDistanceKm(
+          distanceOrigin.lat,
+          distanceOrigin.lng,
+          technicianLocation.lat,
+          technicianLocation.lng,
+        ) * 10,
+      ) / 10
+    : null;
 
   return {
     id: row.id,
@@ -137,6 +152,8 @@ export function transformBrowseTechnician(
     completed_jobs: completedJobs,
     starting_price: startingPrice,
     distance_km: distanceKm,
+    distance_is_estimated:
+      distanceKm != null && (!options.userLocation || !hasExactTechnicianLocation),
     response_time_minutes: responseMinutes,
     location_lat: row.location_lat ?? null,
     location_lng: row.location_lng ?? null,

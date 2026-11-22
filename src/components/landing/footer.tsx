@@ -28,6 +28,9 @@ export function FooterSection() {
           <Link href="/auth/register" className="hover:text-foreground">
             حساب عميل
           </Link>
+          <Link href="/terms" className="hover:text-foreground">
+            الشروط والأحكام
+          </Link>
         </nav>
       </div>
       <p className="mx-auto mt-8 max-w-6xl px-4 text-sm text-muted-foreground md:px-6 lg:px-8">

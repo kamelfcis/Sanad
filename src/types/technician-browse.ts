@@ -15,6 +15,7 @@ export interface BrowseTechnician {
   completed_jobs: number;
   starting_price: number;
   distance_km: number | null;
+  distance_is_estimated?: boolean;
   location_lat: number | null;
   location_lng: number | null;
   response_time_minutes: number;
