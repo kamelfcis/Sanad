@@ -22,11 +22,25 @@ interface CreateReviewInput {
   comment?: string;
 }
 
+function asCustomer(value: unknown): Review['customer'] {
+  const row = Array.isArray(value) ? value[0] : value;
+  if (!row || typeof row !== 'object') return null;
+  const record = row as { full_name?: string | null; avatar_url?: string | null };
+  return {
+    full_name: record.full_name ?? null,
+    avatar_url: record.avatar_url ?? null,
+  };
+}
+
 async function fetchTechnicianReviews(technicianId: string, limit = 50): Promise<Review[]> {
   const res = await fetch(`/api/reviews?technician_id=${encodeURIComponent(technicianId)}&limit=${limit}`);
   if (!res.ok) throw new Error('Failed to fetch reviews');
   const json = await res.json();
-  return json.reviews ?? json ?? []; // handle both paginated and legacy response
+  const rows = (Array.isArray(json) ? json : json.reviews ?? []) as Array<Review & { customer?: unknown }>;
+  return rows.map((review) => ({
+    ...review,
+    customer: asCustomer(review.customer),
+  }));
 }
 
 async function fetchBookingReview(bookingId: string): Promise<Review | null> {

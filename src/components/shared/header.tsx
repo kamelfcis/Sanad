@@ -15,9 +15,10 @@ interface NavItem {
 
 interface HeaderProps {
   navItems?: NavItem[];
+  disablePrefetch?: boolean;
 }
 
-export function Header({ navItems }: HeaderProps) {
+export function Header({ navItems, disablePrefetch }: HeaderProps) {
   const pathname = usePathname();
   const { user, profile, isLoading } = useAuthStore();
 
@@ -26,7 +27,7 @@ export function Header({ navItems }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#E2E8F0] bg-white/80 backdrop-blur-xl dark:border-border dark:bg-[#0B1720]/80">
       <div className="container flex h-14 items-center">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+        <Link href="/" prefetch={disablePrefetch ? false : undefined} className="flex items-center gap-2 font-semibold">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#FF6B00] to-[#FF8A34]">
             <Wrench className="h-4 w-4 text-white" />
           </div>
@@ -40,6 +41,7 @@ export function Header({ navItems }: HeaderProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={disablePrefetch ? false : undefined}
                 className={cn(
                   'text-sm font-medium transition-colors hover:text-[#FF6B00]',
                   pathname === item.href || pathname.startsWith(item.href + '/')

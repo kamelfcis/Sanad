@@ -14,6 +14,7 @@ export const metadata: Metadata = pageMetadata(
 
 const technicianNavItems = [
   { label: 'الطلبات', href: '/technician/jobs' },
+  { label: 'عروض الأسعار', href: '/technician/quotes' },
   { label: 'الأرباح', href: '/technician/earnings' },
   { label: 'المحادثات', href: '/technician/chat' },
   { label: 'التقييمات', href: '/technician/reviews' },

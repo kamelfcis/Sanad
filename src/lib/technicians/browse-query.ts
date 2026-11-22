@@ -67,12 +67,15 @@ export async function listBrowseTechnicians(
     contractorKind,
     capacityTier,
     teamSize,
+    lat,
+    lng,
     page,
     limit,
   } = query;
 
   const categorySlug = resolveCategorySlug(specialty, category);
   const searchQuery = search?.trim().toLowerCase();
+  const userLocation = lat != null && lng != null ? { lat, lng } : undefined;
 
   let rows: RawTechnicianRow[] = (data ?? []).map((row) => {
     const record = row as unknown as RawTechnicianRow & {
@@ -84,6 +87,34 @@ export async function listBrowseTechnicians(
       profile: Array.isArray(record.profile) ? record.profile[0] ?? null : record.profile,
     };
   });
+
+  const technicianIds = rows.map((row) => row.id);
+  if (technicianIds.length > 0) {
+    const { data: completedBookings, error: completedBookingsError } = await supabase
+      .from('bookings')
+      .select('technician_id')
+      .eq('status', 'completed')
+      .in('technician_id', technicianIds);
+
+    if (completedBookingsError) {
+      throw new Error(completedBookingsError.message);
+    }
+
+    const completedJobsByTechnician = new Map<string, number>();
+    for (const booking of completedBookings ?? []) {
+      if (booking.technician_id) {
+        completedJobsByTechnician.set(
+          booking.technician_id,
+          (completedJobsByTechnician.get(booking.technician_id) ?? 0) + 1,
+        );
+      }
+    }
+
+    rows = rows.map((row) => ({
+      ...row,
+      completed_jobs: completedJobsByTechnician.get(row.id) ?? 0,
+    }));
+  }
 
   if (categorySlug) {
     rows = rows.filter((row) => technicianMatchesCategory(row, categorySlug));
@@ -119,6 +150,7 @@ export async function listBrowseTechnicians(
     .map((row) =>
       transformBrowseTechnician(row, {
         categorySlug,
+        userLocation,
       }),
     )
     .filter((item): item is NonNullable<typeof item> => item != null);
@@ -158,7 +190,7 @@ export async function listBrowseTechnicians(
       case 'price':
         return a.starting_price - b.starting_price;
       case 'distance':
-        return a.distance_km - b.distance_km;
+        return (a.distance_km ?? Number.POSITIVE_INFINITY) - (b.distance_km ?? Number.POSITIVE_INFINITY);
       case 'response':
         return a.response_time_minutes - b.response_time_minutes;
       case 'rating':

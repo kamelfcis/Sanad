@@ -56,11 +56,12 @@ export function formatServicePrice(price: number | string | null | undefined): s
   return Number.isFinite(amount) ? `${Math.round(amount)} ج.م` : 'حسب المعاينة';
 }
 
-export function useServices(categorySlug?: string) {
+export function useServices(categorySlug?: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['services', categorySlug],
     queryFn: () => fetchServices(categorySlug),
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   });
 }
 

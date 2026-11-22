@@ -92,7 +92,7 @@ export async function notifyBookingAccepted(
 
 export async function notifyBookingStatusChange(
   booking: BookingContext,
-  status: 'in_progress' | 'completed' | 'cancelled',
+  status: 'in_progress' | 'awaiting_customer_confirmation' | 'completed' | 'cancelled',
   reason?: string,
 ): Promise<void> {
   const statusConfig = {
@@ -100,6 +100,11 @@ export async function notifyBookingStatusChange(
       type: 'booking_started' as const,
       title: 'بدأ تنفيذ الخدمة',
       message: `الفني بدأ العمل على "${booking.serviceName ?? 'حجزك'}".`,
+    },
+    awaiting_customer_confirmation: {
+      type: 'booking_completed' as const,
+      title: 'أكّد اكتمال الخدمة',
+      message: `أنهى الفني "${booking.serviceName ?? 'حجزك'}". يرجى تأكيد الاكتمال من صفحة الحجز.`,
     },
     completed: {
       type: 'booking_completed' as const,
@@ -116,9 +121,10 @@ export async function notifyBookingStatusChange(
   };
 
   const config = statusConfig[status];
-  const recipients = [booking.customerId, booking.technicianId].filter(
-    (id): id is string => Boolean(id),
-  );
+  const recipients =
+    status === 'awaiting_customer_confirmation'
+      ? [booking.customerId].filter((id): id is string => Boolean(id))
+      : [booking.customerId, booking.technicianId].filter((id): id is string => Boolean(id));
 
   await Promise.all(
     recipients.map((userId) =>
@@ -232,4 +238,116 @@ export async function notifyAdminsNewTechnicianApplication(
   }));
 
   await createNotifications(inputs);
+}
+
+export async function notifyAdminsBookingNeedsAssignment(booking: {
+  bookingId: string;
+  serviceName?: string;
+}): Promise<void> {
+  const adminIds = await getAdminUserIds();
+  if (adminIds.length === 0) return;
+
+  const label = booking.serviceName ?? 'خدمة';
+  const inputs = adminIds.map((adminId) => ({
+    userId: adminId,
+    type: 'booking_unassigned' as const,
+    title: 'حجز يحتاج تعيين',
+    message: `طلب جديد لـ "${label}" بانتظار تعيين فني.`,
+    entityType: 'booking' as const,
+    entityId: booking.bookingId,
+    metadata: { bookingId: booking.bookingId },
+  }));
+
+  await createNotifications(inputs);
+}
+
+export async function notifyBookingCancelledByCustomer(
+  booking: BookingContext,
+  options: {
+    technicianIds: string[];
+    notifyAdmins: boolean;
+    reason?: string;
+  },
+): Promise<void> {
+  const serviceLabel = booking.serviceName ?? 'الخدمة';
+  const message = options.reason
+    ? `ألغى العميل "${serviceLabel}": ${options.reason}`
+    : `ألغى العميل حجز "${serviceLabel}".`;
+
+  await Promise.all(
+    options.technicianIds.map((technicianId) =>
+      notifyUser({
+        userId: technicianId,
+        type: 'booking_cancelled',
+        title: 'إلغاء حجز',
+        message,
+        entityType: 'booking',
+        entityId: booking.bookingId,
+        metadata: { reason: options.reason ?? null },
+      }),
+    ),
+  );
+
+  if (options.notifyAdmins) {
+    const adminIds = await getAdminUserIds();
+    if (adminIds.length === 0) return;
+
+    const inputs = adminIds.map((adminId) => ({
+      userId: adminId,
+      type: 'booking_cancelled' as const,
+      title: 'إلغاء حجز',
+      message,
+      entityType: 'booking' as const,
+      entityId: booking.bookingId,
+      metadata: { reason: options.reason ?? null },
+    }));
+
+    await createNotifications(inputs);
+  }
+}
+
+interface PaymentNotificationContext {
+  paymentId: string;
+  bookingId: string;
+  amount: number;
+  customerName?: string;
+  serviceName?: string;
+}
+
+export async function notifyPaymentSubmitted(
+  payment: PaymentNotificationContext,
+  customerId: string,
+): Promise<void> {
+  const adminIds = await getAdminUserIds();
+  if (adminIds.length === 0) return;
+
+  const who = payment.customerName ?? 'عميل';
+  const service = payment.serviceName ?? 'حجز';
+  const inputs = adminIds.map((adminId) => ({
+    userId: adminId,
+    type: 'payment_submitted' as const,
+    title: 'إيصال دفع جديد',
+    message: `${who} أرسل إيصال دفع ${payment.amount} جنيه لـ "${service}".`,
+    entityType: 'payment' as const,
+    entityId: payment.paymentId,
+    metadata: { bookingId: payment.bookingId, amount: payment.amount, customerId },
+  }));
+
+  await createNotifications(inputs);
+}
+
+export async function notifyPaymentApproved(
+  customerId: string,
+  payment: PaymentNotificationContext,
+): Promise<void> {
+  const service = payment.serviceName ?? 'حجزك';
+  await notifyUser({
+    userId: customerId,
+    type: 'payment_approved',
+    title: 'تم اعتماد الدفع',
+    message: `تم اعتماد دفع ${payment.amount} جنيه لـ "${service}".`,
+    entityType: 'payment',
+    entityId: payment.paymentId,
+    metadata: { bookingId: payment.bookingId, amount: payment.amount },
+  });
 }

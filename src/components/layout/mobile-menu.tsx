@@ -32,7 +32,7 @@ const categories = [
 
 const links = [
   { label: 'الرئيسية', href: '/' },
-  { label: 'الخدمات', href: '#services' },
+  { label: 'الخدمات', href: '/services' },
   { label: 'كيف يعمل', href: '#how-it-works' },
   { label: 'الفنيين', href: '/technician' },
   { label: 'التقييمات', href: '#reviews' },
@@ -144,7 +144,9 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   const active =
                     link.href.startsWith('#')
                       ? false
-                      : pathname === link.href;
+                      : link.href === '/services'
+                        ? pathname === '/services' || pathname.startsWith('/services/')
+                        : pathname === link.href;
 
                   return (
                     <Link

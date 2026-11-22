@@ -10,9 +10,15 @@ interface UseAdminBulkDeleteOptions {
   subject: string;
   deleteOne: (id: string) => Promise<unknown>;
   onSettled?: (result: { failed: string[] }) => void;
+  /** Kept for call-site parity; bulk delete always uses the confirm phrase dialog. */
+  requireConfirmPhrase?: boolean;
 }
 
-export function useAdminBulkDelete({ subject, deleteOne, onSettled }: UseAdminBulkDeleteOptions) {
+export function useAdminBulkDelete({
+  subject,
+  deleteOne,
+  onSettled,
+}: UseAdminBulkDeleteOptions) {
   const { t } = useAdminT();
   const { toast } = useToast();
   const [pendingIds, setPendingIds] = useState<string[] | null>(null);

@@ -1,59 +1,51 @@
-//! moment.js locale configuration
-//! locale : Marathi [mr]
-//! author : Harshad Kale : https://github.com/kalehv
-//! author : Vivek Athalye : https://github.com/vnathalye
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/api/auth';
+import { markAsRead, deleteNotification } from '@/lib/services/notification-service';
+import { notificationIdParamsSchema } from '@/lib/validations/notifications';
 
-;(function (global, factory) {
-   typeof exports === 'object' && typeof module !== 'undefined'
-       && typeof require === 'function' ? factory(require('../moment')) :
-   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
-   factory(global.moment)
-}(this, (function (moment) { 'use strict';
+export async function PATCH(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const rawParams = await params;
+  const idParsed = notificationIdParamsSchema.safeParse(rawParams);
+  if (!idParsed.success) {
+    return NextResponse.json({ error: 'Invalid notification ID' }, { status: 400 });
+  }
 
-    //! moment.js locale configuration
+  const supabase = await createServerSupabaseClient();
+  const auth = await requireAuth(supabase);
+  if ('response' in auth) return auth.response;
 
-    var symbolMap = {
-            1: '१',
-            2: '२',
-            3: '३',
-            4: '४',
-            5: '५',
-            6: '६',
-            7: '७',
-            8: '८',
-            9: '९',
-            0: '०',
-        },
-        numberMap = {
-            '१': '1',
-            '२': '2',
-            '३': '3',
-            '४': '4',
-            '५': '5',
-            '६': '6',
-            '७': '7',
-            '८': '8',
-            '९': '9',
-            '०': '0',
-        };
+  const notification = await markAsRead(idParsed.data.id, auth.user.id, supabase);
 
-    function relativeTimeMr(number, withoutSuffix, string, isFuture) {
-        var output = '';
-        if (withoutSuffix) {
-            switch (string) {
-                case 's':
-                    output = 'काही सेकंद';
-                    break;
-                case 'ss':
-                    output = '%d सेकंद';
-                    break;
-                case 'm':
-                    output = 'एक मिनिट';
-                    break;
-                case 'mm':
-                    output = '%d मिनिटे';
-                    break;
-                case 'h':
-                    output = 'एक तास';
-                    break;
-                case
+  if (!notification) {
+    return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
+  }
+
+  return NextResponse.json(notification);
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const rawParams = await params;
+  const idParsed = notificationIdParamsSchema.safeParse(rawParams);
+  if (!idParsed.success) {
+    return NextResponse.json({ error: 'Invalid notification ID' }, { status: 400 });
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const auth = await requireAuth(supabase);
+  if ('response' in auth) return auth.response;
+
+  const deleted = await deleteNotification(idParsed.data.id, auth.user.id, supabase);
+
+  if (!deleted) {
+    return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
+  }
+
+  return NextResponse.json({ success: true });
+}

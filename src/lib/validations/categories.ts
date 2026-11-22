@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { slugSchema } from '@/lib/validations/common';
+import { paginationPageSchema, slugSchema } from '@/lib/validations/common';
+
+export const adminCategoriesQuerySchema = paginationPageSchema.extend({
+  search: z.string().max(200).optional(),
+});
 
 export const createCategorySchema = z.object({
   name_ar: z.string().min(1, 'Arabic name is required').max(100),
@@ -7,6 +11,7 @@ export const createCategorySchema = z.object({
   slug: slugSchema,
   description: z.string().max(1000).optional().nullable(),
   icon: z.string().max(50).optional().nullable(),
+  icon_type: z.string().max(50).optional().nullable(),
   is_active: z.boolean().optional().default(true),
 });
 

@@ -4,6 +4,7 @@ import {
   type TechnicianSpecialtyValue,
 } from '@/lib/constants/technician-registration';
 import { resolveTechnicianServicePrice } from '@/lib/pricing/technician-service-price';
+import { haversineDistanceKm, type GeoPoint } from '@/lib/geo';
 import type { BrowseTechnician, TechnicianBrowseBadge } from '@/types/technician-browse';
 
 export interface RawSkill {
@@ -38,14 +39,6 @@ export interface RawTechnicianRow {
     phone: string | null;
   } | null;
   skills: RawSkill[] | null;
-}
-
-function mockDistanceKm(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) {
-    hash = (hash + id.charCodeAt(i) * (i + 1)) % 1000;
-  }
-  return Math.round(((hash % 90) + 10) / 10 * 10) / 10;
 }
 
 function mockResponseMinutes(isAvailable: boolean, completedJobs: number, id: string): number {
@@ -103,7 +96,7 @@ function buildBadges(
 
 export function transformBrowseTechnician(
   row: RawTechnicianRow,
-  options: { categorySlug?: string } = {},
+  options: { categorySlug?: string; userLocation?: GeoPoint } = {},
 ): BrowseTechnician | null {
   if (!row.profile) return null;
 
@@ -117,6 +110,17 @@ export function transformBrowseTechnician(
   const completedJobs = Number(row.completed_jobs ?? 0);
   const isAvailable = Boolean(row.is_available);
   const responseMinutes = mockResponseMinutes(isAvailable, completedJobs, row.id);
+  const distanceKm =
+    options.userLocation && row.location_lat != null && row.location_lng != null
+      ? Math.round(
+          haversineDistanceKm(
+            options.userLocation.lat,
+            options.userLocation.lng,
+            Number(row.location_lat),
+            Number(row.location_lng),
+          ) * 10,
+        ) / 10
+      : null;
 
   return {
     id: row.id,
@@ -132,7 +136,7 @@ export function transformBrowseTechnician(
     average_rating: averageRating,
     completed_jobs: completedJobs,
     starting_price: startingPrice,
-    distance_km: mockDistanceKm(row.id),
+    distance_km: distanceKm,
     response_time_minutes: responseMinutes,
     location_lat: row.location_lat ?? null,
     location_lng: row.location_lng ?? null,

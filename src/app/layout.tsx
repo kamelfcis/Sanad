@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Tajawal, Cairo } from 'next/font/google';
+import { Cairo } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/lib/utils/providers';
 import { AuthInitializer } from '@/components/shared/auth-initializer';
@@ -11,24 +11,19 @@ import { JsonLd } from '@/components/shared/json-ld';
 import { defaultMetadata } from '@/lib/seo';
 import { colors } from '@/lib/design-system';
 
-const tajawal = Tajawal({
-  variable: '--font-tajawal',
-  subsets: ['arabic', 'latin'],
-  weight: ['400', '500', '700'],
-  display: 'swap',
-});
-
 const cairo = Cairo({
   variable: '--font-cairo',
   subsets: ['arabic', 'latin'],
+  weight: '400',
   display: 'swap',
+  preload: true,
 });
 
 export const metadata: Metadata = {
   ...defaultMetadata,
   icons: {
-    icon: '/icons/icon-192.svg',
-    apple: '/icons/icon-512.svg',
+    icon: [{ url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   manifest: '/manifest.webmanifest',
   appleWebApp: {
@@ -57,12 +52,12 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${tajawal.variable} ${cairo.variable} h-full antialiased`}
+      className={`${cairo.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
         <JsonLd />
-        <link rel="apple-touch-icon" href="/icons/icon-512.svg" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
       </head>

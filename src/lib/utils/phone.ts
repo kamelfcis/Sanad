@@ -16,3 +16,16 @@ export function toTelHref(phone: string): string {
 
   return `tel:${local.replace(/\s/g, '')}`;
 }
+
+/** Build a `wa.me` link (`20…`) from the same Egyptian number as `toTelHref`. */
+export function toWhatsAppHref(phone: string, message?: string): string {
+  const tel = toTelHref(phone);
+  if (!tel.startsWith('tel:')) return '';
+
+  const digits = tel.slice(4).replace(/\D/g, '');
+  if (!digits) return '';
+
+  const base = `https://wa.me/${digits}`;
+  const text = message?.trim();
+  return text ? `${base}?text=${encodeURIComponent(text)}` : base;
+}

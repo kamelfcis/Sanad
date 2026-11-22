@@ -1,5 +1,6 @@
 import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
-import { STORAGE_BUCKET } from '@/lib/storage/constants';
+import { KYC_BUCKET, STORAGE_BUCKET } from '@/lib/storage/constants';
+import { processProfileImage } from '@/lib/storage/process-profile-image';
 import { logger } from '@/lib/logger';
 
 export type UploadResult =
@@ -17,12 +18,15 @@ function sanitizeUserId(userId: string): string {
   return userId.replace(/[^a-zA-Z0-9-]/g, '');
 }
 
-function generatePath(userId: string, fileType: string, subfolder?: string): string {
+function generatePath(userId: string, fileType: string, subfolder?: 'payments' | 'kyc'): string {
   const ext = MIME_EXTENSIONS[fileType] ?? 'bin';
   const safeUserId = sanitizeUserId(userId);
   const id = crypto.randomUUID();
   if (subfolder === 'payments') {
     return `${safeUserId}/payments/${id}.${ext}`;
+  }
+  if (subfolder === 'kyc') {
+    return `${safeUserId}/kyc/${id}.${ext}`;
   }
   const timestamp = Date.now();
   return `${safeUserId}/${timestamp}-${id}.${ext}`;
@@ -34,6 +38,15 @@ function getPublicUrl(path: string): string {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured');
   }
   return `${baseUrl}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
+}
+
+export async function uploadProfilePhotoForUser(userId: string, file: File): Promise<UploadResult> {
+  const processed = await processProfileImage(file);
+  if ('error' in processed) {
+    return { ok: false, error: processed.error };
+  }
+  const blob = new Blob([Uint8Array.from(processed.buffer)], { type: processed.contentType });
+  return uploadFileForUser(userId, blob, processed.contentType);
 }
 
 export async function uploadFileForUser(
@@ -53,6 +66,7 @@ export async function uploadFileForUser(
   const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file, {
     contentType: fileType,
     upsert: false,
+    cacheControl: '31536000',
   });
 
   if (error) {
@@ -93,4 +107,38 @@ export async function generateUploadUrl(
     key: path,
     token: data.token,
   };
+}
+
+function getKycObjectUrl(path: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!baseUrl) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured');
+  return `${baseUrl}/storage/v1/object/${KYC_BUCKET}/${path}`;
+}
+
+/** Upload national ID / KYC images into the private `kyc` bucket (not public `uploads`). */
+export async function uploadKycFileForUser(
+  userId: string,
+  file: Blob,
+  fileType: string,
+): Promise<UploadResult> {
+  if (!isServiceRoleConfigured()) {
+    logger.error('uploadKycFileForUser: service role key not configured');
+    return { ok: false, error: 'storage_not_configured' };
+  }
+
+  const path = generatePath(userId, fileType, 'kyc');
+  const supabase = createServiceRoleClient();
+
+  const { error } = await supabase.storage.from(KYC_BUCKET).upload(path, file, {
+    contentType: fileType,
+    upsert: false,
+    cacheControl: '31536000',
+  });
+
+  if (error) {
+    logger.error('uploadKycFileForUser: storage upload failed', error, { path });
+    return { ok: false, error: error.message };
+  }
+
+  return { ok: true, url: getKycObjectUrl(path) };
 }

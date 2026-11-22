@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAdminBooking, useAdminUpdateBookingStatus } from '@/hooks/use-admin';
@@ -16,10 +16,11 @@ import {
   ArrowLeft, MapPin, Calendar, Clock, Wrench, User, UserPlus, Ban, CheckCircle, AlertCircle,
 } from 'lucide-react';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { formatCairoDateTime } from '@/lib/datetime/cairo';
 import { cn } from '@/lib/utils/cn';
 
 export default function AdminBookingDetailPage() {
-  const { t, formatDateTime, dir } = useAdminT();
+  const { t, formatDateTime, dir, locale } = useAdminT();
   const params = useParams();
   const id = params.id as string;
   const { data: booking, isLoading, error } = useAdminBooking(id);
@@ -132,7 +133,10 @@ export default function AdminBookingDetailPage() {
                 <Input
                   id="reason"
                   value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    const next = (e.target as { value?: string }).value;
+                    if (next !== undefined) setCancelReason(next);
+                  }}
                   placeholder={t('bookings.detail.cancellationPlaceholder')}
                 />
                 <div className="flex gap-2">
@@ -213,7 +217,7 @@ export default function AdminBookingDetailPage() {
                   <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">{t('bookings.detail.preferredTime')}</p>
-                    <p className="text-sm">{formatDateTime(booking.preferred_time)}</p>
+                    <p className="text-sm">{formatCairoDateTime(booking.preferred_time, { dateStyle: 'medium', timeStyle: 'short', locale })}</p>
                   </div>
                 </div>
                 <Separator />

@@ -1,6 +1,8 @@
+import { ALERT_SOUND_URL } from '@/lib/notifications/booking-alert-sound';
+
 const SOUND_ENABLED_KEY = 'sanad_notifications_sound_enabled';
 
-let audioContext: AudioContext | null = null;
+let sharedAudio: HTMLAudioElement | null = null;
 
 function isSoundEnabled(): boolean {
   if (typeof window === 'undefined') return false;
@@ -8,29 +10,46 @@ function isSoundEnabled(): boolean {
   return stored !== 'false';
 }
 
-function playBeep(): void {
+function playSynthAlarm(): void {
   try {
-    const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const Ctx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return;
-    audioContext ??= new Ctx();
-    const ctx = audioContext;
-    if (ctx.state === 'suspended') void ctx.resume();
+    const ctx = new Ctx();
+    const now = ctx.currentTime;
+    const pattern = [
+      { t: 0, f: 1240, d: 0.14 },
+      { t: 0.2, f: 988, d: 0.14 },
+      { t: 0.42, f: 1318, d: 0.2 },
+    ];
 
-    const oscillator = ctx.createOscillator();
-    const gain = ctx.createGain();
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(880, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.12);
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
-    oscillator.connect(gain);
-    gain.connect(ctx.destination);
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.26);
+    for (const step of pattern) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(step.f, now + step.t);
+      gain.gain.setValueAtTime(0.0001, now + step.t);
+      gain.gain.exponentialRampToValueAtTime(0.55, now + step.t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + step.t + step.d);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + step.t);
+      osc.stop(now + step.t + step.d + 0.02);
+    }
+
+    window.setTimeout(() => void ctx.close(), 1200);
   } catch {
     // Ignore audio failures (autoplay policy, etc.)
   }
+}
+
+function getAlertAudio(): HTMLAudioElement {
+  if (!sharedAudio) {
+    sharedAudio = new Audio(ALERT_SOUND_URL);
+    sharedAudio.preload = 'auto';
+  }
+  return sharedAudio;
 }
 
 export function setNotificationSoundEnabled(enabled: boolean): void {
@@ -42,10 +61,18 @@ export function getNotificationSoundEnabled(): boolean {
   return isSoundEnabled();
 }
 
-export function playNotificationSound(): void {
+/** Loud multi-beep alert for high-priority booking events. */
+export function playBookingAlertSound(): void {
   if (!isSoundEnabled()) return;
 
-  const audio = new Audio('/sounds/notification.mp3');
-  audio.volume = 0.5;
-  audio.play().catch(() => playBeep());
+  const audio = getAlertAudio();
+  audio.pause();
+  audio.currentTime = 0;
+  audio.volume = 1;
+  audio.play().catch(() => playSynthAlarm());
+}
+
+/** Softer legacy hook — kept for any generic callers. */
+export function playNotificationSound(): void {
+  playBookingAlertSound();
 }

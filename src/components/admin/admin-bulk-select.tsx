@@ -84,11 +84,13 @@ export function AdminSelectRowCell({
   checked,
   onChange,
   disabled,
+  disabledReason,
 }: {
   id: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
+  disabledReason?: string;
 }) {
   return (
     <AdminPremiumTableCell className="w-10">
@@ -96,7 +98,7 @@ export function AdminSelectRowCell({
         checked={checked}
         disabled={disabled}
         onCheckedChange={(value) => onChange(value === true)}
-        aria-label={id}
+        aria-label={disabledReason || id}
       />
     </AdminPremiumTableCell>
   );

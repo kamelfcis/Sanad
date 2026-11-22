@@ -3,12 +3,13 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Map, Search } from 'lucide-react';
+import { LocateFixed, Map, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/shared/error-state';
 import { useBrowseTechnicians } from '@/hooks/use-browse-technicians';
+import { useUserLocation } from '@/hooks/use-user-location';
 import { ServicesBrowseFilters, type ServicesBrowseFiltersState } from '@/components/services/services-browse-filters';
 import { TechnicianBrowseCard } from '@/components/services/technician-browse-card';
 import { TECHNICIAN_SPECIALTIES } from '@/lib/constants/technician-registration';
@@ -32,6 +33,13 @@ type ServicesBrowseViewProps = {
 
 export function ServicesBrowseView({ initialBrowse }: ServicesBrowseViewProps) {
   const searchParams = useSearchParams();
+  const {
+    location: userLocation,
+    loading: locationLoading,
+    error: locationError,
+    isFallback: isLocationFallback,
+    refresh: refreshLocation,
+  } = useUserLocation();
   const initialRole = searchParams.get('providerRole');
   const initialSpecialty = searchParams.get('specialty');
   const knownSpecialty = TECHNICIAN_SPECIALTIES.some((item) => item.value === initialSpecialty);
@@ -54,9 +62,11 @@ export function ServicesBrowseView({ initialBrowse }: ServicesBrowseViewProps) {
       sort: filters.sort,
       maxPrice: filters.maxPrice,
       availableOnly: filters.availableOnly || undefined,
+      lat: isLocationFallback ? undefined : userLocation.lat,
+      lng: isLocationFallback ? undefined : userLocation.lng,
       limit: 24,
     }),
-    [filters, searchQuery],
+    [filters, isLocationFallback, searchQuery, userLocation],
   );
 
   const { data, isLoading, error, refetch } = useBrowseTechnicians(queryFilters, initialBrowse);
@@ -96,6 +106,18 @@ export function ServicesBrowseView({ initialBrowse }: ServicesBrowseViewProps) {
       </div>
 
       <ServicesBrowseFilters filters={filters} onChange={handleFilterChange} />
+
+      {isLocationFallback && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-text-secondary">
+          <p>
+            {locationError ?? 'فعّل موقعك الحالي لعرض المسافة الفعلية بينك وبين مقدم الخدمة.'}
+          </p>
+          <Button type="button" variant="outline" size="sm" onClick={refreshLocation}>
+            <LocateFixed className="ml-2 h-4 w-4" aria-hidden />
+            {locationLoading ? 'جارٍ تحديد الموقع…' : 'تحديد موقعي'}
+          </Button>
+        </div>
+      )}
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-medium text-text-secondary md:text-base">

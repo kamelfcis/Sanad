@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
-import { configureLeafletIcons } from '@/lib/geo/leaflet-setup';
+import { configureLeafletIcons, getDefaultLeafletIcon } from '@/lib/geo/leaflet-setup';
 import { formatDistanceKm } from '@/lib/geo';
 import type { GeoPoint } from '@/lib/geo';
 import { Button } from '@/components/ui/button';
@@ -24,9 +24,8 @@ export function TechniciansMapInner({
   zoom = 11,
   className,
 }: TechniciansMapInnerProps) {
-  useEffect(() => {
-    configureLeafletIcons();
-  }, []);
+  configureLeafletIcons();
+  const markerIcon = getDefaultLeafletIcon();
 
   const bounds = useMemo(() => {
     if (technicians.length === 0) return null;
@@ -37,6 +36,8 @@ export function TechniciansMapInner({
       [Math.max(...lats, center.lat), Math.max(...lngs, center.lng)],
     ] as [[number, number], [number, number]];
   }, [technicians, center]);
+
+  if (!markerIcon) return null;
 
   return (
     <div className={className ?? 'h-[480px] w-full overflow-hidden rounded-2xl border border-border'}>
@@ -53,7 +54,11 @@ export function TechniciansMapInner({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {technicians.map((tech) => (
-          <Marker key={tech.id} position={[tech.position.lat, tech.position.lng]}>
+          <Marker
+            key={tech.id}
+            position={[tech.position.lat, tech.position.lng]}
+            icon={markerIcon}
+          >
             <Popup>
               <div className="min-w-[160px] text-right" dir="rtl">
                 <p className="font-bold text-text-primary">{tech.name}</p>

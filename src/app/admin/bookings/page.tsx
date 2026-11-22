@@ -40,6 +40,7 @@ import { useAdminModeration, type ModerationRequest } from '@/hooks/use-admin-mo
 import { useAdminTableSelection } from '@/hooks/use-admin-table-selection';
 import { useAdminBulkDelete } from '@/hooks/use-admin-bulk-delete';
 import { useAdminT } from '@/lib/i18n/admin/use-admin-t';
+import { formatCairoDateTime } from '@/lib/datetime/cairo';
 import { translateAdminError } from '@/lib/i18n/admin/translate-error';
 import { useAdminListPagination } from '@/hooks/use-admin-list-pagination';
 import { asAdminListItems } from '@/lib/admin/list-items';
@@ -142,6 +143,7 @@ function BookingCard({
   t,
   formatDateTime,
   formatCurrency,
+  locale,
   onModerate,
   isPending,
   isSelected,
@@ -151,13 +153,16 @@ function BookingCard({
   t: ReturnType<typeof useAdminT>['t'];
   formatDateTime: ReturnType<typeof useAdminT>['formatDateTime'];
   formatCurrency: ReturnType<typeof useAdminT>['formatCurrency'];
+  locale: ReturnType<typeof useAdminT>['locale'];
   onModerate: (request: ModerationRequest) => void;
   isPending: boolean;
   isSelected: boolean;
   onSelect: (checked: boolean) => void;
 }) {
   const customerName = bookingCustomerName(booking, t);
-  const scheduledAt = booking.preferred_time ?? booking.created_at;
+  const scheduledLabel = booking.preferred_time
+    ? formatCairoDateTime(booking.preferred_time, { dateStyle: 'medium', timeStyle: 'short', locale })
+    : formatDateTime(booking.created_at);
 
   return (
     <AdminEntityCard>
@@ -185,7 +190,7 @@ function BookingCard({
       <AdminEntityCardMeta className="mt-3">
         <AdminEntityCardMetaPill variant="muted">
           <Calendar className="h-3 w-3 shrink-0" aria-hidden />
-          {formatDateTime(scheduledAt)}
+          {scheduledLabel}
         </AdminEntityCardMetaPill>
         {booking.preferred_time ? (
           <AdminEntityCardMetaPill variant="orange">
@@ -214,7 +219,7 @@ function BookingCard({
 }
 
 export default function AdminBookingsPage() {
-  const { t, formatDateTime, formatCurrency } = useAdminT();
+  const { t, formatDateTime, formatCurrency, locale } = useAdminT();
   const [statusFilter, setStatusFilter] = useState('');
   const { page, limit, setPage, setLimit, resetPage } = useAdminListPagination();
   const { data, isLoading, error } = useAdminBookings(statusFilter || undefined, page, limit);
@@ -362,6 +367,7 @@ export default function AdminBookingsPage() {
             t={t}
             formatDateTime={formatDateTime}
             formatCurrency={formatCurrency}
+            locale={locale}
             onModerate={moderate}
             isPending={isPending}
             isSelected={selection.isSelected(b.id)}

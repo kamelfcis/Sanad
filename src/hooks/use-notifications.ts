@@ -6,6 +6,8 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type InfiniteData,
+  type QueryClient,
 } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/store/auth-store';
@@ -30,7 +32,63 @@ async function fetchNotifications(params: {
 
   const res = await fetch(`/api/notifications?${searchParams}`);
   if (!res.ok) throw new Error('Failed to fetch notifications');
-  return res.json();
+  const data = (await res.json()) as Partial<NotificationListResponse> | null;
+  const notifications = Array.isArray(data?.notifications) ? data.notifications : [];
+  return {
+    notifications,
+    total: typeof data?.total === 'number' ? data.total : notifications.length,
+    limit: typeof data?.limit === 'number' ? data.limit : PAGE_SIZE,
+    offset: typeof data?.offset === 'number' ? data.offset : params.offset,
+    hasMore: Boolean(data?.hasMore),
+  };
+}
+
+type NotificationsCache = InfiniteData<NotificationListResponse, number>;
+
+function isBookingActivity(row: Notification): boolean {
+  return (
+    row.entity_type === 'booking' ||
+    row.entity_type === 'assignment' ||
+    (typeof row.type === 'string' && row.type.startsWith('booking_'))
+  );
+}
+
+function invalidateLiveBookingQueries(qc: QueryClient) {
+  qc.invalidateQueries({ queryKey: ['bookings'] });
+  qc.invalidateQueries({ queryKey: ['booking'] });
+  qc.invalidateQueries({ queryKey: ['technician-bookings'] });
+  qc.invalidateQueries({ queryKey: ['technician-assignments'] });
+  qc.invalidateQueries({ queryKey: ['technician-assignment'] });
+}
+
+/** Mark cached rows read and drop the badge in one React Query update. */
+export function applyNotificationsReadCache(qc: QueryClient, ids: 'all' | string[]) {
+  const idSet = ids === 'all' ? null : new Set(ids);
+
+  qc.setQueriesData<NotificationsCache>({ queryKey: ['notifications'] }, (old) => {
+    if (!old?.pages) return old;
+    return {
+      ...old,
+      pages: old.pages.map((page) => ({
+        ...page,
+        notifications: (page.notifications ?? []).map((notification) => {
+          if (notification.is_read) return notification;
+          if (idSet && !idSet.has(notification.id)) return notification;
+          return { ...notification, is_read: true };
+        }),
+      })),
+    };
+  });
+
+  if (ids === 'all') {
+    qc.setQueryData(['notifications-unread-count'], 0);
+    return;
+  }
+
+  qc.setQueryData<number>(['notifications-unread-count'], (current) => {
+    if (typeof current !== 'number') return current;
+    return Math.max(0, current - ids.length);
+  });
 }
 
 async function fetchUnreadCount(): Promise<number> {
@@ -99,6 +157,36 @@ export function useMarkNotificationRead() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: markNotificationRead,
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ['notifications-unread-count'] });
+      applyNotificationsReadCache(qc, [id]);
+    },
+    onError: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+    },
+  });
+}
+
+/** Marks the bell's visible unread rows, and clears those rows from the badge together. */
+export function useMarkVisibleNotificationsRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      await Promise.all(ids.map((id) => markNotificationRead(id)));
+    },
+    onMutate: async (ids) => {
+      await qc.cancelQueries({ queryKey: ['notifications-unread-count'] });
+      applyNotificationsReadCache(qc, ids);
+    },
+    onError: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['notifications-unread-count'] });
@@ -110,6 +198,15 @@ export function useMarkAllNotificationsRead() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: markAllNotificationsRead,
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: ['notifications'] });
+      await qc.cancelQueries({ queryKey: ['notifications-unread-count'] });
+      applyNotificationsReadCache(qc, 'all');
+    },
+    onError: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['notifications-unread-count'] });
@@ -157,7 +254,7 @@ export function useNotificationsRealtime(enabled = true) {
     const userId = profile.id;
 
     const channel = supabase
-      .channel(`notifications:${userId}`)
+      .channel(`notifications:${userId}:${crypto.randomUUID()}`)
       .on(
         'postgres_changes' as never,
         {
@@ -171,6 +268,7 @@ export function useNotificationsRealtime(enabled = true) {
           if (!row?.id || seenIds.current.has(row.id)) return;
           seenIds.current.add(row.id);
           invalidate();
+          if (isBookingActivity(row)) invalidateLiveBookingQueries(qc);
         },
       )
       .on(
@@ -190,7 +288,7 @@ export function useNotificationsRealtime(enabled = true) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [enabled, profile?.id, invalidate]);
+  }, [enabled, profile?.id, invalidate, qc]);
 }
 
 export function useNotificationPushListener(
@@ -232,20 +330,21 @@ export function useNotificationPushListener(
 export function getNotificationLink(notification: Notification, role?: string): string {
   const base =
     role === 'admin' ? '/admin' : role === 'technician' ? '/technician' : '/customer';
+  const entityId = notification.entity_id;
 
   switch (notification.entity_type) {
     case 'booking':
-      return notification.entity_id
-        ? role === 'technician'
-          ? `/technician/jobs`
-          : role === 'admin'
-            ? `/admin/bookings`
-            : `/customer/bookings`
-        : '/notifications';
+      if (!entityId) return '/notifications';
+      if (role === 'technician') return `/technician/jobs/${entityId}`;
+      if (role === 'admin') return `/admin/bookings/${entityId}`;
+      return `/customer/bookings/${entityId}`;
+    case 'assignment':
+      if (role === 'technician' && entityId) return `/technician/jobs/${entityId}`;
+      return role === 'technician' ? '/technician/jobs' : '/notifications';
     case 'chat':
       return role === 'technician' ? '/technician/chat' : '/customer/chat';
     case 'review':
-      return role === 'technician' ? '/technician/profile' : '/notifications';
+      return role === 'technician' ? '/technician/reviews' : '/notifications';
     case 'technician':
       return role === 'admin' ? '/admin/technicians' : '/technician/profile';
     default:

@@ -14,3 +14,7 @@ export const auditLogsQuerySchema = paginationPageSchema.extend({
 export const adminEntityIdSchema = z.object({
   id: uuidSchema,
 });
+
+export const adminBookingsQuerySchema = paginationPageSchema.extend({
+  status: bookingStatusSchema.optional(),
+});

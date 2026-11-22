@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useBookings } from '@/hooks/use-bookings';
+import { useAuthStore } from '@/store/auth-store';
+import { useBookings, useBookingsRealtime } from '@/hooks/use-bookings';
 import { BookingCard } from '@/components/shared/booking-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
@@ -21,7 +22,9 @@ const statusFilters = [
 
 export default function CustomerBookingsPage() {
   const [statusFilter, setStatusFilter] = useState('');
+  const { profile } = useAuthStore();
   const { data: bookings, isLoading, error, refetch } = useBookings(statusFilter || undefined);
+  useBookingsRealtime(profile?.id);
 
   return (
     <PageTransition className="container py-8">

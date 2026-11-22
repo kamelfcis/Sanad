@@ -6,6 +6,7 @@ import type {
   NotificationListResponse,
   NotificationType,
 } from '@/types/notifications';
+import { isLoudPushNotificationType } from '@/lib/notifications/booking-alert-sound';
 import { fanOutWebPush } from '@/lib/push/web-push';
 
 export interface CreateNotificationInput {
@@ -64,6 +65,8 @@ export async function createNotification(
     message: input.message,
     notificationId: notification.id,
     url: buildPushUrl(input.entityType, input.entityId, input.metadata),
+    type: input.type,
+    alert: isLoudPushNotificationType(input.type),
   });
 
   return notification;

@@ -61,14 +61,22 @@ export function useBrowseTechnicians(
   filters: BrowseTechniciansFilters,
   initialData?: BrowseTechniciansResponse,
 ) {
-  const defaultFiltersKey = JSON.stringify({ page: 1, limit: 24, sort: 'rating', maxPrice: 500 });
   const isDefaultQuery =
-    JSON.stringify({
-      page: filters.page ?? 1,
-      limit: filters.limit ?? 24,
-      sort: filters.sort ?? 'rating',
-      maxPrice: filters.maxPrice ?? 500,
-    }) === defaultFiltersKey && !filters.search && !filters.specialty && !filters.governorate;
+    !filters.search &&
+    !filters.specialty &&
+    !filters.category &&
+    !filters.providerRole &&
+    !filters.contractorKind &&
+    !filters.capacityTier &&
+    filters.teamSize == null &&
+    !filters.governorate &&
+    (filters.page ?? 1) === 1 &&
+    (filters.limit ?? 24) === 24 &&
+    (filters.sort ?? 'rating') === 'rating' &&
+    (filters.maxPrice ?? 500) === 500 &&
+    !filters.availableOnly &&
+    filters.lat == null &&
+    filters.lng == null;
 
   return useQuery({
     queryKey: ['browse-technicians', filters],

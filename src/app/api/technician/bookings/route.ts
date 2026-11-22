@@ -4,6 +4,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/api/auth';
 import { parseSearchParams } from '@/lib/api/validate';
 import { bookingStatusSchema } from '@/lib/validations/common';
+import { BOOKING_WITH_CUSTOMER_PROFILE_SELECT } from '@/lib/booking/select-fragments';
+import { TECHNICIAN_ACTIVE_WORK_BOOKING_STATUSES } from '@/lib/validations/booking';
 
 const technicianBookingsQuerySchema = z.object({
   status: bookingStatusSchema.optional(),
@@ -28,27 +30,30 @@ export async function GET(request: NextRequest) {
 
   let dbQuery = supabase
     .from('bookings')
-    .select(`
-      *,
-      services(name_ar, name_en, slug, price, price_type),
-      profiles!customer_id(full_name, avatar_url)
-    `)
+    .select(BOOKING_WITH_CUSTOMER_PROFILE_SELECT)
     .neq('customer_id', auth.user.id)
     .order('created_at', { ascending: false });
 
   if (status) {
     if (status === 'pending') {
+      if (myServiceIds.length === 0) {
+        return NextResponse.json([]);
+      }
+      dbQuery = dbQuery.eq('status', 'pending').in('service_id', myServiceIds);
+    } else if (status === 'in_progress') {
       dbQuery = dbQuery
-        .eq('status', 'pending')
-        .in('service_id', myServiceIds.length > 0 ? myServiceIds : ['']);
+        .eq('technician_id', auth.user.id)
+        .in('status', [...TECHNICIAN_ACTIVE_WORK_BOOKING_STATUSES]);
     } else {
       dbQuery = dbQuery.eq('technician_id', auth.user.id).eq('status', status);
     }
-  } else {
+  } else if (myServiceIds.length > 0) {
+    const pendingServicesIn = `(${myServiceIds.join(',')})`;
     dbQuery = dbQuery.or(
-      `technician_id.eq.${auth.user.id},and(status.eq.pending,service_id.in.(${myServiceIds.map(() => '?').join(',')}))`,
-      ...myServiceIds,
+      `technician_id.eq.${auth.user.id},and(status.eq.pending,service_id.in.${pendingServicesIn})`,
     );
+  } else {
+    dbQuery = dbQuery.eq('technician_id', auth.user.id);
   }
 
   const { data, error } = await dbQuery;

@@ -1,14 +1,20 @@
 import type { NextConfig } from 'next';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+const isProd = process.env.NODE_ENV === 'production';
+
+const scriptSrc = isProd
+  ? `script-src 'self' 'unsafe-inline'`
+  : `script-src 'self' 'unsafe-inline' 'unsafe-eval'`;
 
 const cspDirectives = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
+  scriptSrc,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com https://images.unsplash.com https://placehold.co https://*.tile.openstreetmap.org https://tile.openstreetmap.org`,
   "font-src 'self' data:",
-  `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://nominatim.openstreetmap.org`,
+  `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://nominatim.openstreetmap.org https://accounts.google.com`,
+  "frame-src 'self' https://accounts.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -35,6 +41,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['127.0.0.1', 'localhost'],
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
+  compiler: {
+    removeConsole: isProd ? { exclude: ['error', 'warn'] } : false,
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [

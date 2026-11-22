@@ -7,6 +7,9 @@ import {
   createReviewSchema,
   listReviewsQuerySchema,
 } from '@/lib/validations/reviews';
+import { notifyReviewReceived } from '@/lib/notifications/events';
+import { createNotification } from '@/lib/services/notification-service';
+import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
 
 export async function GET(request: NextRequest) {
   const supabase = await createServerSupabaseClient();
@@ -15,7 +18,10 @@ export async function GET(request: NextRequest) {
 
   const { technician_id: technicianId, booking_id: bookingId, limit, offset } = query.data;
 
-  let dbQuery = supabase
+  // Service role so the customer name survives profile RLS. The UI shows the first name only.
+  const reader = isServiceRoleConfigured() ? createServiceRoleClient() : supabase;
+
+  let dbQuery = reader
     .from('reviews')
     .select(
       `
@@ -106,6 +112,24 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const customerName =
+    (review.customer as { full_name?: string | null } | null)?.full_name ?? undefined;
+
+  try {
+    await notifyReviewReceived(booking.technician_id, review.id, rating, customerName);
+    await createNotification({
+      userId: auth.user.id,
+      type: 'booking_completed',
+      title: 'شكراً لتقييمك',
+      message: 'تم تسجيل تقييمك وإغلاق الطلب بنجاح.',
+      entityType: 'review',
+      entityId: review.id,
+      metadata: { bookingId: booking_id, rating },
+    });
+  } catch {
+    /* non-blocking */
+  }
 
   return NextResponse.json(review, { status: 201 });
 }

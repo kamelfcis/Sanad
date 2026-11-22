@@ -1,18 +1,22 @@
+import { getSiteUrl, siteConfig } from '@/lib/seo';
+
 export function JsonLd() {
+  const siteUrl = getSiteUrl();
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'سند',
     alternateName: 'Sanad',
-    url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://sanad.sa',
+    url: siteUrl,
     description:
-      'منصة الخدمات المنزلية في المملكة العربية السعودية — احجز فنيين معتمدين للكهرباء والسباكة والتكييف والمزيد.',
-    inLanguage: 'ar-SA',
+      'منصة الخدمات المنزلية في مصر — احجز صنايعي موثّقين للكهرباء والسباكة والنجارة والمزيد.',
+    inLanguage: 'ar-EG',
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://sanad.sa'}/services?q={search_term_string}`,
+        urlTemplate: `${siteUrl}/services?q={search_term_string}`,
       },
       'query-input': 'required name=search_term_string',
     },
@@ -21,12 +25,12 @@ export function JsonLd() {
       name: 'سند',
       logo: {
         '@type': 'ImageObject',
-        url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://sanad.sa'}/icons/icon-512.svg`,
+        url: `${siteUrl}/icons/icon-512.png`,
       },
     },
     areaServed: {
       '@type': 'Country',
-      name: 'Saudi Arabia',
+      name: 'Egypt',
     },
     serviceType: ['Home Services', 'Maintenance', 'Repair'],
   };
@@ -35,8 +39,8 @@ export function JsonLd() {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: 'سند — Sanad',
-    description: 'منصة حجز الخدمات المنزلية',
-    url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://sanad.sa',
+    description: 'منصة حجز الخدمات المنزلية في مصر',
+    url: siteUrl,
     priceRange: '$$',
     aggregateRating: {
       '@type': 'AggregateRating',

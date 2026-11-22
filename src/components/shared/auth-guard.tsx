@@ -1,12 +1,23 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { buildLoginHrefWithNext } from '@/lib/auth/safe-redirect';
+import { isAdminCustomerFlowPreviewPath } from '@/lib/auth/customer-flow-preview';
 import { PageLoading } from '@/components/shared/page-loading';
 
 type Role = 'customer' | 'technician' | 'admin';
+
+function roleMayAccess(
+  role: Role | undefined,
+  allowedRoles: Role[],
+  pathname: string,
+): boolean {
+  if (!role) return false;
+  if (allowedRoles.includes(role)) return true;
+  return role === 'admin' && isAdminCustomerFlowPreviewPath(pathname);
+}
 
 export function AuthGuard({
   allowedRoles,
@@ -16,7 +27,12 @@ export function AuthGuard({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, profile, isLoading, sessionResolved } = useAuthStore();
+  const accessGranted = useMemo(
+    () => roleMayAccess(profile?.role, allowedRoles, pathname),
+    [profile?.role, allowedRoles, pathname],
+  );
 
   useEffect(() => {
     if (isLoading) return;
@@ -45,7 +61,7 @@ export function AuthGuard({
       return;
     }
 
-    if (!allowedRoles.includes(profile.role)) {
+    if (!roleMayAccess(profile.role, allowedRoles, pathname)) {
       const redirectMap: Record<string, string> = {
         customer: '/services',
         technician: '/technician/jobs',
@@ -53,13 +69,13 @@ export function AuthGuard({
       };
       router.replace(redirectMap[profile.role] ?? '/');
     }
-  }, [user, profile, isLoading, allowedRoles, router]);
+  }, [user, profile, isLoading, allowedRoles, router, pathname]);
 
   if (!sessionResolved || isLoading) {
     return <PageLoading />;
   }
 
-  if (!user || !profile || !allowedRoles.includes(profile.role)) {
+  if (!user || !profile || !accessGranted) {
     return <PageLoading />;
   }
 

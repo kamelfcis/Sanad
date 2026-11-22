@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -21,6 +21,7 @@ import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookingLocationPicker } from '@/components/maps/booking-location-picker';
 import { CAIRO_DEFAULT } from '@/lib/geo';
+import { normalizeEgyptCoords } from '@/lib/geo/normalize-coords';
 
 interface BookingFormProps {
   defaultServiceId?: string;
@@ -61,6 +62,8 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
   const locationAddress = watch('location_address') ?? '';
   const locationLat = watch('location_lat');
   const locationLng = watch('location_lng');
+  const locationTouched = useRef(false);
+  const pickedPoint = useRef<{ lat: number; lng: number } | null>(null);
   const apartmentNumber = watch('apartment_number') ?? '';
   const floorNumber = watch('floor_number') ?? '';
   const selectedServiceId = watch('service_id');
@@ -73,11 +76,72 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
     ? preselectedService
     : allServices?.find((service) => service.id === selectedServiceId);
 
+  const [quotedPrice, setQuotedPrice] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!lockedService || !defaultTechnicianId || !defaultServiceId) {
+      setQuotedPrice(null);
+      return;
+    }
+
+    let cancelled = false;
+    void fetch(`/api/technicians/${defaultTechnicianId}?service_id=${encodeURIComponent(defaultServiceId)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        const value =
+          typeof data.quoted_price === 'number'
+            ? data.quoted_price
+            : typeof data.starting_price === 'number'
+              ? data.starting_price
+              : null;
+        setQuotedPrice(value);
+      })
+      .catch(() => {
+        if (!cancelled) setQuotedPrice(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [defaultServiceId, defaultTechnicianId, lockedService]);
+
   useEffect(() => {
     if (defaultTechnicianId) {
       setValue('technician_id', defaultTechnicianId);
     }
   }, [defaultTechnicianId, setValue]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch('/api/customer/profile')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((profile) => {
+        if (cancelled || !profile?.default_address || locationTouched.current) return;
+        setValue('location_address', profile.default_address, { shouldValidate: true });
+        const rawLat = profile.default_location_lat;
+        const rawLng = profile.default_location_lng;
+        if (rawLat != null && rawLng != null) {
+          const savedLat = Number(rawLat);
+          const savedLng = Number(rawLng);
+          if (Number.isFinite(savedLat) && Number.isFinite(savedLng)) {
+            const saved = normalizeEgyptCoords(savedLat, savedLng);
+            setValue('location_lat', saved.lat);
+            setValue('location_lng', saved.lng);
+          }
+        }
+        if (profile.default_apartment_number) {
+          setValue('apartment_number', profile.default_apartment_number);
+        }
+        if (profile.default_floor_number) {
+          setValue('floor_number', profile.default_floor_number);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [setValue]);
 
   useEffect(() => {
     if (!defaultServiceId) return;
@@ -98,8 +162,13 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
   }, [allServices, defaultServiceId, preselectedService, setValue]);
 
   const onSubmit = async (data: CreateBookingInput) => {
+    const picked = pickedPoint.current;
+    const payload: CreateBookingInput = picked
+      ? { ...data, location_lat: picked.lat, location_lng: picked.lng }
+      : data;
+
     try {
-      const booking = await createBooking.mutateAsync(data);
+      const booking = await createBooking.mutateAsync(payload);
 
       if (booking?.id) {
         toast({
@@ -153,8 +222,6 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
       )}
 
       <input type="hidden" {...register('location_address')} />
-      <input type="hidden" {...register('location_lat', { valueAsNumber: true })} />
-      <input type="hidden" {...register('location_lng', { valueAsNumber: true })} />
       <input type="hidden" {...register('apartment_number')} />
       <input type="hidden" {...register('floor_number')} />
 
@@ -172,7 +239,7 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
             <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
               <p className="text-sm font-medium text-text-primary">{matchedService.name_ar}</p>
               <p className="mt-0.5 text-xs text-text-muted">
-                {formatMoneyOrEstimate(matchedService.price)}
+                {formatMoneyOrEstimate(quotedPrice ?? matchedService.price)}
               </p>
             </div>
           )
@@ -242,17 +309,16 @@ export function BookingForm({ defaultServiceId, defaultTechnicianId }: BookingFo
       <fieldset>
         <BookingLocationPicker
           address={locationAddress}
-          lat={locationLat}
-          lng={locationLng}
-          apartmentNumber={apartmentNumber}
-          floorNumber={floorNumber}
+          lat={locationLat ?? CAIRO_DEFAULT.lat}
+          lng={locationLng ?? CAIRO_DEFAULT.lng}
           onAddressChange={(value) => setValue('location_address', value, { shouldValidate: true })}
           onCoordsChange={({ lat, lng }) => {
-            setValue('location_lat', lat);
-            setValue('location_lng', lng);
+            const point = normalizeEgyptCoords(lat, lng);
+            locationTouched.current = true;
+            pickedPoint.current = point;
+            setValue('location_lat', point.lat, { shouldDirty: true, shouldValidate: true });
+            setValue('location_lng', point.lng, { shouldDirty: true, shouldValidate: true });
           }}
-          onApartmentChange={(value) => setValue('apartment_number', value)}
-          onFloorChange={(value) => setValue('floor_number', value)}
           error={errors.location_address?.message}
         />
       </fieldset>

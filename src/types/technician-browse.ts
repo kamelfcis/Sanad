@@ -14,7 +14,7 @@ export interface BrowseTechnician {
   average_rating: number;
   completed_jobs: number;
   starting_price: number;
-  distance_km: number;
+  distance_km: number | null;
   location_lat: number | null;
   location_lng: number | null;
   response_time_minutes: number;

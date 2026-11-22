@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
-import { configureLeafletIcons } from '@/lib/geo/leaflet-setup';
-import type { GeoPoint } from '@/lib/geo';
+import { configureLeafletIcons, getDefaultLeafletIcon } from '@/lib/geo/leaflet-setup';
+import { CAIRO_DEFAULT, type GeoPoint } from '@/lib/geo';
 
 interface MapClickHandlerProps {
   onChange: (point: GeoPoint) => void;
@@ -20,13 +20,16 @@ function MapClickHandler({ onChange }: MapClickHandlerProps) {
 
 interface RecenterProps {
   center: GeoPoint;
+  zoom: number;
 }
 
-function RecenterMap({ center }: RecenterProps) {
+function RecenterMap({ center, zoom }: RecenterProps) {
   const map = useMap();
   useEffect(() => {
-    map.setView([center.lat, center.lng], map.getZoom());
-  }, [center.lat, center.lng, map]);
+    const current = map.getZoom();
+    const nextZoom = !Number.isFinite(current) || current < 6 ? zoom : current;
+    map.setView([center.lat, center.lng], nextZoom);
+  }, [center.lat, center.lng, map, zoom]);
   return null;
 }
 
@@ -37,13 +40,22 @@ export interface MapPickerInnerProps {
   className?: string;
 }
 
-export function MapPickerInner({ value, onChange, zoom = 13, className }: MapPickerInnerProps) {
+export function MapPickerInner({ value, onChange, zoom = 12, className }: MapPickerInnerProps) {
   configureLeafletIcons();
+  const markerIcon = getDefaultLeafletIcon();
+
+  if (!markerIcon) return null;
+
+  const center =
+    Number.isFinite(value.lat) && Number.isFinite(value.lng) ? value : CAIRO_DEFAULT;
 
   return (
-    <div className={className ?? 'h-[280px] w-full overflow-hidden rounded-xl border border-border'}>
+    <div
+      dir="ltr"
+      className={className ?? 'h-[280px] w-full overflow-hidden rounded-xl border border-border'}
+    >
       <MapContainer
-        center={[value.lat, value.lng]}
+        center={[center.lat, center.lng]}
         zoom={zoom}
         scrollWheelZoom
         className="h-full w-full"
@@ -53,11 +65,12 @@ export function MapPickerInner({ value, onChange, zoom = 13, className }: MapPic
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <RecenterMap center={value} />
+        <RecenterMap center={center} zoom={zoom} />
         <MapClickHandler onChange={onChange} />
         <Marker
           draggable
-          position={[value.lat, value.lng]}
+          icon={markerIcon}
+          position={[center.lat, center.lng]}
           eventHandlers={{
             dragend: (event) => {
               const marker = event.target;

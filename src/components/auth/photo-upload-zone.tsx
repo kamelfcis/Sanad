@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Upload, X, Check } from 'lucide-react';
+import { Upload, X, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { compressRegistrationPhoto } from '@/lib/images/compress-registration-photo';
 
 interface PhotoUploadZoneProps {
   label: string;
@@ -14,13 +15,25 @@ interface PhotoUploadZoneProps {
 export function PhotoUploadZone({ label, value, onChange, error }: PhotoUploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
-  const handleFile = (file: File | undefined) => {
+  const handleFile = async (file: File | undefined) => {
     if (!file) return;
-    onChange(file);
-    const reader = new FileReader();
-    reader.onload = () => setPreview(reader.result as string);
-    reader.readAsDataURL(file);
+    setIsCompressing(true);
+    try {
+      const compressed = await compressRegistrationPhoto(file);
+      onChange(compressed);
+      const reader = new FileReader();
+      reader.onload = () => setPreview(reader.result as string);
+      reader.readAsDataURL(compressed);
+    } catch {
+      onChange(file);
+      const reader = new FileReader();
+      reader.onload = () => setPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const clear = () => {
@@ -35,8 +48,9 @@ export function PhotoUploadZone({ label, value, onChange, error }: PhotoUploadZo
         ref={inputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp"
+        aria-label={label}
         className="hidden"
-        onChange={(e) => handleFile(e.target.files?.[0])}
+        onChange={(e) => void handleFile(e.target.files?.[0])}
       />
       <button
         type="button"
@@ -47,7 +61,12 @@ export function PhotoUploadZone({ label, value, onChange, error }: PhotoUploadZo
           value && 'border-primary/40 bg-primary/5',
         )}
       >
-        {preview ? (
+        {isCompressing ? (
+          <>
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <span className="text-xs text-text-muted">جاري تحسين حجم الصورة…</span>
+          </>
+        ) : preview ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview} alt={label} className="h-20 w-20 rounded-lg object-cover" />

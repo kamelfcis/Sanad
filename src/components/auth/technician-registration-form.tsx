@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import {
@@ -12,11 +12,18 @@ import {
   type TechnicianCompleteInput,
 } from '@/lib/validations/technician-registration';
 import {
-  TECHNICIAN_SPECIALTIES,
   EGYPT_GOVERNORATES,
+  CAPACITY_TIERS,
+  CONTRACTOR_KINDS,
+  SPECIALIST_CONTRACTOR_SPECIALTIES,
+  TEAM_SIZES,
+  TECHNICIAN_SPECIALTIES,
+  TECHNICIAN_TRADE_SPECIALTIES,
+  teamSizeLabel,
   phoneToTechnicianEmail,
 } from '@/lib/constants/technician-registration';
 import { TechnicianRegisterHero } from '@/components/auth/technician-register-layout';
+import { RegisterPathBadge } from '@/components/auth/register-role-chrome';
 import { PhotoUploadZone } from '@/components/auth/photo-upload-zone';
 import { PolicyAgreement } from '@/components/auth/policy-agreement';
 import { Button } from '@/components/ui/button';
@@ -35,6 +42,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/store/auth-store';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { gradients } from '@/lib/design-system';
+import { MAX_REGISTRATION_FORM_TOTAL_BYTES } from '@/lib/validations/registration-upload';
 
 type Mode = 'signup' | 'complete';
 
@@ -56,6 +64,9 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
   const [agreed, setAgreed] = useState(false);
   const [agreeError, setAgreeError] = useState<string | undefined>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const asContractor = searchParams.get('as') === 'contractor';
+  const lockedRole = asContractor ? 'contractor' : 'technician';
   const supabase = createClient();
   const { profile, setUser, setProfile } = useAuthStore();
 
@@ -64,6 +75,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<TechnicianRegisterInput>({
     resolver: zodResolver(isCompleteMode ? technicianCompleteSchema : technicianRegisterSchema),
@@ -73,6 +85,10 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
       fullName: profile?.full_name ?? '',
       phone: '',
       nationalId: '',
+      providerRole: asContractor ? 'contractor' : 'technician',
+      contractorKind: 'specialist',
+      capacityTier: 'low',
+      teamSize: 5,
       specialty: '' as TechnicianRegisterInput['specialty'],
       governorate: '' as TechnicianRegisterInput['governorate'],
       area: '',
@@ -88,6 +104,18 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
     }
   }, [isCompleteMode, profile?.full_name, reset]);
 
+  useEffect(() => {
+    setValue('providerRole', lockedRole);
+  }, [lockedRole, setValue]);
+
+  const contractorKind = useWatch({ control, name: 'contractorKind' });
+  const isContractor = lockedRole === 'contractor';
+  const specialtyOptions = !isContractor
+    ? TECHNICIAN_TRADE_SPECIALTIES
+    : contractorKind === 'integrated'
+      ? TECHNICIAN_SPECIALTIES.filter((item) => item.value === 'general-contractor')
+      : SPECIALIST_CONTRACTOR_SPECIALTIES;
+
   const onSubmit = async (data: TechnicianRegisterInput | TechnicianCompleteInput) => {
     const nextPhotoErrors: { profile?: string; idCard?: string; idCardBack?: string } = {};
     if (!profilePhoto) nextPhotoErrors.profile = 'صورة شخصية مطلوبة';
@@ -95,6 +123,24 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
     if (!idCardBackPhoto) nextPhotoErrors.idCardBack = 'صورة ضهر البطاقة مطلوبة';
     setPhotoErrors(nextPhotoErrors);
     if (Object.keys(nextPhotoErrors).length > 0) return;
+
+    const photosTotal =
+      (profilePhoto?.size ?? 0) + (idCardPhoto?.size ?? 0) + (idCardBackPhoto?.size ?? 0);
+    if (photosTotal > MAX_REGISTRATION_FORM_TOTAL_BYTES) {
+      const tooLargeMsg =
+        'حجم الصور الثلاث كبير جداً حتى بعد الضغط. اختر صوراً أصغر أو أعد التقاطها بجودة أقل.';
+      setPhotoErrors({
+        profile: tooLargeMsg,
+        idCard: tooLargeMsg,
+        idCardBack: tooLargeMsg,
+      });
+      toast({
+        title: 'حجم الصور كبير',
+        description: tooLargeMsg,
+        variant: 'destructive',
+      });
+      return;
+    }
 
     if (!agreed) {
       setAgreeError('يجب الموافقة على حدود المسؤولية للمتابعة');
@@ -108,6 +154,12 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
     formData.append('phone', data.phone);
     formData.append('nationalId', data.nationalId);
     formData.append('specialty', data.specialty);
+    formData.append('providerRole', lockedRole);
+    if (lockedRole === 'contractor') {
+      if (data.contractorKind) formData.append('contractorKind', data.contractorKind);
+      if (data.capacityTier) formData.append('capacityTier', data.capacityTier);
+      if (data.teamSize) formData.append('teamSize', String(data.teamSize));
+    }
     formData.append('yearsExperience', String(data.yearsExperience));
     formData.append('governorate', data.governorate);
     formData.append('area', data.area);
@@ -128,12 +180,25 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
 
     try {
       const res = await fetch(endpoint, { method: 'POST', body: formData });
-      const result = await res.json();
+
+      if (res.status === 413) {
+        toast({
+          title: 'حجم الصور كبير جداً',
+          description:
+            'تم ضغط الصور تلقائياً — جرّب صور أصغر أو أعد المحاولة.',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const result = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         toast({
           title: 'فشل التسجيل',
-          description: result.error ?? 'حدث خطأ. حاول مرة أخرى.',
+          description:
+            typeof result.error === 'string' ? result.error : 'حدث خطأ. حاول مرة أخرى.',
           variant: 'destructive',
         });
         setIsSubmitting(false);
@@ -142,7 +207,9 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
 
       toast({
         title: 'تم إرسال طلب التسجيل!',
-        description: result.message ?? 'سيتم مراجعة طلبك قريباً.',
+        description:
+          result.message ??
+          `سيتم مراجعة طلبك. بعد الموافقة ادخل برقم ${data.phone} وكلمة المرور التي اخترتها.`,
       });
 
       if (isCompleteMode) {
@@ -191,7 +258,13 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
 
   return (
     <div className="rounded-2xl border border-border bg-white dark:bg-card p-6 shadow-sm md:p-8">
-      <TechnicianRegisterHero completeMode={isCompleteMode} />
+      <RegisterPathBadge audience={isContractor ? 'contractor' : 'technician'} />
+      <div className="mt-6">
+        <TechnicianRegisterHero
+          completeMode={isCompleteMode}
+          audience={isContractor ? 'contractor' : 'technician'}
+        />
+      </div>
 
       <form
         onSubmit={(event) => {
@@ -296,18 +369,111 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
+          {isContractor && (
+            <>
           <div className="space-y-2">
+            <Label>نوع المقاول</Label>
+            <Controller
+              name="contractorKind"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => {
+                    const previous = field.value;
+                    field.onChange(value);
+                    if (value === 'integrated') {
+                      setValue('specialty', 'general-contractor');
+                    } else if (previous === 'integrated') {
+                      setValue('specialty', '' as TechnicianRegisterInput['specialty']);
+                    }
+                  }}
+                >
+                  <SelectTrigger id="contractor-kind" className="border-border bg-card focus:border-primary">
+                    <SelectValue placeholder="اختر النوع" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONTRACTOR_KINDS.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.contractorKind && (
+              <p className="text-xs text-destructive">{errors.contractorKind.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>السعة الحالية</Label>
+            <Controller
+              name="capacityTier"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="capacity-tier" className="border-border bg-card focus:border-primary">
+                    <SelectValue placeholder="اختر السعة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CAPACITY_TIERS.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.capacityTier && (
+              <p className="text-xs text-destructive">{errors.capacityTier.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2 sm:col-span-2">
+            <Label>حجم الفريق</Label>
+            <Controller
+              name="teamSize"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value ? String(field.value) : undefined}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                >
+                  <SelectTrigger id="team-size" className="border-border bg-card focus:border-primary">
+                    <SelectValue placeholder="5 أو 10 أو 20" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TEAM_SIZES.map((size) => (
+                      <SelectItem key={size} value={String(size)}>
+                        {teamSizeLabel(size)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.teamSize && (
+              <p className="text-xs text-destructive">{errors.teamSize.message}</p>
+            )}
+          </div>
+            </>
+          )}
+
+          <div className="space-y-2 sm:col-span-2">
             <Label>التخصص</Label>
             <Controller
               name="specialty"
               control={control}
               render={({ field }) => (
                 <Select value={field.value ?? ''} onValueChange={field.onChange}>
-                  <SelectTrigger className="border-border bg-card focus:border-primary">
+                  <SelectTrigger id="specialty" className="border-border bg-card focus:border-primary">
                     <SelectValue placeholder="اختر التخصص" />
                   </SelectTrigger>
                   <SelectContent>
-                    {TECHNICIAN_SPECIALTIES.map((item) => (
+                    {specialtyOptions.map((item) => (
                       <SelectItem key={item.value} value={item.value}>
                         {item.label}
                       </SelectItem>
@@ -343,7 +509,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
               control={control}
               render={({ field }) => (
                 <Select value={field.value ?? ''} onValueChange={field.onChange}>
-                  <SelectTrigger className="border-border bg-card focus:border-primary">
+                  <SelectTrigger id="governorate" className="border-border bg-card focus:border-primary">
                     <SelectValue placeholder="اختر المحافظة" />
                   </SelectTrigger>
                   <SelectContent>
@@ -437,12 +603,11 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
 
         {!isCompleteMode && (
           <p className="text-center text-sm text-text-secondary">
-            عميل؟{' '}
             <Link
-              href="/auth/register?role=customer"
-              className="font-medium text-primary hover:underline"
+              href="/auth/register"
+              className="rounded-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              سجّل كعميل
+              تغيير نوع الحساب
             </Link>
           </p>
         )}

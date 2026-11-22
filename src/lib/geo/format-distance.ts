@@ -1,5 +1,6 @@
 /** Arabic-friendly distance label (e.g. "٣.٥ كم" or "٨٠٠ م"). */
-export function formatDistanceKm(km: number): string {
+export function formatDistanceKm(km: number | null | undefined): string {
+  if (km == null) return '-';
   if (!Number.isFinite(km) || km < 0) return '—';
 
   if (km < 1) {

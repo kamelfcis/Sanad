@@ -9,6 +9,7 @@ import {
 } from '@/lib/validations/booking';
 import { adminEntityIdSchema } from '@/lib/validations/admin';
 import { notifyBookingCancelledByCustomer } from '@/lib/notifications/events';
+import { loadTechnicianPublicIdentities } from '@/lib/booking/technician-public-identity';
 
 export async function GET(
   _request: NextRequest,
@@ -30,7 +31,7 @@ export async function GET(
     .select(
       `
       *,
-      services(name_ar, name_en, slug),
+      services(name_ar, name_en, slug, price),
       booking_images(image_url)
     `,
     )
@@ -57,7 +58,14 @@ export async function GET(
     }
   }
 
-  return NextResponse.json(data);
+  const identities = await loadTechnicianPublicIdentities([data.technician_id]);
+  const identity = data.technician_id ? identities.get(data.technician_id) : undefined;
+
+  return NextResponse.json({
+    ...data,
+    technician: identity?.technician ?? null,
+    technician_profile: identity?.technician_profile ?? null,
+  });
 }
 
 /**
@@ -185,7 +193,7 @@ export async function PATCH(
     {
       technicianIds,
       notifyAdmins: needsAdminNotice,
-      reason,
+      reason: reason ?? undefined,
     },
   );
 

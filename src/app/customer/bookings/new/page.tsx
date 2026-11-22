@@ -9,6 +9,7 @@ import { PageLoading } from '@/components/shared/page-loading';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AdminCustomerFlowPreviewNotice } from '@/components/shared/admin-customer-flow-preview-notice';
 
 function NewBookingContent() {
   const searchParams = useSearchParams();
@@ -17,6 +18,7 @@ function NewBookingContent() {
 
   return (
     <div className="container py-8" dir="rtl">
+      <AdminCustomerFlowPreviewNotice />
       <Button variant="ghost" size="sm" asChild className="mb-4">
         <Link href={defaultTechnicianId ? '/services' : '/customer/bookings'}>
           <ArrowRight className="ml-1 h-4 w-4" />

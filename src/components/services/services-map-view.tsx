@@ -18,6 +18,10 @@ import { CAIRO_DEFAULT } from '@/lib/geo';
 
 const DEFAULT_FILTERS: ServicesBrowseFiltersState = {
   specialty: null,
+  providerRole: null,
+  contractorKind: null,
+  capacityTier: null,
+  teamSize: null,
   governorate: null,
   sort: 'distance',
   maxPrice: 500,
@@ -64,7 +68,7 @@ export function ServicesMapView() {
     sort: 'distance',
   }));
 
-  const userLocation = useMemo(() => {
+  const urlLocation = useMemo(() => {
     if (urlLat && urlLng) {
       const lat = Number.parseFloat(urlLat);
       const lng = Number.parseFloat(urlLng);
@@ -72,8 +76,11 @@ export function ServicesMapView() {
         return { lat, lng };
       }
     }
-    return location;
-  }, [location, urlLat, urlLng]);
+    return null;
+  }, [urlLat, urlLng]);
+
+  const userLocation = urlLocation ?? location;
+  const distanceOrigin = urlLocation ?? (isFallback ? undefined : location);
 
   const queryFilters = useMemo(
     () => ({
@@ -83,17 +90,17 @@ export function ServicesMapView() {
       sort: filters.sort,
       maxPrice: filters.maxPrice,
       availableOnly: filters.availableOnly || undefined,
-      lat: userLocation.lat,
-      lng: userLocation.lng,
+      lat: distanceOrigin?.lat,
+      lng: distanceOrigin?.lng,
       limit: 100,
     }),
-    [filters, searchQuery, urlGovernorate, urlSearch, urlSpecialty, userLocation],
+    [distanceOrigin, filters, searchQuery, urlGovernorate, urlSearch, urlSpecialty],
   );
 
   const { data, isLoading, error, refetch } = useBrowseTechnicians(queryFilters);
   const markers = useMemo(() => toMarkers(data?.technicians ?? []), [data?.technicians]);
 
-  const listHref = `/services${buildMapQuery(filters, searchQuery, userLocation.lat, userLocation.lng)}`;
+  const listHref = `/services${buildMapQuery(filters, searchQuery, distanceOrigin?.lat, distanceOrigin?.lng)}`;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-6 lg:px-8" dir="rtl">

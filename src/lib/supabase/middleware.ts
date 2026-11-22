@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getTechnicianProfileMissingFields } from '@/lib/technician/profile-complete';
 import { getSafeInternalRedirect, redirectUrlForPath } from '@/lib/auth/safe-redirect';
+import { isAdminCustomerFlowPreviewPath } from '@/lib/auth/customer-flow-preview';
 
 /** Strip spoofed client identity; set trusted user id for downstream rate limiting */
 function createForwardResponse(request: NextRequest, userId?: string) {
@@ -228,14 +229,21 @@ export async function updateSession(request: NextRequest) {
 
   if (user) {
     if (isCustomerRoute && profile?.role !== 'customer') {
-      const url = request.nextUrl.clone();
-      if (profile) {
-        url.pathname = '/auth/login';
-        url.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
-      } else {
-        url.pathname = '/auth/role-selection';
+      const adminPreview =
+        profile?.role === 'admin' && isAdminCustomerFlowPreviewPath(pathname);
+      if (!adminPreview) {
+        const url = request.nextUrl.clone();
+        if (profile?.role === 'admin') {
+          url.pathname = '/admin';
+          url.search = '';
+        } else if (profile) {
+          url.pathname = '/auth/login';
+          url.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
+        } else {
+          url.pathname = '/auth/role-selection';
+        }
+        return NextResponse.redirect(url);
       }
-      return NextResponse.redirect(url);
     }
 
     if (isTechnicianRoute && profile?.role !== 'technician') {

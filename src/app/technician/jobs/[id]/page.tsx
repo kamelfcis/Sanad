@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   useTechnicianAssignment,
   useRespondToAssignment,
   useUpdateBookingStatus,
+  useTechnicianProfile,
+  useTechnicianAssignmentsRealtime,
+  useTechnicianBookingsRealtime,
 } from '@/hooks/use-technician';
 import { BookingStatus } from '@/components/shared/booking-status';
 import { AssignmentStatus } from '@/components/shared/assignment-status';
@@ -29,20 +33,33 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { LocationMap } from '@/components/maps/location-map';
 import { toTelHref } from '@/lib/utils/phone';
-
-function formatArabicDateTime(value: string): string {
-  return new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(
-    new Date(value),
-  );
-}
+import { formatCairoDateTime } from '@/lib/datetime/cairo';
+import { getBookingDisplayPrice } from '@/lib/pricing/booking-display-price';
+import { formatMoney } from '@/lib/currency/format';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Banknote } from 'lucide-react';
 
 export default function TechnicianJobDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
   const { data: assignment, isLoading, error } = useTechnicianAssignment(id);
+  const { data: techProfile } = useTechnicianProfile();
   const respondMutation = useRespondToAssignment();
   const statusMutation = useUpdateBookingStatus();
+  const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false);
+  const [completeConfirmOpen, setCompleteConfirmOpen] = useState(false);
+
+  useTechnicianAssignmentsRealtime(techProfile?.id);
+  useTechnicianBookingsRealtime(techProfile?.id);
 
   if (isLoading) {
     return (
@@ -78,6 +95,7 @@ export default function TechnicianJobDetailPage() {
     !!customerPhone &&
     (booking.status === 'accepted' ||
       booking.status === 'in_progress' ||
+      booking.status === 'awaiting_customer_confirmation' ||
       booking.status === 'completed');
   const initials = customerName
     .split(' ')
@@ -94,6 +112,7 @@ export default function TechnicianJobDetailPage() {
 
   const handleReject = async () => {
     await respondMutation.mutateAsync({ id: assignment.id, action: 'reject' });
+    setRejectConfirmOpen(false);
     toast({ title: 'تم رفض الطلب', description: 'سيتم عرض الطلب على فني آخر.' });
     router.refresh();
   };
@@ -105,10 +124,19 @@ export default function TechnicianJobDetailPage() {
   };
 
   const handleComplete = async () => {
-    await statusMutation.mutateAsync({ bookingId: booking.id, status: 'completed' });
-    toast({ title: 'تم إنهاء العمل', description: 'تم إعلام العميل باكتمال الخدمة.' });
+    await statusMutation.mutateAsync({
+      bookingId: booking.id,
+      status: 'awaiting_customer_confirmation',
+    });
+    setCompleteConfirmOpen(false);
+    toast({
+      title: 'تم إنهاء العمل',
+      description: 'بانتظار تأكيد العميل لإتمام الحجز.',
+    });
     router.refresh();
   };
+
+  const displayPrice = getBookingDisplayPrice(booking.price_quote, booking.services?.price ?? null);
 
   return (
     <div className="container py-8" dir="rtl">
@@ -141,39 +169,44 @@ export default function TechnicianJobDetailPage() {
               status={assignment.status}
               createdAt={assignment.created_at}
               onAccept={handleAccept}
-              onReject={handleReject}
+              onReject={() => setRejectConfirmOpen(true)}
             />
           </CardContent>
         </Card>
 
         {/* Job lifecycle — Start / Complete */}
-        {booking.status === 'accepted' && (
+        {(booking.status === 'accepted' || booking.status === 'in_progress') && (
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="flex flex-col gap-2 p-4">
+              {booking.status === 'accepted' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 w-full gap-2 rounded-xl font-bold"
+                  onClick={handleStart}
+                  disabled={statusMutation.isPending}
+                >
+                  <Play className="h-5 w-5" />
+                  بدء العمل
+                </Button>
+              )}
               <Button
                 type="button"
                 className="h-11 w-full gap-2 rounded-xl font-bold"
-                onClick={handleStart}
+                onClick={() => setCompleteConfirmOpen(true)}
                 disabled={statusMutation.isPending}
               >
-                <Play className="h-5 w-5" />
-                بدء العمل
+                <CheckCircle2 className="h-5 w-5" />
+                إكمال الطلب
               </Button>
             </CardContent>
           </Card>
         )}
-        {booking.status === 'in_progress' && (
+        {booking.status === 'awaiting_customer_confirmation' && (
           <Card>
-            <CardContent className="p-4">
-              <Button
-                type="button"
-                className="h-11 w-full gap-2 rounded-xl font-bold"
-                onClick={handleComplete}
-                disabled={statusMutation.isPending}
-              >
-                <CheckCircle2 className="h-5 w-5" />
-                إنهاء العمل
-              </Button>
+            <CardContent className="flex items-center gap-2 p-4 text-sm font-medium text-amber-800 dark:text-amber-200">
+              <CheckCircle2 className="h-5 w-5" />
+              بانتظار تأكيد العميل لإتمام الحجز.
             </CardContent>
           </Card>
         )}
@@ -225,6 +258,7 @@ export default function TechnicianJobDetailPage() {
         {/* Chat */}
         {(booking.status === 'accepted' ||
           booking.status === 'in_progress' ||
+          booking.status === 'awaiting_customer_confirmation' ||
           booking.status === 'completed') && (
           <Card>
             <CardContent className="p-4">
@@ -234,6 +268,18 @@ export default function TechnicianJobDetailPage() {
                   فتح المحادثة
                 </Link>
               </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {displayPrice != null && (
+          <Card>
+            <CardContent className="flex items-center justify-between gap-3 p-4">
+              <span className="text-sm text-muted-foreground">السعر المتفق عليه</span>
+              <span className="flex items-center gap-1 font-semibold">
+                <Banknote className="h-4 w-4 text-primary" />
+                {formatMoney(displayPrice)}
+              </span>
             </CardContent>
           </Card>
         )}
@@ -302,7 +348,7 @@ export default function TechnicianJobDetailPage() {
                 <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground">الوقت المفضل</p>
-                  <p className="text-sm">{formatArabicDateTime(booking.preferred_time)}</p>
+                  <p className="text-sm">{formatCairoDateTime(booking.preferred_time)}</p>
                 </div>
               </div>
             )}
@@ -310,12 +356,55 @@ export default function TechnicianJobDetailPage() {
               <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-xs text-muted-foreground">تاريخ الطلب</p>
-                <p className="text-sm">{formatArabicDateTime(booking.created_at)}</p>
+                <p className="text-sm">{formatCairoDateTime(booking.created_at)}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={rejectConfirmOpen} onOpenChange={setRejectConfirmOpen}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد رفض الطلب؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              سيتم إعادة تعيين الطلب لفني آخر. لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={respondMutation.isPending}
+              onClick={() => void handleReject()}
+            >
+              رفض الطلب
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={completeConfirmOpen} onOpenChange={setCompleteConfirmOpen}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد إكمال العمل؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              سيتم إشعار العميل لتأكيد اكتمال الخدمة قبل إغلاق الحجز.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <Button
+              type="button"
+              disabled={statusMutation.isPending}
+              onClick={() => void handleComplete()}
+            >
+              إكمال الطلب
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

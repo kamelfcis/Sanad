@@ -1,33 +1,57 @@
 import type { Metadata } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://sanad.sa';
+const defaultSiteUrl = 'https://sanad-five-zeta.vercel.app';
+
+export function getSiteUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL ?? defaultSiteUrl;
+  return raw.replace(/\/$/, '');
+}
+
+export function isPreviewDeployment(): boolean {
+  return process.env.VERCEL_ENV === 'preview' || process.env.NEXT_PUBLIC_NOINDEX === 'true';
+}
+
+const siteUrl = getSiteUrl();
 
 export const siteConfig = {
   name: 'سند',
   nameEn: 'Sanad',
-  title: 'سند | Sanad — منصة الخدمات المنزلية',
+  title: 'سند | Sanad — منصة الخدمات المنزلية في مصر',
   description:
-    'احجز أفضل الفنيين والمتخصصين للخدمات المنزلية في المملكة العربية السعودية. كهرباء، سباكة، تكييف، نجارة والمزيد — بضمان الجودة ودعم على مدار الساعة.',
+    'احجز أفضل الصنايعي والمتخصصين للخدمات المنزلية في مصر. كهرباء، سباكة، نجارة، دهانات والمزيد — بضمان الجودة ودفع إنستاباي أو فودافون كاش.',
   keywords: [
     'خدمات منزلية',
     'صيانة منزلية',
+    'صنايعي',
     'فني كهرباء',
     'فني سباكة',
-    'تكييف',
     'نجارة',
     'دهانات',
     'حجز فني',
     'سند',
     'Sanad',
-    'home services Saudi Arabia',
-    'خدمات منزلية السعودية',
+    'خدمات منزلية مصر',
     'فني معتمد',
     'صيانة منازل',
+    'القاهرة',
+    'إنستاباي',
+    'فودافون كاش',
   ],
   url: siteUrl,
-  locale: 'ar_SA',
-  twitter: '@sanad_sa',
+  locale: 'ar_EG',
+  twitter: '@sanad_eg',
 } as const;
+
+function robotsForEnvironment(): Metadata['robots'] {
+  if (isPreviewDeployment()) {
+    return { index: false, follow: false, googleBot: { index: false, follow: false } };
+  }
+  return {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  };
+}
 
 export const defaultMetadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -40,14 +64,10 @@ export const defaultMetadata: Metadata = {
   authors: [{ name: siteConfig.nameEn, url: siteUrl }],
   creator: siteConfig.nameEn,
   publisher: siteConfig.nameEn,
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true },
-  },
+  robots: robotsForEnvironment(),
   alternates: {
-    canonical: siteUrl,
-    languages: { 'ar-SA': siteUrl },
+    canonical: '/',
+    languages: { 'ar-EG': siteUrl },
   },
   openGraph: {
     type: 'website',
@@ -61,7 +81,7 @@ export const defaultMetadata: Metadata = {
         url: '/og-image.svg',
         width: 1200,
         height: 630,
-        alt: 'سند — منصة الخدمات المنزلية',
+        alt: 'سند — منصة الخدمات المنزلية في مصر',
       },
     ],
   },
@@ -75,17 +95,33 @@ export const defaultMetadata: Metadata = {
   },
   category: 'technology',
   other: {
-    'geo.region': 'SA',
-    'geo.placename': 'Saudi Arabia',
+    'geo.region': 'EG',
+    'geo.placename': 'Egypt',
     'content-language': 'ar',
   },
 };
 
-export function pageMetadata(title: string, description?: string): Metadata {
+export function absoluteUrl(path: string): string {
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  return `${siteUrl}${normalized}`;
+}
+
+export function pageMetadata(
+  title: string,
+  description?: string,
+  canonicalPath?: string,
+): Metadata {
+  const path = canonicalPath ?? '/';
   return {
     title,
     description: description ?? siteConfig.description,
-    openGraph: { title, description: description ?? siteConfig.description },
+    alternates: { canonical: path },
+    robots: robotsForEnvironment(),
+    openGraph: {
+      title,
+      description: description ?? siteConfig.description,
+      url: absoluteUrl(path),
+    },
     twitter: { title, description: description ?? siteConfig.description },
   };
 }

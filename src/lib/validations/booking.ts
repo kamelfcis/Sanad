@@ -3,6 +3,14 @@ import { bookingStatusSchema, paginationOffsetSchema, uuidSchema } from '@/lib/v
 
 export const CUSTOMER_CANCELLABLE_STATUSES = ['pending', 'matched', 'accepted'] as const;
 
+/** Bookings shown under technician jobs filter «جاري التنفيذ» (API status=in_progress). */
+export const TECHNICIAN_ACTIVE_WORK_BOOKING_STATUSES = [
+  'matched',
+  'accepted',
+  'in_progress',
+  'awaiting_customer_confirmation',
+] as const;
+
 export function isCustomerCancellableStatus(status: string): boolean {
   return (CUSTOMER_CANCELLABLE_STATUSES as readonly string[]).includes(status);
 }
@@ -35,6 +43,7 @@ export const BOOKING_STATUS_LABELS: Record<string, string> = {
   matched: 'Matched',
   accepted: 'Accepted',
   in_progress: 'In progress',
+  awaiting_customer_confirmation: 'Awaiting customer confirmation',
   completed: 'Completed',
   cancelled: 'Cancelled',
   disputed: 'Disputed',
@@ -45,6 +54,7 @@ export const BOOKING_STATUS_LABELS_AR: Record<string, string> = {
   matched: 'تم التعيين',
   accepted: 'مقبول',
   in_progress: 'قيد التنفيذ',
+  awaiting_customer_confirmation: 'بانتظار تأكيد العميل',
   completed: 'مكتمل',
   cancelled: 'ملغي',
   disputed: 'متنازع عليه',
@@ -58,6 +68,7 @@ export const BOOKING_STATUS_VARIANTS: Record<
   matched: 'secondary',
   accepted: 'success',
   in_progress: 'default',
+  awaiting_customer_confirmation: 'warning',
   completed: 'success',
   cancelled: 'destructive',
   disputed: 'outline',

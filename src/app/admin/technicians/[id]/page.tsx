@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAdminTechnician, useAdminUpdateTechnicianStatus } from '@/hooks/use-admin';
+import { AdminContractorFields } from '@/components/admin/admin-contractor-fields';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -37,6 +39,8 @@ import {
 } from '@/components/admin/admin-moderation-actions';
 import { useAdminModeration } from '@/hooks/use-admin-moderation';
 import { useToast } from '@/hooks/use-toast';
+import { AdminProviderContactActions } from '@/components/admin/admin-provider-contact-actions';
+import { specialtyArabicLabel } from '@/lib/constants/technician-registration';
 
 const statusColors: Record<string, string> = {
   verified: 'bg-green-100 text-green-700',
@@ -51,6 +55,7 @@ export default function AdminTechnicianDetailPage() {
   const { toast } = useToast();
   const params = useParams();
   const id = params.id as string;
+  const queryClient = useQueryClient();
   const { data: tech, isLoading, error } = useAdminTechnician(id);
   const updateStatus = useAdminUpdateTechnicianStatus();
   const [pendingAction, setPendingAction] = useState<TechnicianStatusAction | null>(null);
@@ -185,6 +190,14 @@ export default function AdminTechnicianDetailPage() {
     );
   };
 
+  const activeSkill = tech.skills.find((skill) => skill.is_active !== false && skill.service);
+  const specialtySlug = activeSkill?.service?.category?.slug ?? activeSkill?.service?.slug ?? null;
+  const tradeName =
+    specialtyArabicLabel(specialtySlug) ||
+    activeSkill?.service?.category?.name_ar ||
+    activeSkill?.service?.name_ar ||
+    null;
+
   return (
     <div className="p-6">
       <Button variant="ghost" size="sm" asChild className="mb-4">
@@ -227,6 +240,18 @@ export default function AdminTechnicianDetailPage() {
                 t('technicians.detail.noPhone')
               )}
             </p>
+            <AdminProviderContactActions
+              className="mt-3"
+              technicianId={tech.id}
+              name={tech.full_name ?? t('technicians.detail.unnamed')}
+              phone={tech.phone}
+              role={tech.provider_role}
+              specialty={specialtySlug}
+              trade={tradeName}
+              serviceId={tech.provider_role === 'contractor' ? null : (activeSkill?.service?.id ?? null)}
+              capacityTier={tech.capacity_tier}
+              variant="labeled"
+            />
           </div>
         </div>
 
@@ -261,6 +286,18 @@ export default function AdminTechnicianDetailPage() {
               isBlocked={tech.is_blocked}
               disabled={moderationPending}
               onRequest={moderate}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-sm font-medium">نوع المقاول</CardTitle></CardHeader>
+          <CardContent>
+            <AdminContractorFields
+              tech={tech}
+              onUpdated={() => {
+                void queryClient.invalidateQueries({ queryKey: ['admin-technician', id] });
+              }}
             />
           </CardContent>
         </Card>

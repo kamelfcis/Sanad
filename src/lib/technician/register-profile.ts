@@ -1,6 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { TechnicianSpecialtyValue } from '@/lib/constants/technician-registration';
-import { specialtyToCategorySlug } from '@/lib/constants/technician-registration';
+import type {
+  CapacityTier,
+  ContractorKind,
+  ProviderRole,
+  TechnicianSpecialtyValue,
+} from '@/lib/constants/technician-registration';
+import {
+  resolveContractorKindFromSpecialty,
+  specialtyToCategorySlug,
+} from '@/lib/constants/technician-registration';
 import { notifyAdminsNewTechnicianApplication } from '@/lib/notifications/events';
 
 export type TechnicianRegistrationData = {
@@ -8,6 +16,10 @@ export type TechnicianRegistrationData = {
   phone: string;
   nationalId: string;
   specialty: string;
+  providerRole: ProviderRole;
+  contractorKind?: ContractorKind;
+  capacityTier?: CapacityTier;
+  teamSize?: number | null;
   yearsExperience: number;
   governorate: string;
   area: string;
@@ -66,6 +78,14 @@ export async function upsertTechnicianRegistration(
 
   if (profileError) return { error: profileError.message };
 
+  const isContractor = data.providerRole === 'contractor';
+  const contractorKind = isContractor
+    ? resolveContractorKindFromSpecialty(
+        data.specialty as TechnicianSpecialtyValue,
+        data.contractorKind,
+      )
+    : 'specialist';
+
   const { error: techProfileError } = await supabase.from('technician_profiles').upsert({
     id: userId,
     bio: data.bio,
@@ -75,6 +95,10 @@ export async function upsertTechnicianRegistration(
     area: data.area,
     starting_price: data.startingPrice,
     working_hours: data.workingHours,
+    provider_role: data.providerRole,
+    contractor_kind: contractorKind,
+    capacity_tier: isContractor ? data.capacityTier ?? 'none' : 'none',
+    team_size: isContractor ? data.teamSize ?? null : null,
     profile_photo_url: profilePhotoUrl,
     id_card_photo_url: idCardPhotoUrl,
     id_card_back_photo_url: idCardBackPhotoUrl,

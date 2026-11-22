@@ -14,6 +14,9 @@ export interface PushPayload {
   message: string;
   url?: string;
   notificationId?: string;
+  type?: string;
+  /** When true, service worker shows a non-silent notification with vibration. */
+  alert?: boolean;
 }
 
 function getVapidConfig(): { publicKey: string; privateKey: string; subject: string } | null {

@@ -11,7 +11,7 @@ import { AdminI18nProvider, useAdminT } from '@/lib/i18n/admin/use-admin-t';
 import { cn } from '@/lib/utils/cn';
 import {
   LayoutDashboard, ClipboardList, Users, Wrench, FolderTree, UserCog,
-  Star, History, Settings, Menu, X, ChevronLeft, ChevronRight, Banknote, Images,
+  Star, History, Settings, Menu, X, ChevronLeft, ChevronRight, Banknote, Images, MessageSquareWarning,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DashboardSessionManager } from '@/components/shared/dashboard-session-manager';
@@ -32,6 +32,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     { label: t('nav.categories'), href: '/admin/categories', icon: FolderTree },
     { label: t('nav.heroSlides'), href: '/admin/hero-slides', icon: Images },
     { label: t('nav.reviews'), href: '/admin/reviews', icon: Star },
+    { label: t('nav.complaints'), href: '/admin/complaints', icon: MessageSquareWarning },
     { label: t('nav.payments'), href: '/admin/payments', icon: Banknote },
     { label: t('nav.auditLogs'), href: '/admin/audit-logs', icon: History },
     { label: t('nav.settings'), href: '/admin/settings', icon: Settings },

@@ -17,11 +17,13 @@ import { toast } from '@/hooks/use-toast';
 import { SplitLayout } from '@/components/auth/split-layout';
 import { getSafeInternalRedirect } from '@/lib/auth/safe-redirect';
 import { Loader2, ArrowLeft } from 'lucide-react';
+import { cn } from '@/lib/utils/cn';
 
 const BLOCKED_MESSAGE =
   'تم حظر هذا الحساب من قبل الإدارة. لمعرفة السبب أو طلب استعادة الحساب، تواصل مع الدعم.';
 
 function LoginForm() {
+  const [loginHint, setLoginHint] = useState<'customer' | 'technician'>('customer');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,7 +46,7 @@ function LoginForm() {
     if (role === 'technician') {
       const { data: tp } = await supabase
         .from('technician_profiles')
-        .select('national_id, governorate, bio, profile_photo_url, id_card_photo_url')
+        .select('national_id, governorate, bio, profile_photo_url, id_card_photo_url, provider_role')
         .eq('id', userId)
         .maybeSingle();
       const { count } = await supabase
@@ -52,10 +54,13 @@ function LoginForm() {
         .select('*', { count: 'exact', head: true })
         .eq('technician_id', userId);
       const { isTechnicianProfileComplete } = await import('@/lib/technician/profile-complete');
+      const profileComplete = isTechnicianProfileComplete(tp, count ?? 0);
       router.push(
-        isTechnicianProfileComplete(tp, count ?? 0)
-          ? '/technician/jobs'
-          : '/auth/register-technician?complete=1',
+        !profileComplete
+          ? '/auth/register-technician?complete=1'
+          : tp?.provider_role === 'contractor'
+            ? '/technician/quotes'
+            : '/technician/jobs',
       );
     } else {
       const m: Record<string, string> = { customer: '/services', admin: '/admin' };
@@ -118,12 +123,40 @@ function LoginForm() {
   };
 
   return (
-    <SplitLayout title="مرحباً بك في سند" subtitle="منصة الخدمات المنزلية الأكثر موثوقية في المملكة">
+    <SplitLayout title="مرحباً بك في سند" subtitle="منصة الخدمات المنزلية في مصر">
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary" style={{ fontFamily: 'var(--font-heading)' }}>تسجيل الدخول</h2>
+          <h1 className="text-2xl font-bold text-text-primary" style={{ fontFamily: 'var(--font-heading)' }}>تسجيل الدخول</h1>
           <p className="mt-1 text-sm text-text-secondary">أدخل بياناتك للوصول إلى حسابك</p>
         </div>
+
+        <div className="flex rounded-xl border border-border p-1">
+          <button
+            type="button"
+            className={cn(
+              'flex-1 rounded-lg py-2 text-sm font-semibold transition-colors',
+              loginHint === 'customer' ? 'bg-primary text-white' : 'text-text-secondary',
+            )}
+            onClick={() => setLoginHint('customer')}
+          >
+            عميل
+          </button>
+          <button
+            type="button"
+            className={cn(
+              'flex-1 rounded-lg py-2 text-sm font-semibold transition-colors',
+              loginHint === 'technician' ? 'bg-primary text-white' : 'text-text-secondary',
+            )}
+            onClick={() => setLoginHint('technician')}
+          >
+            صنايعي أو مقاول
+          </button>
+        </div>
+        <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-text-secondary">
+          {loginHint === 'technician'
+            ? 'فني أو مقاول: رقم الموبايل وكلمة المرور — بدون OTP.'
+            : 'عميل: البريد الإلكتروني أو رقم الموبايل (إن كان مرتبطًا بحسابك) وكلمة المرور.'}
+        </p>
 
         {wasBlocked && (
           <div
@@ -142,7 +175,7 @@ function LoginForm() {
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
           </svg>
-          Continue with Google
+          المتابعة مع Google
         </Button>
 
         <div className="flex items-center gap-2">
@@ -161,11 +194,13 @@ function LoginForm() {
           className="space-y-4"
         >
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-text-primary">البريد الإلكتروني أو رقم الموبايل</Label>
+            <Label htmlFor="email" className="text-text-primary">
+              {loginHint === 'technician' ? 'رقم الموبايل' : 'البريد الإلكتروني أو رقم الموبايل'}
+            </Label>
             <Input
               id="email"
               type="text"
-              placeholder="you@example.com أو 01xxxxxxxxx"
+              placeholder={loginHint === 'technician' ? '01xxxxxxxxx' : 'you@example.com أو 01xxxxxxxxx'}
               autoComplete="username"
               className="border-border bg-card text-text-primary placeholder:text-text-muted focus:border-primary focus:ring-primary/20"
               {...register('email')}

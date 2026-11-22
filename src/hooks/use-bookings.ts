@@ -1,7 +1,18 @@
 'use client';
 
+import { useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
 import type { CreateBookingInput } from '@/lib/validations/booking';
+
+export interface BookingTechnicianInfo {
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
+export interface BookingTechnicianProfile {
+  profile_photo_url: string | null;
+}
 
 export interface Booking {
   id: string;
@@ -24,7 +35,10 @@ export interface Booking {
     name_ar: string;
     name_en: string;
     slug: string;
+    price?: number | null;
   } | null;
+  technician?: BookingTechnicianInfo | null;
+  technician_profile?: BookingTechnicianProfile | null;
   booking_images?: { image_url: string }[];
   needs_manual_assignment?: boolean;
 }
@@ -91,6 +105,41 @@ export function useBooking(id: string) {
   });
 }
 
+/** Invalidate customer booking list + detail when Supabase reports booking row changes. */
+export function useBookingsRealtime(customerId?: string) {
+  const qc = useQueryClient();
+
+  const invalidate = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ['bookings'] });
+    qc.invalidateQueries({ queryKey: ['booking'] });
+  }, [qc]);
+
+  useEffect(() => {
+    if (!customerId) return;
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`bookings-customer:${customerId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `customer_id=eq.${customerId}`,
+        },
+        () => {
+          invalidate();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [customerId, invalidate]);
+}
+
 export function useCreateBooking() {
   const queryClient = useQueryClient();
 
@@ -118,6 +167,28 @@ async function cancelBooking(id: string, reason?: string): Promise<Booking> {
     throw new Error(body.error ?? 'Failed to cancel booking');
   }
   return body as Booking;
+}
+
+async function confirmBookingCompletion(id: string): Promise<Booking> {
+  const res = await fetch(`/api/bookings/${id}/confirm-completion`, { method: 'POST' });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(body.error ?? 'Failed to confirm booking completion');
+  }
+  return body as Booking;
+}
+
+export function useConfirmBookingCompletion() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => confirmBookingCompletion(id),
+    onSuccess: (booking) => {
+      queryClient.setQueryData(['booking', booking.id], booking);
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['booking', booking.id] });
+    },
+  });
 }
 
 export function useCancelBooking() {

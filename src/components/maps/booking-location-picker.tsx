@@ -1,49 +1,67 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Loader2, MapPin, Search } from 'lucide-react';
 import { MapPicker } from '@/components/maps/map-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { CAIRO_DEFAULT, type GeoPoint } from '@/lib/geo';
+import { CAIRO_DEFAULT, getGovernorateCentroid, type GeoPoint } from '@/lib/geo';
+import { normalizeEgyptCoords } from '@/lib/geo/normalize-coords';
 import { reverseGeocode, searchAddress } from '@/lib/geo/geocode';
 
 export interface BookingLocationPickerProps {
   address: string;
   lat?: number;
   lng?: number;
+  /** Used only when lat/lng are missing, so the map opens on the customer's governorate instead of the world. */
+  governorate?: string | null;
   onAddressChange: (address: string) => void;
   onCoordsChange: (coords: { lat: number; lng: number }) => void;
   error?: string;
+}
+
+function finitePoint(lat?: number, lng?: number): GeoPoint | null {
+  if (typeof lat !== 'number' || typeof lng !== 'number') return null;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return normalizeEgyptCoords(lat, lng);
 }
 
 export function BookingLocationPicker({
   address,
   lat,
   lng,
+  governorate,
   onAddressChange,
   onCoordsChange,
   error,
 }: BookingLocationPickerProps) {
-  const [mapCenter, setMapCenter] = useState<GeoPoint>({
-    lat: lat ?? CAIRO_DEFAULT.lat,
-    lng: lng ?? CAIRO_DEFAULT.lng,
-  });
+  const point = finitePoint(lat, lng) ?? getGovernorateCentroid(governorate) ?? CAIRO_DEFAULT;
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
+  const geocodeRequest = useRef(0);
+
+  const publish = useCallback(
+    (next: GeoPoint) => {
+      const normalized = normalizeEgyptCoords(next.lat, next.lng);
+      onCoordsChange({ lat: normalized.lat, lng: normalized.lng });
+      return normalized;
+    },
+    [onCoordsChange],
+  );
 
   const handleMapChange = useCallback(
-    async (point: GeoPoint) => {
-      setMapCenter(point);
-      onCoordsChange({ lat: point.lat, lng: point.lng });
+    async (next: GeoPoint) => {
+      const normalized = publish(next);
+      const requestId = ++geocodeRequest.current;
       setGeocoding(true);
-      const resolved = await reverseGeocode(point.lat, point.lng);
+      const resolved = await reverseGeocode(normalized.lat, normalized.lng);
+      if (requestId !== geocodeRequest.current) return;
       if (resolved) onAddressChange(resolved);
       setGeocoding(false);
     },
-    [onAddressChange, onCoordsChange],
+    [onAddressChange, publish],
   );
 
   const handleSearch = async () => {
@@ -53,8 +71,7 @@ export function BookingLocationPicker({
     setSearching(false);
     const first = results[0];
     if (!first) return;
-    setMapCenter({ lat: first.lat, lng: first.lng });
-    onCoordsChange({ lat: first.lat, lng: first.lng });
+    publish({ lat: first.lat, lng: first.lng });
     onAddressChange(first.address);
   };
 
@@ -83,7 +100,7 @@ export function BookingLocationPicker({
         </Button>
       </div>
 
-      <MapPicker value={mapCenter} onChange={(point) => void handleMapChange(point)} />
+      <MapPicker value={point} zoom={12} onChange={(next) => void handleMapChange(next)} />
 
       <div className="relative">
         <MapPin className="absolute right-3 top-3 h-4 w-4 text-text-muted" />

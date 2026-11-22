@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
 import { phoneToTechnicianEmail } from '@/lib/constants/technician-registration';
 import { technicianRegisterSchema } from '@/lib/validations/technician-registration';
-import { ALLOWED_UPLOAD_MIME_TYPES, MAX_UPLOAD_SIZE_BYTES } from '@/lib/validations/upload';
-import { uploadFileForUser } from '@/lib/storage/upload';
-import { upsertTechnicianRegistration } from '@/lib/technician/register-profile';
+import { ALLOWED_UPLOAD_MIME_TYPES } from '@/lib/validations/upload';
+import { MAX_REGISTRATION_UPLOAD_BYTES } from '@/lib/validations/registration-upload';
+import { uploadKycFileForUser, uploadProfilePhotoForUser } from '@/lib/storage/upload';
+import {
+  upsertTechnicianRegistration,
+  type TechnicianRegistrationData,
+} from '@/lib/technician/register-profile';
 
 const IMAGE_MIME_TYPES = ALLOWED_UPLOAD_MIME_TYPES.filter((t) => t.startsWith('image/'));
 
@@ -13,8 +17,9 @@ function validateImageFile(file: File | null, label: string): string | null {
   if (!IMAGE_MIME_TYPES.includes(file.type as (typeof IMAGE_MIME_TYPES)[number])) {
     return `${label}: نوع الملف غير مدعوم (JPEG, PNG, WebP فقط)`;
   }
-  if (file.size > MAX_UPLOAD_SIZE_BYTES) {
-    return `${label}: حجم الملف أكبر من 10 ميجابايت`;
+  if (file.size > MAX_REGISTRATION_UPLOAD_BYTES) {
+    const maxMb = MAX_REGISTRATION_UPLOAD_BYTES / (1024 * 1024);
+    return `${label}: حجم الملف أكبر من ${maxMb} ميجابايت`;
   }
   return null;
 }
@@ -40,6 +45,10 @@ export async function POST(request: NextRequest) {
     password: String(formData.get('password') ?? ''),
     nationalId: String(formData.get('nationalId') ?? ''),
     specialty: String(formData.get('specialty') ?? ''),
+    providerRole: String(formData.get('providerRole') ?? ''),
+    contractorKind: String(formData.get('contractorKind') ?? ''),
+    capacityTier: String(formData.get('capacityTier') ?? ''),
+    teamSize: formData.get('teamSize') ?? '',
     yearsExperience: formData.get('yearsExperience'),
     governorate: String(formData.get('governorate') ?? ''),
     area: String(formData.get('area') ?? ''),
@@ -118,17 +127,17 @@ export async function POST(request: NextRequest) {
 
   const userId = authData.user.id;
 
-  const profileUpload = await uploadFileForUser(
-    userId,
-    profilePhoto as File,
-    (profilePhoto as File).type,
-  );
-  const idCardUpload = await uploadFileForUser(
+  const profileUpload = await uploadProfilePhotoForUser(userId, profilePhoto as File);
+  if (!profileUpload.ok && profileUpload.error !== 'storage_not_configured') {
+    await supabase.auth.admin.deleteUser(userId);
+    return NextResponse.json({ error: profileUpload.error }, { status: 400 });
+  }
+  const idCardUpload = await uploadKycFileForUser(
     userId,
     idCardPhoto as File,
     (idCardPhoto as File).type,
   );
-  const idCardBackUpload = await uploadFileForUser(
+  const idCardBackUpload = await uploadKycFileForUser(
     userId,
     idCardBackPhoto as File,
     (idCardBackPhoto as File).type,
@@ -139,22 +148,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'فشل رفع الصور. حاول مرة أخرى.' }, { status: 500 });
   }
 
+  const registration: TechnicianRegistrationData = {
+    fullName: data.fullName,
+    phone: data.phone,
+    nationalId: data.nationalId,
+    specialty: data.specialty,
+    providerRole: data.providerRole as TechnicianRegistrationData['providerRole'],
+    contractorKind: data.contractorKind as TechnicianRegistrationData['contractorKind'],
+    capacityTier: data.capacityTier as TechnicianRegistrationData['capacityTier'],
+    teamSize: data.teamSize,
+    yearsExperience: data.yearsExperience,
+    governorate: data.governorate,
+    area: data.area,
+    startingPrice: data.startingPrice,
+    workingHours: data.workingHours,
+    bio: data.bio,
+  };
+
   const result = await upsertTechnicianRegistration(
     supabase,
     userId,
     email,
-    {
-      fullName: data.fullName,
-      phone: data.phone,
-      nationalId: data.nationalId,
-      specialty: data.specialty,
-      yearsExperience: data.yearsExperience,
-      governorate: data.governorate,
-      area: data.area,
-      startingPrice: data.startingPrice,
-      workingHours: data.workingHours,
-      bio: data.bio,
-    },
+    registration,
     profileUpload.url,
     idCardUpload.url,
     idCardBackUpload.url,
@@ -167,6 +182,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     success: true,
-    message: 'تم إرسال طلب التسجيل بنجاح. سيتم مراجعته قريباً.',
+    userId,
+    message: `تم إرسال طلب التسجيل. بعد الموافقة ادخل برقم الموبايل ${data.phone} وكلمة المرور التي اخترتها.`,
   });
 }

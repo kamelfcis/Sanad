@@ -190,12 +190,14 @@ export function AdminEntityCard({
 export function AdminEntityCardField({
   label,
   children,
+  className,
 }: {
   label: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <div>
+    <div className={className}>
       <p className="text-xs font-medium text-[#64748B]">{label}</p>
       <div className="mt-1 text-sm">{children}</div>
     </div>
@@ -246,8 +248,18 @@ export function AdminEntityCardAvatar({
   );
 }
 
-export function AdminEntityCardActions({ children }: { children: React.ReactNode }) {
-  return <div className="mt-4 flex flex-wrap items-center justify-between gap-2">{children}</div>;
+export function AdminEntityCardActions({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn('mt-4 flex flex-wrap items-center justify-between gap-2', className)}>
+      {children}
+    </div>
+  );
 }
 
 export function AdminEntityCardActionsGroup({ children }: { children: React.ReactNode }) {
@@ -255,16 +267,28 @@ export function AdminEntityCardActionsGroup({ children }: { children: React.Reac
 }
 
 export function AdminEntityCardIconButton({
-  children,
+  icon: Icon,
+  label,
+  variant = 'edit',
+  className,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) {
+}: Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
+  icon: LucideIcon;
+  label: string;
+  variant?: 'edit' | 'destructive';
+}) {
   return (
     <button
       type="button"
-      className={cn(adminActionButtonClass, 'inline-flex h-8 w-8 items-center justify-center rounded-md')}
+      aria-label={label}
+      className={cn(
+        variant === 'destructive' ? adminActionButtonDestructiveClass : adminActionButtonClass,
+        'inline-flex h-8 w-8 items-center justify-center rounded-md',
+        className,
+      )}
       {...props}
     >
-      {children}
+      <Icon className="h-4 w-4" />
     </button>
   );
 }
@@ -272,12 +296,25 @@ export function AdminEntityCardIconButton({
 export function AdminEntityCardPrimaryAction({
   icon: Icon,
   onClick,
+  href,
   children,
 }: {
   icon?: LucideIcon;
   onClick?: () => void;
+  href?: string;
   children: React.ReactNode;
 }) {
+  if (href) {
+    return (
+      <Button asChild size="sm">
+        <Link href={href}>
+          {Icon ? <Icon className="h-4 w-4" /> : null}
+          {children}
+        </Link>
+      </Button>
+    );
+  }
+
   return (
     <Button type="button" size="sm" onClick={onClick}>
       {Icon ? <Icon className="h-4 w-4" /> : null}
@@ -317,9 +354,15 @@ export function AdminEntityCardInfoRow({
   );
 }
 
-export function AdminEntityCardInfoLtrValue({ children }: { children: React.ReactNode }) {
+export function AdminEntityCardInfoLtrValue({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <span dir="ltr" className="font-mono text-sm text-[#64748B]">
+    <span dir="ltr" className={cn('font-mono text-sm text-[#64748B]', className)}>
       {children}
     </span>
   );

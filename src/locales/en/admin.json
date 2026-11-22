@@ -9,6 +9,7 @@
     "categories": "Categories",
     "heroSlides": "Hero Slides",
     "reviews": "Reviews",
+    "complaints": "Complaints",
     "payments": "Payments",
     "auditLogs": "Audit Logs",
     "settings": "Settings",
@@ -121,6 +122,19 @@
     "subtitle": "Manage technician registrations and statuses.",
     "loadError": "Failed to load technicians.",
     "searchPlaceholder": "Search technicians...",
+    "unnamed": "No name",
+    "trade": "Trade",
+    "role": "Account type",
+    "contractorKind": "Contractor type",
+    "capacity": "Capacity",
+    "teamSize": "Team size",
+    "contact": {
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "requestService": "Request service",
+      "requestQuote": "Request a quote",
+      "unavailable": "Unavailable for new work"
+    },
     "empty": {
       "title": "No technicians found",
       "subtitle": "No technicians match your search."
@@ -128,7 +142,7 @@
     "detail": {
       "notFound": "Technician not found",
       "back": "Back to technicians",
-      "unnamed": "Unnamed Technician",
+      "unnamed": "No name",
       "noPhone": "No phone",
       "statusActions": "Status Actions",
       "approve": "Approve",
@@ -148,7 +162,53 @@
       "recentBookings": "Recent Bookings ({{count}})",
       "reviews": "Reviews ({{count}})",
       "anonymous": "Anonymous",
-      "booking": "Booking"
+      "booking": "Booking",
+      "profilePhoto": "Profile photo",
+      "idCard": "National ID card",
+      "idCardBack": "ID card back",
+      "verificationDoc": "Verification document",
+      "viewDocument": "View document",
+      "noDocuments": "No documents",
+      "applicationDetails": "Application details",
+      "skills": "Skills",
+      "documents": "Documents",
+      "performance": "Performance",
+      "nationalId": "National ID",
+      "governorate": "Governorate",
+      "area": "Area",
+      "workingHours": "Working hours",
+      "startingPrice": "Starting price",
+      "specialty": "Specialty",
+      "noSkills": "No skills on file",
+      "confirm": {
+        "reasonLabel": "Reason",
+        "reasonPlaceholder": "Write the reason...",
+        "cancel": "Cancel",
+        "approve": {
+          "title": "Confirm approval",
+          "description": "Approve {{name}}?",
+          "confirm": "Approve",
+          "success": "Approved"
+        },
+        "reject": {
+          "title": "Confirm rejection",
+          "description": "Reject {{name}}?",
+          "confirm": "Reject",
+          "success": "Rejected"
+        },
+        "suspend": {
+          "title": "Confirm suspension",
+          "description": "Suspend {{name}}?",
+          "confirm": "Suspend",
+          "success": "Suspended"
+        },
+        "reactivate": {
+          "title": "Confirm reactivation",
+          "description": "Reactivate {{name}}?",
+          "confirm": "Reactivate",
+          "success": "Reactivated"
+        }
+      }
     },
     "status": {
       "verified": "Verified",
@@ -312,6 +372,58 @@
     "about": "About",
     "aboutText": "Sanad v1.0.0 — A home services marketplace platform built with Next.js, Supabase, and TailwindCSS."
   },
+  "moderation": {
+    "actionsLabel": "Account actions",
+    "blockedBadge": "Blocked",
+    "blockedReason": "Block reason",
+    "block": "Block",
+    "unblock": "Unblock",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "confirmPhrase": "DELETE",
+    "confirmPhraseLabel": "Type {{phrase}} to confirm",
+    "reasonLabel": "Reason",
+    "reasonPlaceholder": "Reason for blocking...",
+    "bulk": {
+      "protectedRow": "This account cannot be deleted"
+    },
+    "toast": {
+      "blocked": "Account blocked",
+      "unblocked": "Account unblocked",
+      "userDeleted": "Account deleted",
+      "bookingDeleted": "Booking deleted"
+    },
+    "dialog": {
+      "block": {
+        "title": "Block account",
+        "description": "{{name}} will be blocked from using the platform.",
+        "confirm": "Block"
+      },
+      "unblock": {
+        "title": "Unblock account",
+        "description": "{{name}} will be unblocked.",
+        "confirm": "Unblock"
+      },
+      "deleteTechnician": {
+        "title": "Delete technician",
+        "description": "{{name}} will be permanently deleted.",
+        "consequences": "This cannot be undone.",
+        "confirm": "Delete"
+      },
+      "deleteCustomer": {
+        "title": "Delete customer",
+        "description": "{{name}} will be permanently deleted.",
+        "consequences": "This cannot be undone.",
+        "confirm": "Delete"
+      },
+      "deleteBooking": {
+        "title": "Delete booking",
+        "description": "Booking {{name}} will be permanently deleted.",
+        "consequences": "This cannot be undone.",
+        "confirm": "Delete"
+      }
+    }
+  },
   "unauthorized": {
     "title": "Unauthorized",
     "description": "You do not have permission to access this area. Only administrators can view this page.",
@@ -328,6 +440,7 @@
     "create": "Create",
     "update": "Update",
     "actions": "Actions",
+    "error": "Something went wrong",
     "yes": "Yes",
     "no": "No",
     "unknown": "Unknown",
@@ -368,6 +481,7 @@
     "matched": "Matched",
     "accepted": "Accepted",
     "in_progress": "In Progress",
+    "awaiting_customer_confirmation": "Awaiting customer confirmation",
     "completed": "Completed",
     "cancelled": "Cancelled",
     "disputed": "Disputed"
@@ -415,7 +529,13 @@
       "ADMIN_APPROVE_PAYMENT_FAILED": "Failed to approve payment",
       "ADMIN_REJECT_PAYMENT_FAILED": "Failed to reject payment",
       "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "Failed to load payment settings",
-      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "Failed to update payment settings"
+      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "Failed to update payment settings",
+      "ADMIN_BLOCK_USER_FAILED": "Failed to block the account",
+      "ADMIN_DELETE_USER_FAILED": "Failed to delete the account",
+      "ADMIN_DELETE_BOOKING_FAILED": "Failed to delete the booking",
+      "ADMIN_MODERATE_SELF_FORBIDDEN": "You cannot perform this action on your own account",
+      "ADMIN_MODERATE_ADMIN_FORBIDDEN": "Admin accounts cannot be blocked or deleted",
+      "ADMIN_MODERATE_PROTECTED_FORBIDDEN": "This account is protected and cannot be blocked or deleted"
     },
     "generic": "An unexpected error occurred"
   },

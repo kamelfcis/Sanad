@@ -3,12 +3,21 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TechnicianRegistrationForm } from '@/components/auth/technician-registration-form';
+import { TechnicianRegisterLayout } from '@/components/auth/technician-register-layout';
 import { PageLoading } from '@/components/shared/page-loading';
 
 function RegisterTechnicianContent() {
   const searchParams = useSearchParams();
   const complete = searchParams.get('complete') === '1';
-  return <TechnicianRegistrationForm mode={complete ? 'complete' : 'signup'} />;
+  const asContractor = searchParams.get('as') === 'contractor';
+  return (
+    <TechnicianRegisterLayout
+      audience={asContractor ? 'contractor' : 'technician'}
+      showLoginLink={!complete}
+    >
+      <TechnicianRegistrationForm mode={complete ? 'complete' : 'signup'} />
+    </TechnicianRegisterLayout>
+  );
 }
 
 export default function RegisterTechnicianPage() {

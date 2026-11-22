@@ -25,6 +25,7 @@ export const bookingStatusSchema = z.enum([
   'matched',
   'accepted',
   'in_progress',
+  'awaiting_customer_confirmation',
   'completed',
   'cancelled',
   'disputed',

@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useBooking } from '@/hooks/use-bookings';
+import { useAuthStore } from '@/store/auth-store';
+import { useBooking, useBookingsRealtime, useConfirmBookingCompletion } from '@/hooks/use-bookings';
 import { useBookingReview } from '@/hooks/use-reviews';
 import { useBookingPayment } from '@/hooks/use-payments';
 import { BookingStatus } from '@/components/shared/booking-status';
@@ -14,10 +15,37 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Ban, Calendar, MapPin, Wrench, Clock, MessageCircle, Star, Banknote } from 'lucide-react';
-import { format } from 'date-fns';
+import {
+  ArrowLeft,
+  Ban,
+  Calendar,
+  MapPin,
+  Wrench,
+  Clock,
+  MessageCircle,
+  Star,
+  Banknote,
+  CheckCircle2,
+} from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { formatCairoDateTime } from '@/lib/datetime/cairo';
+import { getBookingDisplayPrice } from '@/lib/pricing/booking-display-price';
+import { formatMoney } from '@/lib/currency/format';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { LocationMap } from '@/components/maps/location-map';
 import { isCustomerCancellableStatus } from '@/lib/validations/booking';
+import { BookingComplaintDialog } from '@/components/customer/booking-complaint-dialog';
+import { BookingStatusTimeline } from '@/components/shared/booking-status-timeline';
+import { ReviewForm } from '@/components/shared/review-form';
 
 function BookingDetailSkeleton() {
   return (
@@ -40,6 +68,10 @@ export default function BookingDetailPage() {
     booking?.status === 'completed' ? id : '',
   );
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [confirmCompletionOpen, setConfirmCompletionOpen] = useState(false);
+  const confirmCompletion = useConfirmBookingCompletion();
+  const { profile } = useAuthStore();
+  useBookingsRealtime(profile?.id);
 
   const canCancel = booking ? isCustomerCancellableStatus(booking.status) : false;
 
@@ -78,6 +110,11 @@ export default function BookingDetailPage() {
     );
   }
 
+  const displayPrice =
+    booking != null
+      ? getBookingDisplayPrice(booking.price_quote, booking.services?.price ?? null)
+      : null;
+
   if (!booking) {
     return (
       <div className="container py-16 text-center" dir="rtl">
@@ -114,9 +151,33 @@ export default function BookingDetailPage() {
             )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            أُنشئ في {format(new Date(booking.created_at), 'MMMM d, yyyy \'at\' h:mm a')}
+            أُنشئ في {formatCairoDateTime(booking.created_at)}
           </p>
         </div>
+
+        {booking.technician?.full_name && (
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <Avatar className="h-11 w-11">
+                <AvatarImage
+                  src={
+                    booking.technician_profile?.profile_photo_url ??
+                    booking.technician.avatar_url ??
+                    undefined
+                  }
+                  alt={booking.technician.full_name}
+                />
+                <AvatarFallback>
+                  {booking.technician.full_name.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-xs text-muted-foreground">الفني</p>
+                <p className="font-medium">{booking.technician.full_name}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Service Info */}
         <Card>
@@ -185,7 +246,7 @@ export default function BookingDetailPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">الوقت المفضّل</p>
                   <p className="text-sm">
-                    {format(new Date(booking.preferred_time), 'MMMM d, yyyy \'at\' h:mm a')}
+                    {formatCairoDateTime(booking.preferred_time)}
                   </p>
                 </div>
               </div>
@@ -195,7 +256,7 @@ export default function BookingDetailPage() {
               <div>
                 <p className="text-xs text-muted-foreground">تاريخ الإنشاء</p>
                 <p className="text-sm">
-                  {format(new Date(booking.created_at), 'MMMM d, yyyy \'at\' h:mm a')}
+                  {formatCairoDateTime(booking.created_at)}
                 </p>
               </div>
             </div>
@@ -231,15 +292,15 @@ export default function BookingDetailPage() {
         )}
 
         {/* Payment */}
-        {booking.price_quote != null && Number(booking.price_quote) > 0 && (
+        {displayPrice != null && (
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium">الدفع</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">المبلغ</span>
-                <span className="font-semibold">{Number(booking.price_quote).toFixed(2)} ج.م</span>
+                <span className="text-sm text-muted-foreground">السعر المتفق عليه</span>
+                <span className="font-semibold">{formatMoney(displayPrice)}</span>
               </div>
               {paymentData?.payment ? (
                 <PaymentStatusBadge
@@ -265,8 +326,30 @@ export default function BookingDetailPage() {
           </Card>
         )}
 
+        {booking.status === 'awaiting_customer_confirmation' && (
+          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+            <CardContent className="space-y-3 p-4">
+              <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                أنهى الفني العمل. يُرجى التأكيد لإتمام الحجز.
+              </p>
+              <Button
+                type="button"
+                className="w-full gap-2"
+                disabled={confirmCompletion.isPending}
+                onClick={() => setConfirmCompletionOpen(true)}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                تأكيد اكتمال الخدمة
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Chat */}
-        {(booking.status === 'accepted' || booking.status === 'in_progress' || booking.status === 'completed') && (
+        {(booking.status === 'accepted' ||
+          booking.status === 'in_progress' ||
+          booking.status === 'awaiting_customer_confirmation' ||
+          booking.status === 'completed') && (
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium">المحادثة مع الفني</CardTitle>
@@ -285,24 +368,33 @@ export default function BookingDetailPage() {
         {/* Review Prompt */}
         {booking.status === 'completed' && !reviewLoading && !existingReview && (
           <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-            <CardContent className="flex items-center gap-4 p-4">
-              <Star className="h-8 w-8 shrink-0 text-amber-500" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                  كيف كانت تجربتك؟
-                </p>
-                <p className="text-xs text-amber-700 dark:text-amber-300">
-                  ملاحظاتك تساعد العملاء والفنيين الآخرين.
-                </p>
-              </div>
-              <Button size="sm" asChild>
-                <Link href={`/customer/bookings/${id}/review`}>تقييم</Link>
-              </Button>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Star className="h-5 w-5 text-amber-500" />
+                قيّم تجربتك مع الصنايعي
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ReviewForm bookingId={id} redirectHomeOnSuccess />
             </CardContent>
           </Card>
         )}
 
         {/* Already reviewed */}
+        {booking.status === 'completed' && booking.technician_id && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">شكوى</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
+                مسار منفصل عن التقييم — للإبلاغ عن مشكلة في التنفيذ.
+              </p>
+              <BookingComplaintDialog bookingId={id} />
+            </CardContent>
+          </Card>
+        )}
+
         {existingReview && (
           <Card>
             <CardHeader>
@@ -331,16 +423,19 @@ export default function BookingDetailPage() {
           <CardHeader>
             <CardTitle className="text-sm font-medium">الحالة</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <BookingStatusTimeline status={booking.status} />
             <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
               <span className="text-sm font-medium">الحالة الحالية</span>
               <BookingStatus status={booking.status} />
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {booking.status === 'pending' && 'بانتظار قبول فني لطلبك.'}
               {booking.status === 'matched' && 'تم مطابقة فني وإشعاره.'}
               {booking.status === 'accepted' && 'قبل الفني طلبك وهو في الطريق.'}
               {booking.status === 'in_progress' && 'الفني يعمل على طلبك حالياً.'}
+              {booking.status === 'awaiting_customer_confirmation' &&
+                'أنهى الفني العمل — يُرجى التأكيد لإتمام الحجز.'}
               {booking.status === 'completed' && 'اكتمل طلب الخدمة.'}
               {booking.status === 'cancelled' && 'تم إلغاء طلب الخدمة.'}
               {booking.status === 'disputed' && 'هناك مشكلة متعلقة بهذا الحجز.'}
@@ -385,6 +480,42 @@ export default function BookingDetailPage() {
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
       />
+
+      <AlertDialog open={confirmCompletionOpen} onOpenChange={setConfirmCompletionOpen}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد اكتمال الخدمة؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              بالتأكيد أنت توافق على أن العمل تم بنجاح وسيصبح الحجز مكتملاً.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <Button
+              type="button"
+              disabled={confirmCompletion.isPending}
+              onClick={async () => {
+                try {
+                  await confirmCompletion.mutateAsync(id);
+                  setConfirmCompletionOpen(false);
+                  toast({
+                    title: 'تم تأكيد الاكتمال',
+                    description: 'أصبح الحجز مكتملاً. يمكنك ترك تقييم للفني.',
+                  });
+                } catch (e) {
+                  toast({
+                    title: 'تعذّر التأكيد',
+                    description: e instanceof Error ? e.message : 'حاول مرة أخرى.',
+                    variant: 'destructive',
+                  });
+                }
+              }}
+            >
+              تأكيد الاكتمال
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

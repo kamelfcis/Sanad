@@ -149,6 +149,13 @@ export interface AdminTechnicianListItem {
   skills_count?: number;
   is_blocked?: boolean | null;
   blocked_reason?: string | null;
+  provider_role?: string | null;
+  contractor_kind?: string | null;
+  capacity_tier?: string | null;
+  team_size?: number | null;
+  specialty_label?: string | null;
+  specialty_slug?: string | null;
+  role?: string | null;
 }
 
 export interface AdminTechnicianSkill {
@@ -190,6 +197,10 @@ export interface AdminTechnicianDetail {
   completed_jobs: number;
   average_rating: number;
   total_ratings: number;
+  provider_role?: string | null;
+  contractor_kind?: string | null;
+  capacity_tier?: string | null;
+  team_size?: number | null;
   created_at: string;
   is_blocked?: boolean | null;
   blocked_reason?: string | null;

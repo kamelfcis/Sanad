@@ -3,10 +3,12 @@ import { siteConfig } from '@/lib/seo';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: siteConfig.title,
+    id: '/',
+    name: `${siteConfig.nameEn} | ${siteConfig.name}`,
     short_name: siteConfig.name,
     description: siteConfig.description,
     start_url: '/',
+    scope: '/',
     display: 'standalone',
     background_color: '#FFFFFF',
     theme_color: '#FF6B00',
@@ -15,6 +17,18 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: 'rtl',
     categories: ['business', 'utilities'],
     icons: [
+      {
+        src: '/icons/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
       {
         src: '/icons/icon-192.svg',
         sizes: '192x192',
@@ -28,6 +42,14 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'maskable',
       },
     ],
-    screenshots: [],
+    screenshots: [
+      {
+        src: '/og-image.svg',
+        sizes: '1200x630',
+        type: 'image/svg+xml',
+        form_factor: 'wide',
+        label: 'سند — منصة الخدمات المنزلية في مصر',
+      },
+    ],
   };
 }

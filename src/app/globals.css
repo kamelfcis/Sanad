@@ -13,6 +13,7 @@
   --popover: #ffffff;
   --popover-foreground: #0f172a;
   --primary: #ff6b00;
+  --primary-strong: #9a3d00;
   --primary-foreground: #ffffff;
   --secondary: #194e5b;
   --secondary-foreground: #ffffff;
@@ -123,6 +124,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-surface: var(--surface);
+  --color-primary-strong: var(--primary-strong);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-success: var(--success);
@@ -142,9 +144,9 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-tajawal), var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-tajawal), var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
-  --font-arabic: var(--font-tajawal), var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
 
   --animate-float: float 6s ease-in-out infinite;
   --animate-fade-in: fade-in 0.5s ease-out;

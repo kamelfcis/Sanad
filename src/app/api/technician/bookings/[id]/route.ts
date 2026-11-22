@@ -1,129 +1,94 @@
-/**
- * @fileoverview Common propTypes sorting functionality.
- */
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
+import { requireAuth } from '@/lib/api/auth';
+import { parseJsonBody } from '@/lib/api/validate';
+import { adminEntityIdSchema } from '@/lib/validations/admin';
+import { notifyBookingStatusChange } from '@/lib/notifications/events';
 
-'use strict';
+const technicianBookingStatusSchema = z.object({
+  status: z.enum(['in_progress', 'awaiting_customer_confirmation']),
+});
 
-const toSorted = require('array.prototype.tosorted');
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const rawParams = await params;
+  const idParsed = adminEntityIdSchema.safeParse(rawParams);
+  if (!idParsed.success) {
+    return NextResponse.json({ error: 'Invalid booking ID' }, { status: 400 });
+  }
+  const { id: bookingId } = idParsed.data;
 
-const astUtil = require('./ast');
-const eslintUtil = require('./eslint');
+  const supabase = await createServerSupabaseClient();
+  const auth = await requireAuth(supabase);
+  if ('response' in auth) return auth.response;
 
-const getSourceCode = eslintUtil.getSourceCode;
-const getText = eslintUtil.getText;
+  const parsed = await parseJsonBody(request, technicianBookingStatusSchema);
+  if ('response' in parsed) return parsed.response;
 
-/**
- * Returns the value name of a node.
- *
- * @param {ASTNode} node the node to check.
- * @returns {string} The name of the node.
- */
-function getValueName(node) {
-  return node.type === 'Property'
-    && node.value.property
-    && node.value.property.name;
-}
+  const { status } = parsed.data;
 
-/**
- * Checks if the prop is required or not.
- *
- * @param {ASTNode} node the prop to check.
- * @returns {boolean} true if the prop is required.
- */
-function isRequiredProp(node) {
-  return getValueName(node) === 'isRequired';
-}
+  const { data: booking, error: fetchError } = await supabase
+    .from('bookings')
+    .select('id, status, customer_id, technician_id, services(name_ar)')
+    .eq('id', bookingId)
+    .maybeSingle();
 
-/**
- * Checks if the proptype is a callback by checking if it starts with 'on'.
- *
- * @param {string} propName the name of the proptype to check.
- * @returns {boolean} true if the proptype is a callback.
- */
-function isCallbackPropName(propName) {
-  return /^on[A-Z]/.test(propName);
-}
+  if (fetchError) {
+    return NextResponse.json({ error: fetchError.message }, { status: 500 });
+  }
 
-/**
- * Checks if the prop is PropTypes.shape.
- *
- * @param {ASTNode} node the prop to check.
- * @returns {boolean} true if the prop is PropTypes.shape.
- */
-function isShapeProp(node) {
-  return !!(
-    node
-    && node.callee
-    && node.callee.property
-    && node.callee.property.name === 'shape'
+  if (!booking) {
+    return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+  }
+
+  if (booking.technician_id !== auth.user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const allowed =
+    (status === 'in_progress' && booking.status === 'accepted') ||
+    (status === 'awaiting_customer_confirmation' &&
+      (booking.status === 'in_progress' || booking.status === 'accepted'));
+
+  if (!allowed) {
+    return NextResponse.json({ error: 'Invalid status transition' }, { status: 400 });
+  }
+
+  const writeClient = isServiceRoleConfigured() ? createServiceRoleClient() : supabase;
+
+  const { data, error } = await writeClient
+    .from('bookings')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', bookingId)
+    .eq('technician_id', auth.user.id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data) {
+    return NextResponse.json(
+      { error: 'Booking could not be updated (status may have changed)' },
+      { status: 409 },
+    );
+  }
+
+  const serviceName = (booking.services as { name_ar?: string } | null)?.name_ar;
+  await notifyBookingStatusChange(
+    {
+      bookingId,
+      serviceName,
+      customerId: booking.customer_id,
+      technicianId: booking.technician_id,
+    },
+    status,
   );
+
+  return NextResponse.json(data);
 }
-
-/**
- * Returns the properties of a PropTypes.shape.
- *
- * @param {ASTNode} node the prop to check.
- * @returns {Array} the properties of the PropTypes.shape node.
- */
-function getShapeProperties(node) {
-  return node.arguments
-    && node.arguments[0]
-    && node.arguments[0].properties;
-}
-
-/**
- * Compares two elements.
- *
- * @param {ASTNode} a the first element to compare.
- * @param {ASTNode} b the second element to compare.
- * @param {Context} context The context of the two nodes.
- * @param {boolean=} ignoreCase whether or not to ignore case when comparing the two elements.
- * @param {boolean=} requiredFirst whether or not to sort required elements first.
- * @param {boolean=} callbacksLast whether or not to sort callbacks after everything else.
- * @param {boolean=} noSortAlphabetically whether or not to disable alphabetical sorting of the elements.
- * @returns {number} the sort order of the two elements.
- */
-function sorter(a, b, context, ignoreCase, requiredFirst, callbacksLast, noSortAlphabetically) {
-  const aKey = String(astUtil.getKeyValue(context, a));
-  const bKey = String(astUtil.getKeyValue(context, b));
-
-  if (requiredFirst) {
-    if (isRequiredProp(a) && !isRequiredProp(b)) {
-      return -1;
-    }
-    if (!isRequiredProp(a) && isRequiredProp(b)) {
-      return 1;
-    }
-  }
-
-  if (callbacksLast) {
-    if (isCallbackPropName(aKey) && !isCallbackPropName(bKey)) {
-      return 1;
-    }
-    if (!isCallbackPropName(aKey) && isCallbackPropName(bKey)) {
-      return -1;
-    }
-  }
-
-  if (!noSortAlphabetically) {
-    if (ignoreCase) {
-      return aKey.localeCompare(bKey);
-    }
-
-    if (aKey < bKey) {
-      return -1;
-    }
-    if (aKey > bKey) {
-      return 1;
-    }
-  }
-  return 0;
-}
-
-const commentnodeMap = new WeakMap(); // all nodes reference WeakMap for start and end range
-
-/**
- * Fixes sort order of prop types.
- *
- * @param {Context} context the second element to compare.
- * @param {Fixer} fixer

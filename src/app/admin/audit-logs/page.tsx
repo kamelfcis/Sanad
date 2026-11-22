@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAdminAuditLogs } from '@/hooks/use-admin';
+import { useAdminAuditLogs, type AdminAuditLogEntry } from '@/hooks/use-admin';
 import { Badge } from '@/components/ui/badge';
 import {
   AdminPremiumTable,
@@ -26,17 +26,6 @@ import { cn } from '@/lib/utils/cn';
 
 const entityFilters = ['', 'booking', 'technician', 'customer', 'service', 'category', 'review'] as const;
 
-interface AuditLogEntry {
-  id: string;
-  action: string;
-  entity_type: string;
-  entity_id: string;
-  admin_id: string;
-  created_at: string;
-  metadata?: Record<string, unknown> | null;
-  admin?: { full_name?: string | null; email?: string | null } | null;
-}
-
 function useAuditLogLabels(t: ReturnType<typeof useAdminT>['t']) {
   const actionLabel = (action: string) => {
     const key = `auditLogs.actions.${action}`;
@@ -59,7 +48,7 @@ function AuditLogSummary({
   actionLabel,
   entityLabel,
 }: {
-  log: AuditLogEntry;
+  log: AdminAuditLogEntry;
   t: ReturnType<typeof useAdminT>['t'];
   actionLabel: (action: string) => string;
   entityLabel: (type: string) => string;
@@ -76,9 +65,9 @@ function AuditLogSummary({
       <code
         className="rounded-md bg-[#F1F5F9] px-1.5 py-0.5 text-xs font-mono text-[#64748B]"
         dir="ltr"
-        title={log.entity_id}
+        title={log.entity_id ?? undefined}
       >
-        {log.entity_id.slice(0, 8)}…
+        {log.entity_id ? `${log.entity_id.slice(0, 8)}…` : '—'}
       </code>
     </p>
   );
@@ -91,7 +80,7 @@ function AuditLogCard({
   actionLabel,
   entityLabel,
 }: {
-  log: AuditLogEntry;
+  log: AdminAuditLogEntry;
   t: ReturnType<typeof useAdminT>['t'];
   formatDateTime: ReturnType<typeof useAdminT>['formatDateTime'];
   actionLabel: (action: string) => string;
@@ -117,7 +106,7 @@ function AuditLogCard({
 
           {log.metadata && Object.keys(log.metadata).length > 0 ? (
             <AdminAuditLogDetails
-              metadata={log.metadata as Record<string, unknown>}
+              metadata={log.metadata as Record<string, import('@/components/admin/admin-audit-log-details').MetadataValue>}
               entityType={log.entity_type}
               action={log.action}
             />
@@ -129,9 +118,9 @@ function AuditLogCard({
             'shrink-0 text-xs tabular-nums text-[#94A3B8]',
             'sm:max-w-[9rem] sm:text-end',
           )}
-          dateTime={log.created_at}
+          dateTime={log.created_at ?? undefined}
         >
-          {formatDateTime(log.created_at)}
+          {log.created_at ? formatDateTime(log.created_at) : '—'}
         </time>
       </div>
     </AdminEntityCard>
@@ -194,7 +183,7 @@ export default function AdminAuditLogsPage() {
             </AdminPremiumTableHeaderCell>
           </AdminPremiumTableHead>
           <AdminPremiumTableBody>
-            {data?.logs.map((log: AuditLogEntry) => (
+            {data?.logs.map((log) => (
               <AdminPremiumTableRow key={log.id}>
                 <AdminPremiumTableCell>
                   <Badge
@@ -212,11 +201,11 @@ export default function AdminAuditLogsPage() {
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell dir="ltr">
                   <code className="rounded-md bg-[#F1F5F9] px-1.5 py-0.5 text-xs font-mono text-[#64748B]">
-                    {log.entity_id.slice(0, 8)}…
+                    {log.entity_id ? `${log.entity_id.slice(0, 8)}…` : '—'}
                   </code>
                 </AdminPremiumTableCell>
                 <AdminPremiumTableCell className="hidden text-[#64748B] md:table-cell">
-                  {formatDateTime(log.created_at)}
+                  {log.created_at ? formatDateTime(log.created_at) : '—'}
                 </AdminPremiumTableCell>
               </AdminPremiumTableRow>
             ))}
@@ -224,7 +213,7 @@ export default function AdminAuditLogsPage() {
         </AdminPremiumTable>
       }
       cards={
-        data?.logs.map((log: AuditLogEntry) => (
+        data?.logs.map((log) => (
           <AuditLogCard
             key={log.id}
             log={log}

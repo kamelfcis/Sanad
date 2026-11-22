@@ -35,6 +35,25 @@ export async function PUT(request: NextRequest) {
 
   const { bio, years_experience, max_distance_km, is_available, phone } = parsed.data;
 
+  if (is_available === true) {
+    const { data: current, error: currentError } = await supabase
+      .from('technician_profiles')
+      .select('verification_status')
+      .eq('id', auth.user.id)
+      .maybeSingle();
+
+    if (currentError) {
+      return NextResponse.json({ error: currentError.message }, { status: 500 });
+    }
+
+    if (!current || current.verification_status !== 'verified') {
+      return NextResponse.json(
+        { error: 'لا يمكن تفعيل التوفر قبل اكتمال توثيق حسابك من الإدارة.' },
+        { status: 422 },
+      );
+    }
+  }
+
   const { data, error } = await supabase
     .from('technician_profiles')
     .upsert({

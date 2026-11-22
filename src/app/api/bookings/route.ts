@@ -9,6 +9,10 @@ import {
   notifyAdminsBookingNeedsAssignment,
 } from '@/lib/notifications/events';
 import { logger } from '@/lib/logger';
+import { resolveTechnicianServicePrice } from '@/lib/pricing/technician-service-price';
+import { preferredTimeLocalToIso } from '@/lib/datetime/cairo';
+import { normalizeEgyptCoords } from '@/lib/geo/normalize-coords';
+import { loadTechnicianPublicIdentities } from '@/lib/booking/technician-public-identity';
 
 export async function GET(request: NextRequest) {
   const supabase = await createServerSupabaseClient();
@@ -22,7 +26,10 @@ export async function GET(request: NextRequest) {
 
   let dbQuery = supabase
     .from('bookings')
-    .select('*, services(name_ar, name_en, slug, service_categories(name_ar, name_en))')
+    .select(
+      `*,
+      services(name_ar, name_en, slug, price, service_categories(name_ar, name_en))`,
+    )
     .eq('customer_id', auth.user.id)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -37,7 +44,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  const rows = data ?? [];
+  const identities = await loadTechnicianPublicIdentities(
+    rows.map((row) => row.technician_id),
+  );
+  const withTechnician = rows.map((row) => {
+    const identity = row.technician_id ? identities.get(row.technician_id) : undefined;
+    return {
+      ...row,
+      technician: identity?.technician ?? null,
+      technician_profile: identity?.technician_profile ?? null,
+    };
+  });
+
+  return NextResponse.json(withTechnician);
 }
 
 export async function POST(request: NextRequest) {
@@ -53,6 +73,8 @@ export async function POST(request: NextRequest) {
 
   const rpcClient = isServiceRoleConfigured() ? createServiceRoleClient() : supabase;
   const writeClient = rpcClient;
+
+  let priceQuote: number | null = null;
 
   if (technician_id) {
     const { data: techProfile } = await rpcClient
@@ -81,7 +103,13 @@ export async function POST(request: NextRequest) {
 
     const { data: skill } = await rpcClient
       .from('technician_skills')
-      .select('id')
+      .select(
+        `
+        id,
+        price_override,
+        services(price)
+      `,
+      )
       .eq('technician_id', technician_id)
       .eq('service_id', service_id)
       .eq('is_active', true)
@@ -93,6 +121,46 @@ export async function POST(request: NextRequest) {
         { status: 422 },
       );
     }
+
+    const serviceJoin = skill.services as unknown as {
+      id: string;
+      price: number | null;
+      service_categories: { slug: string; name_ar: string } | null;
+    } | null;
+    priceQuote = resolveTechnicianServicePrice(
+      [
+        {
+          is_active: true,
+          price_override: skill.price_override,
+          services: serviceJoin,
+        },
+      ],
+      service_id,
+    );
+    if (priceQuote <= 0) {
+      const { data: serviceRow } = await rpcClient
+        .from('services')
+        .select('price')
+        .eq('id', service_id)
+        .maybeSingle();
+      if (serviceRow?.price != null) priceQuote = Number(serviceRow.price);
+    }
+  } else {
+    const { data: serviceRow } = await rpcClient.from('services').select('price').eq('id', service_id).maybeSingle();
+    if (serviceRow?.price != null) priceQuote = Number(serviceRow.price);
+  }
+
+  const normalizedCoords =
+    location_lat != null && location_lng != null
+      ? normalizeEgyptCoords(location_lat, location_lng)
+      : { lat: location_lat ?? null, lng: location_lng ?? null };
+
+  let preferredTimeIso: string | null = null;
+  if (typeof preferred_time === 'string' && preferred_time.trim()) {
+    preferredTimeIso = preferredTimeLocalToIso(preferred_time);
+    if (!preferredTimeIso) {
+      return NextResponse.json({ error: 'الوقت المفضل غير صالح' }, { status: 400 });
+    }
   }
 
   const { data: booking, error: bookingError } = await writeClient
@@ -103,11 +171,12 @@ export async function POST(request: NextRequest) {
       technician_id: technician_id ?? null,
       description,
       location_address,
-      location_lat: location_lat ?? null,
-      location_lng: location_lng ?? null,
+      location_lat: normalizedCoords.lat,
+      location_lng: normalizedCoords.lng,
       apartment_number: apartment_number ?? null,
       floor_number: floor_number ?? null,
-      preferred_time: preferred_time ? new Date(preferred_time).toISOString() : null,
+      preferred_time: preferredTimeIso,
+      price_quote: priceQuote,
       status: technician_id ? 'matched' : 'pending',
     })
     .select()

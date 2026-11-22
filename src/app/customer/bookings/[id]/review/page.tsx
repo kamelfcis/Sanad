@@ -15,7 +15,7 @@ export default function BookingReviewPage() {
       <p className="mb-6 text-sm text-muted-foreground">
         ساعد الآخرين باختيار تقييم يعكس تجربتك مع الفني.
       </p>
-      <ReviewForm bookingId={id} />
+      <ReviewForm bookingId={id} redirectHomeOnSuccess />
       <Button asChild variant="ghost" className="mt-6">
         <Link href={`/customer/bookings/${id}`}>العودة للحجز</Link>
       </Button>

@@ -150,7 +150,7 @@ export function NotificationsPageClient() {
 
   useNotificationsRealtime(true);
 
-  const notifications = data?.pages.flatMap((page) => page.notifications) ?? [];
+  const notifications = data?.pages.flatMap((page) => page.notifications ?? []) ?? [];
   const total = data?.pages[0]?.total ?? 0;
 
   const handleSelect = useCallback((id: string, checked: boolean) => {

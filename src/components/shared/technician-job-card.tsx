@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookingStatus } from '@/components/shared/booking-status';
-import { Calendar, MapPin, Wrench } from 'lucide-react';
+import { Calendar, Banknote, MapPin, Wrench } from 'lucide-react';
 import { format } from 'date-fns';
+import { getBookingDisplayPrice } from '@/lib/pricing/booking-display-price';
+import { formatMoney } from '@/lib/currency/format';
 
 interface TechnicianJobCardProps {
   id?: string;
@@ -12,7 +14,8 @@ interface TechnicianJobCardProps {
   description?: string | null;
   location_address?: string | null;
   created_at?: string;
-  services?: { name_ar: string; name_en?: string } | null;
+  price_quote?: number | null;
+  services?: { name_ar: string; name_en?: string; price?: number | null } | null;
   href: string;
 }
 
@@ -21,9 +24,11 @@ export function TechnicianJobCard({
   description,
   location_address,
   created_at,
+  price_quote,
   services,
   href,
 }: TechnicianJobCardProps) {
+  const displayPrice = getBookingDisplayPrice(price_quote, services?.price ?? null);
   return (
     <Link href={href} className="block">
       <Card className="transition-all hover:border-primary/50 hover:shadow-sm" dir="rtl">
@@ -51,6 +56,12 @@ export function TechnicianJobCard({
               <span className="inline-flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
                 {location_address}
+              </span>
+            ) : null}
+            {displayPrice != null ? (
+              <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                <Banknote className="h-3 w-3" />
+                {formatMoney(displayPrice)}
               </span>
             ) : null}
           </div>

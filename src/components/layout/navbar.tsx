@@ -16,7 +16,7 @@ import { Wrench, Star, Menu, Globe } from 'lucide-react';
 
 const navItems = [
   { label: 'الرئيسية', href: '/', hasMega: false },
-  { label: 'الخدمات', href: '#services', hasMega: true },
+  { label: 'الخدمات', href: '/services', hasMega: true },
   { label: 'كيف يعمل', href: '#how-it-works', hasMega: false },
   { label: 'الفنيين', href: '/technician', hasMega: false },
   { label: 'التقييمات', href: '#reviews', hasMega: false },
@@ -37,7 +37,7 @@ function getServerHashSnapshot() {
   return '';
 }
 
-export function Navbar() {
+export function Navbar({ overHero = false }: { overHero?: boolean }) {
   const pathname = usePathname();
   const { profile } = useAuthStore();
   const [scrolled, setScrolled] = useState(false);
@@ -65,10 +65,14 @@ export function Navbar() {
 
   const isActive = (href: string) => {
     if (href.startsWith('#')) return hash === href;
+    if (href === '/services') {
+      return pathname === '/services' || pathname.startsWith('/services/');
+    }
     return pathname === href;
   };
 
   const bookHref = profile ? '/customer/bookings/new' : '/auth/register';
+  const lightOnHero = overHero && !scrolled;
 
   return (
     <>
@@ -90,14 +94,29 @@ export function Navbar() {
           {/* Logo — start column (right in RTL) */}
           <Link
             href="/"
+            aria-label="سند — الصفحة الرئيسية"
             className="group flex shrink-0 items-center gap-2 transition-transform duration-200 hover:scale-[1.03] sm:gap-2.5"
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-sm transition-shadow duration-200 group-hover:shadow-md group-hover:shadow-primary/20 lg:h-10 lg:w-10">
               <Wrench className="h-[18px] w-[18px] text-primary-foreground lg:h-5 lg:w-5" />
             </div>
             <div className="hidden min-w-0 flex-col leading-tight xs:flex">
-              <span className="truncate text-lg font-bold text-text-primary -mb-0.5 lg:text-xl">سند</span>
-              <span className="text-[9px] font-bold tracking-[0.25em] text-text-muted lg:text-[10px]">SANAD</span>
+              <span
+                className={cn(
+                  'truncate text-lg font-bold -mb-0.5 lg:text-xl',
+                  lightOnHero ? 'text-white' : 'text-text-primary',
+                )}
+              >
+                سند
+              </span>
+              <span
+                className={cn(
+                  'text-[9px] font-bold tracking-[0.25em] lg:text-[10px]',
+                  lightOnHero ? 'text-white/70' : 'text-text-muted',
+                )}
+              >
+                SANAD
+              </span>
             </div>
           </Link>
 
@@ -114,7 +133,11 @@ export function Navbar() {
                   onMouseEnter={item.hasMega ? handleMegaEnter : undefined}
                   onMouseLeave={item.hasMega ? handleMegaLeave : undefined}
                 >
-                  <NavLink href={item.href} isActive={isActive(item.href)}>
+                  <NavLink
+                    href={item.href}
+                    isActive={isActive(item.href)}
+                    className={lightOnHero && !isActive(item.href) ? 'text-white/85 hover:text-white' : undefined}
+                  >
                     {item.label}
                   </NavLink>
                   {item.hasMega && (
@@ -132,7 +155,12 @@ export function Navbar() {
             <button
               type="button"
               aria-label="تغيير اللغة إلى الإنجليزية"
-              className="flex shrink-0 items-center gap-1 rounded-lg px-2 py-2 text-sm font-semibold text-text-secondary transition-all duration-200 hover:bg-muted hover:text-text-primary md:px-3"
+              className={cn(
+                'flex shrink-0 items-center gap-1 rounded-lg px-2 py-2 text-sm font-semibold transition-all duration-200 md:px-3',
+                lightOnHero
+                  ? 'text-white/85 hover:bg-white/10 hover:text-white'
+                  : 'text-text-secondary hover:bg-muted hover:text-text-primary',
+              )}
             >
               <Globe className="h-4 w-4 shrink-0" aria-hidden />
               <span className="hidden sm:inline">EN</span>
@@ -157,7 +185,12 @@ export function Navbar() {
                 <Link href="/auth/login">
                   <Button
                     variant="ghost"
-                    className="shrink-0 px-2 font-semibold text-text-secondary hover:bg-muted hover:text-primary xl:px-4"
+                    className={cn(
+                      'shrink-0 px-2 font-semibold xl:px-4',
+                      lightOnHero
+                        ? 'text-white hover:bg-white/10 hover:text-white'
+                        : 'text-text-secondary hover:bg-muted hover:text-primary',
+                    )}
                   >
                     <span className="hidden xl:inline">تسجيل الدخول</span>
                     <span className="xl:hidden">دخول</span>
@@ -166,7 +199,12 @@ export function Navbar() {
                 <Link href="/auth/register" className="hidden xl:block">
                   <Button
                     variant="outline"
-                    className="shrink-0 whitespace-nowrap border-border font-semibold text-text-primary hover:bg-muted"
+                    className={cn(
+                      'shrink-0 whitespace-nowrap font-semibold',
+                      lightOnHero
+                        ? 'border-white/50 bg-transparent text-white hover:bg-white/10'
+                        : 'border-border text-text-primary hover:bg-muted',
+                    )}
                   >
                     إنشاء حساب
                   </Button>
@@ -193,7 +231,12 @@ export function Navbar() {
               aria-label="فتح القائمة"
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(true)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-text-secondary transition-all duration-200 hover:bg-muted hover:text-text-primary xl:hidden"
+              className={cn(
+                'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all duration-200 xl:hidden',
+                lightOnHero
+                  ? 'text-white hover:bg-white/10'
+                  : 'text-text-secondary hover:bg-muted hover:text-text-primary',
+              )}
             >
               <Menu className="h-5 w-5" aria-hidden />
             </button>

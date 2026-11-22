@@ -52,6 +52,7 @@ interface Booking {
   apartment_number: string | null;
   floor_number: string | null;
   preferred_time: string | null;
+  price_quote: number | null;
   created_at: string;
   services: { name_ar: string; name_en: string; slug: string; price: number | null; price_type: string } | null;
   profiles: { full_name: string | null; avatar_url: string | null; phone: string | null } | null;
@@ -170,6 +171,7 @@ interface Assignment {
     apartment_number: string | null;
     floor_number: string | null;
     preferred_time: string | null;
+    price_quote: number | null;
     created_at: string;
     services: { name_ar: string; name_en: string; slug: string; price: number | null; price_type: string } | null;
     profiles: { full_name: string | null; avatar_url: string | null; phone: string | null } | null;
@@ -228,6 +230,7 @@ export function useRespondToAssignment() {
     mutationFn: ({ id, action }: { id: string; action: 'accept' | 'reject' }) =>
       respondToAssignment(id, action),
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['technician-assignment'] });
       qc.invalidateQueries({ queryKey: ['technician-assignments'] });
       qc.invalidateQueries({ queryKey: ['technician-bookings'] });
       qc.invalidateQueries({ queryKey: ['booking'] });
@@ -235,7 +238,10 @@ export function useRespondToAssignment() {
   });
 }
 
-async function updateBookingStatus(bookingId: string, status: 'in_progress' | 'completed') {
+async function updateBookingStatus(
+  bookingId: string,
+  status: 'in_progress' | 'awaiting_customer_confirmation',
+) {
   const res = await fetch(`/api/technician/bookings/${bookingId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -276,6 +282,41 @@ export function useTechnicianAssignmentsRealtime(technicianId?: string) {
         () => {
           qc.invalidateQueries({ queryKey: ['technician-assignments'] });
           qc.invalidateQueries({ queryKey: ['technician-bookings'] });
+          qc.invalidateQueries({ queryKey: ['technician-assignment'] });
+          qc.invalidateQueries({ queryKey: ['booking'] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [qc, technicianId]);
+}
+
+/** Live updates for bookings assigned to this technician (accept/start/complete/confirm). */
+export function useTechnicianBookingsRealtime(technicianId?: string) {
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (!technicianId) return;
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`technician-bookings:${technicianId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `technician_id=eq.${technicianId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ['technician-bookings'] });
+          qc.invalidateQueries({ queryKey: ['technician-assignment'] });
+          qc.invalidateQueries({ queryKey: ['technician-assignments'] });
+          qc.invalidateQueries({ queryKey: ['booking'] });
         },
       )
       .subscribe();
@@ -321,7 +362,13 @@ export function useTechnicianEarnings() {
 export function useUpdateBookingStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ bookingId, status }: { bookingId: string; status: 'in_progress' | 'completed' }) =>
+    mutationFn: ({
+      bookingId,
+      status,
+    }: {
+      bookingId: string;
+      status: 'in_progress' | 'awaiting_customer_confirmation';
+    }) =>
       updateBookingStatus(bookingId, status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['technician-assignment'] });

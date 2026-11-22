@@ -54,7 +54,7 @@ export default function TechnicianChatDetailPage() {
     );
   }
 
-  const customer = conversation.booking?.customer;
+  const customer = conversation.booking?.profiles;
   const customerName =
     customer?.full_name?.trim() || customer?.phone?.trim() || 'Customer';
 

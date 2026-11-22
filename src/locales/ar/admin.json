@@ -9,6 +9,7 @@
     "categories": "التصنيفات",
     "heroSlides": "شرائح البanner",
     "reviews": "التقييمات",
+    "complaints": "الشكاوى",
     "payments": "المدفوعات",
     "auditLogs": "سجل التدقيق",
     "settings": "الإعدادات",
@@ -121,6 +122,19 @@
     "subtitle": "إدارة تسجيلات الفنيين وحالاتهم.",
     "loadError": "فشل تحميل الفنيين.",
     "searchPlaceholder": "البحث عن فنيين...",
+    "unnamed": "بدون اسم",
+    "trade": "الحرفة",
+    "role": "نوع الحساب",
+    "contractorKind": "نوع المقاول",
+    "capacity": "السعة",
+    "teamSize": "حجم الفريق",
+    "contact": {
+      "call": "اتصال",
+      "whatsapp": "واتساب",
+      "requestService": "طلب الخدمة",
+      "requestQuote": "اطلب عرض سعر",
+      "unavailable": "غير متاح لشغل جديد"
+    },
     "empty": {
       "title": "لم يتم العثور على فنيين",
       "subtitle": "لا يوجد فنيون يطابقون بحثك."
@@ -128,7 +142,7 @@
     "detail": {
       "notFound": "الفني غير موجود",
       "back": "العودة للفنيين",
-      "unnamed": "فني بدون اسم",
+      "unnamed": "بدون اسم",
       "noPhone": "لا يوجد هاتف",
       "statusActions": "إجراءات الحالة",
       "approve": "موافقة",
@@ -148,7 +162,53 @@
       "recentBookings": "أحدث الحجوزات ({{count}})",
       "reviews": "التقييمات ({{count}})",
       "anonymous": "مجهول",
-      "booking": "حجز"
+      "booking": "حجز",
+      "profilePhoto": "صورة الملف",
+      "idCard": "بطاقة الرقم القومي",
+      "idCardBack": "ظهر البطاقة",
+      "verificationDoc": "مستند توثيق",
+      "viewDocument": "عرض المستند",
+      "noDocuments": "لا توجد مستندات",
+      "applicationDetails": "بيانات الطلب",
+      "skills": "المهارات",
+      "documents": "المستندات",
+      "performance": "الأداء",
+      "nationalId": "الرقم القومي",
+      "governorate": "المحافظة",
+      "area": "المنطقة",
+      "workingHours": "ساعات العمل",
+      "startingPrice": "السعر الابتدائي",
+      "specialty": "التخصص",
+      "noSkills": "لا توجد مهارات مسجّلة",
+      "confirm": {
+        "reasonLabel": "السبب",
+        "reasonPlaceholder": "اكتب السبب...",
+        "cancel": "إلغاء",
+        "approve": {
+          "title": "تأكيد الموافقة",
+          "description": "الموافقة على حساب {{name}}؟",
+          "confirm": "موافقة",
+          "success": "تمت الموافقة"
+        },
+        "reject": {
+          "title": "تأكيد الرفض",
+          "description": "رفض حساب {{name}}؟",
+          "confirm": "رفض",
+          "success": "تم الرفض"
+        },
+        "suspend": {
+          "title": "تأكيد التعليق",
+          "description": "تعليق حساب {{name}}؟",
+          "confirm": "تعليق",
+          "success": "تم التعليق"
+        },
+        "reactivate": {
+          "title": "تأكيد إعادة التفعيل",
+          "description": "إعادة تفعيل حساب {{name}}؟",
+          "confirm": "إعادة تفعيل",
+          "success": "تم إعادة التفعيل"
+        }
+      }
     },
     "status": {
       "verified": "موثّق",
@@ -312,6 +372,58 @@
     "about": "حول",
     "aboutText": "سند v1.0.0 — منصة خدمات منزلية مبنية بـ Next.js و Supabase و TailwindCSS."
   },
+  "moderation": {
+    "actionsLabel": "إجراءات الحساب",
+    "blockedBadge": "محظور",
+    "blockedReason": "سبب الحظر",
+    "block": "حظر",
+    "unblock": "إلغاء الحظر",
+    "delete": "حذف",
+    "cancel": "إلغاء",
+    "confirmPhrase": "حذف",
+    "confirmPhraseLabel": "اكتب {{phrase}} للتأكيد",
+    "reasonLabel": "السبب",
+    "reasonPlaceholder": "سبب الحظر...",
+    "bulk": {
+      "protectedRow": "لا يمكن حذف هذا الحساب"
+    },
+    "toast": {
+      "blocked": "تم حظر الحساب",
+      "unblocked": "تم إلغاء الحظر",
+      "userDeleted": "تم حذف الحساب",
+      "bookingDeleted": "تم حذف الحجز"
+    },
+    "dialog": {
+      "block": {
+        "title": "حظر الحساب",
+        "description": "سيتم حظر {{name}} ومنعه من استخدام المنصة.",
+        "confirm": "حظر"
+      },
+      "unblock": {
+        "title": "إلغاء الحظر",
+        "description": "سيتم إلغاء حظر {{name}}.",
+        "confirm": "إلغاء الحظر"
+      },
+      "deleteTechnician": {
+        "title": "حذف الفني",
+        "description": "سيتم حذف حساب {{name}} نهائياً.",
+        "consequences": "لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "حذف"
+      },
+      "deleteCustomer": {
+        "title": "حذف العميل",
+        "description": "سيتم حذف حساب {{name}} نهائياً.",
+        "consequences": "لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "حذف"
+      },
+      "deleteBooking": {
+        "title": "حذف الحجز",
+        "description": "سيتم حذف الحجز {{name}} نهائياً.",
+        "consequences": "لا يمكن التراجع عن هذا الإجراء.",
+        "confirm": "حذف"
+      }
+    }
+  },
   "unauthorized": {
     "title": "غير مصرح",
     "description": "ليس لديك صلاحية للوصول إلى هذه المنطقة. يمكن للمسؤولين فقط عرض هذه الصفحة.",
@@ -328,6 +440,7 @@
     "create": "إنشاء",
     "update": "تحديث",
     "actions": "إجراءات",
+    "error": "حدث خطأ",
     "yes": "نعم",
     "no": "لا",
     "unknown": "غير معروف",
@@ -368,6 +481,7 @@
     "matched": "تمت المطابقة",
     "accepted": "مقبول",
     "in_progress": "قيد التنفيذ",
+    "awaiting_customer_confirmation": "بانتظار تأكيد العميل",
     "completed": "مكتمل",
     "cancelled": "ملغى",
     "disputed": "متنازع عليه"
@@ -415,7 +529,13 @@
       "ADMIN_APPROVE_PAYMENT_FAILED": "فشل الموافقة على الدفع",
       "ADMIN_REJECT_PAYMENT_FAILED": "فشل رفض الدفع",
       "ADMIN_FETCH_PAYMENT_SETTINGS_FAILED": "فشل تحميل إعدادات الدفع",
-      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "فشل تحديث إعدادات الدفع"
+      "ADMIN_UPDATE_PAYMENT_SETTINGS_FAILED": "فشل تحديث إعدادات الدفع",
+      "ADMIN_BLOCK_USER_FAILED": "فشل حظر الحساب",
+      "ADMIN_DELETE_USER_FAILED": "فشل حذف الحساب",
+      "ADMIN_DELETE_BOOKING_FAILED": "فشل حذف الحجز",
+      "ADMIN_MODERATE_SELF_FORBIDDEN": "لا يمكنك تنفيذ هذا الإجراء على حسابك",
+      "ADMIN_MODERATE_ADMIN_FORBIDDEN": "لا يمكن حظر أو حذف حساب أدمن",
+      "ADMIN_MODERATE_PROTECTED_FORBIDDEN": "هذا الحساب محمي ولا يمكن حظره أو حذفه"
     },
     "generic": "حدث خطأ غير متوقع"
   },

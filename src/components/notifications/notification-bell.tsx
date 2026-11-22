@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useCallback, useRef } from 'react';
 import {
   Bell,
   Calendar,
@@ -24,6 +25,7 @@ import {
   useNotifications,
   useUnreadCount,
   useMarkNotificationRead,
+  useMarkVisibleNotificationsRead,
   useMarkAllNotificationsRead,
   useNotificationsRealtime,
   getNotificationLink,
@@ -37,12 +39,16 @@ const TYPE_ICONS: Record<NotificationType, typeof Bell> = {
   booking_started: Wrench,
   booking_completed: CheckCheck,
   booking_cancelled: Calendar,
+  booking_unassigned: Calendar,
   chat_message: MessageSquare,
   review_received: Star,
   technician_approved: UserCheck,
   technician_rejected: UserCheck,
   technician_suspended: UserCheck,
   technician_application: UserCheck,
+  payment_submitted: Check,
+  payment_approved: CheckCheck,
+  payment_rejected: Calendar,
 };
 
 function NotificationIcon({ type, unread }: { type: NotificationType; unread: boolean }) {
@@ -113,7 +119,7 @@ function NotificationItem({
 
 interface NotificationBellProps {
   className?: string;
-  variant?: 'light' | 'default';
+  variant?: 'light' | 'default' | 'admin';
 }
 
 export function NotificationBell({ className, variant = 'default' }: NotificationBellProps) {
@@ -121,17 +127,32 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
   const { data: unreadCount = 0 } = useUnreadCount(!!profile);
   const { data, isLoading } = useNotifications({ isRead: 'all', enabled: !!profile });
   const markRead = useMarkNotificationRead();
+  const markVisibleRead = useMarkVisibleNotificationsRead();
   const markAllRead = useMarkAllNotificationsRead();
+  const markedOnOpenRef = useRef<string>('');
 
   useNotificationsRealtime(!!profile);
 
   const recent =
-    data?.pages.flatMap((page) => page.notifications).slice(0, 8) ?? [];
+    data?.pages.flatMap((page) => page.notifications ?? []).slice(0, 8) ?? [];
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) return;
+      const unreadIds = recent.filter((n) => !n.is_read).map((n) => n.id);
+      if (unreadIds.length === 0) return;
+      const signature = unreadIds.join(',');
+      if (markedOnOpenRef.current === signature) return;
+      markedOnOpenRef.current = signature;
+      markVisibleRead.mutate(unreadIds);
+    },
+    [markVisibleRead, recent],
+  );
 
   if (!profile) return null;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -140,7 +161,9 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
             'relative rounded-full',
             variant === 'light'
               ? 'text-text-secondary hover:bg-muted hover:text-text-primary'
-              : 'text-[#64748B] hover:text-[#0F172A]',
+              : variant === 'admin'
+                ? 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+                : 'text-[#64748B] hover:text-[#0F172A]',
             className,
           )}
           aria-label={`الإشعارات${unreadCount > 0 ? `، ${unreadCount} غير مقروء` : ''}`}

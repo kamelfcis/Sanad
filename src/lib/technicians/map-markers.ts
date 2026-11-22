@@ -18,7 +18,7 @@ export function toTechnicianMapMarkers(technicians: BrowseTechnician[]): Technic
       name: tech.full_name ?? 'صنايعي',
       specialty: tech.specialty_label,
       position: { lat: tech.location_lat!, lng: tech.location_lng! },
-      distanceKm: tech.distance_km,
+      distanceKm: tech.distance_km ?? undefined,
       bookingHref: tech.primary_service_id
         ? `/customer/bookings/new?service_id=${tech.primary_service_id}`
         : '/customer/bookings/new',
