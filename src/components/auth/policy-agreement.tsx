@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,6 +42,16 @@ export function PolicyAgreement({ checked, onCheckedChange, error }: PolicyAgree
           وسياسة الاستخدام
         </label>
       </div>
+      <div className="pr-6 text-xs">
+        <Link
+          href="/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          قراءة الشروط كاملة في صفحة مستقلة
+        </Link>
+      </div>
       {error && <p className="text-xs text-destructive">{error}</p>}
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -53,6 +64,14 @@ export function PolicyAgreement({ checked, onCheckedChange, error }: PolicyAgree
               <p key={index}>{paragraph}</p>
             ))}
           </div>
+          <Link
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            فتح صفحة الشروط كاملة
+          </Link>
           <Button
             type="button"
             className="w-full bg-gradient-to-br from-primary to-accent text-white shadow-sm hover:shadow-md hover:brightness-105"
