@@ -1,6 +1,5 @@
 import { createServiceRoleClient, isServiceRoleConfigured } from '@/lib/supabase/admin';
 import { KYC_BUCKET, STORAGE_BUCKET } from '@/lib/storage/constants';
-import { processProfileImage } from '@/lib/storage/process-profile-image';
 import { logger } from '@/lib/logger';
 
 export type UploadResult =
@@ -41,12 +40,9 @@ function getPublicUrl(path: string): string {
 }
 
 export async function uploadProfilePhotoForUser(userId: string, file: File): Promise<UploadResult> {
-  const processed = await processProfileImage(file);
-  if ('error' in processed) {
-    return { ok: false, error: processed.error };
-  }
-  const blob = new Blob([Uint8Array.from(processed.buffer)], { type: processed.contentType });
-  return uploadFileForUser(userId, blob, processed.contentType);
+  // Registration photos are compressed on the client before upload. Keeping this
+  // server path native-library-free avoids loading sharp in the auth function.
+  return uploadFileForUser(userId, file, file.type);
 }
 
 export async function uploadFileForUser(
