@@ -35,34 +35,54 @@ export async function PUT(request: NextRequest) {
 
   const { bio, years_experience, max_distance_km, is_available, phone } = parsed.data;
 
+  const { data: currentProfile, error: currentProfileError } = await supabase
+    .from('technician_profiles')
+    .select('verification_status, is_available')
+    .eq('id', auth.user.id)
+    .maybeSingle();
+  if (currentProfileError) {
+    return NextResponse.json({ error: currentProfileError.message }, { status: 500 });
+  }
+  const nextIsAvailable = is_available ?? Boolean(currentProfile?.is_available);
+
   if (is_available === true) {
-    const { data: current, error: currentError } = await supabase
-      .from('technician_profiles')
-      .select('verification_status')
-      .eq('id', auth.user.id)
-      .maybeSingle();
-
-    if (currentError) {
-      return NextResponse.json({ error: currentError.message }, { status: 500 });
-    }
-
-    if (!current || current.verification_status !== 'verified') {
+    if (!currentProfile || currentProfile.verification_status !== 'verified') {
       return NextResponse.json(
         { error: 'لا يمكن تفعيل التوفر قبل اكتمال توثيق حسابك من الإدارة.' },
         { status: 422 },
       );
     }
+
+    const { data: subscription, error: subscriptionError } = await supabase
+      .from('provider_subscriptions')
+      .select('active_until')
+      .eq('provider_id', auth.user.id)
+      .maybeSingle();
+
+    if (subscriptionError) {
+      return NextResponse.json({ error: 'تعذر التحقق من حالة الاشتراك.' }, { status: 500 });
+    }
+    if (!subscription?.active_until || new Date(subscription.active_until).getTime() <= Date.now()) {
+      return NextResponse.json(
+        {
+          code: 'PROVIDER_SUBSCRIPTION_REQUIRED',
+          error: 'اشترك مقابل 10 جنيهات شهرياً لتفعيل ظهورك واستقبال الحجوزات.',
+        },
+        { status: 402 },
+      );
+    }
   }
+
+  const updates: Record<string, unknown> = {};
+  if (bio !== undefined) updates.bio = bio;
+  if (years_experience !== undefined) updates.years_experience = years_experience;
+  if (max_distance_km !== undefined) updates.max_distance_km = max_distance_km;
+  if (is_available !== undefined) updates.is_available = nextIsAvailable;
 
   const { data, error } = await supabase
     .from('technician_profiles')
-    .upsert({
-      id: auth.user.id,
-      bio: bio ?? null,
-      years_experience: years_experience ?? null,
-      max_distance_km: max_distance_km ?? 20.0,
-      is_available: is_available ?? true,
-    })
+    .update(updates)
+    .eq('id', auth.user.id)
     .select()
     .single();
 
