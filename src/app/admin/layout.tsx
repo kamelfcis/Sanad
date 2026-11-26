@@ -34,6 +34,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     { label: t('nav.reviews'), href: '/admin/reviews', icon: Star },
     { label: t('nav.complaints'), href: '/admin/complaints', icon: MessageSquareWarning },
     { label: t('nav.payments'), href: '/admin/payments', icon: Banknote },
+    { label: 'مدفوعات اشتراك مقدمي الخدمة', href: '/admin/provider-subscriptions', icon: Banknote },
     { label: t('nav.auditLogs'), href: '/admin/audit-logs', icon: History },
     { label: t('nav.settings'), href: '/admin/settings', icon: Settings },
   ];
