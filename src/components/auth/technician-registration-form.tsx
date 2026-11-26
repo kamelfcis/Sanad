@@ -45,6 +45,7 @@ import { gradients } from '@/lib/design-system';
 import { MAX_REGISTRATION_FORM_TOTAL_BYTES } from '@/lib/validations/registration-upload';
 
 type Mode = 'signup' | 'complete';
+type InitialPaymentChoice = 'now' | 'later';
 
 interface TechnicianRegistrationFormProps {
   mode?: Mode;
@@ -62,6 +63,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
     idCardBack?: string;
   }>({});
   const [agreed, setAgreed] = useState(false);
+  const [initialPaymentChoice, setInitialPaymentChoice] = useState<InitialPaymentChoice>('later');
   const [agreeError, setAgreeError] = useState<string | undefined>();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -226,7 +228,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
       });
 
       if (signInError) {
-        router.push('/auth/login');
+        router.push(initialPaymentChoice === 'now' ? '/auth/login?next=%2Ftechnician%2Fsubscription%3Fstart%3D1' : '/auth/login');
         setIsSubmitting(false);
         return;
       }
@@ -244,7 +246,7 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
         if (newProfile) setProfile(newProfile);
       }
 
-      router.push('/technician/jobs');
+      router.push(initialPaymentChoice === 'now' ? '/technician/subscription?start=1' : '/technician/jobs');
       router.refresh();
     } catch {
       toast({
@@ -577,6 +579,39 @@ export function TechnicianRegistrationForm({ mode = 'signup' }: TechnicianRegist
           />
           {errors.bio && <p className="text-xs text-destructive">{errors.bio.message}</p>}
         </div>
+
+        {!isCompleteMode && (
+          <section className="space-y-3 rounded-2xl border border-border bg-surface/40 p-4" aria-labelledby="registration-payment-choice">
+            <div>
+              <h2 id="registration-payment-choice" className="font-semibold text-text-primary">اشتراك الظهور للعملاء</h2>
+              <p className="mt-1 text-sm leading-6 text-text-secondary">
+                الاشتراك 10 جنيهات شهرياً. تقدر تدفع بعد التسجيل أو تكمل التسجيل وتدفع لاحقاً.
+                يبدأ الشهر بعد مراجعة الأدمن وإقرار الإيصال.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {([
+                ['now', 'هسدد الآن', 'بعد إنشاء الحساب هتنتقل لخطوات الدفع ورفع الإيصال.'],
+                ['later', 'هسدد لاحقاً', 'كمّل التسجيل، وادفع من صفحة الاشتراك في أي وقت.'],
+              ] as const).map(([value, title, description]) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={initialPaymentChoice === value}
+                  onClick={() => setInitialPaymentChoice(value)}
+                  className={`rounded-xl border p-4 text-start transition-colors ${
+                    initialPaymentChoice === value
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                      : 'border-border bg-card hover:border-primary/40'
+                  }`}
+                >
+                  <span className="block font-semibold text-text-primary">{title}</span>
+                  <span className="mt-1 block text-sm leading-6 text-text-secondary">{description}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         <PolicyAgreement
           checked={agreed}
