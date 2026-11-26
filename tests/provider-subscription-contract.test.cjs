@@ -89,7 +89,7 @@ test('provider and admin screens show receipt review, approval, and visibility s
 
 test('admin technician details return signed URLs for private identity documents', () => {
   assert.match(adminTechnicianApi, /KYC_SIGNED_URL_TTL_SECONDS/);
-  assert.match(adminTechnicianApi, /createSignedUrl\\(path, KYC_SIGNED_URL_TTL_SECONDS\\)/);
+  assert.match(adminTechnicianApi, /createSignedUrl\(path, KYC_SIGNED_URL_TTL_SECONDS\)/);
   assert.match(adminTechnicianApi, /id_card_photo_url: idCardPhotoUrl/);
   assert.match(adminTechnicianApi, /id_card_back_photo_url: idCardBackPhotoUrl/);
   assert.match(adminTechnicianApi, /verification_docs: verificationDocs/);
