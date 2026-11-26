@@ -37,12 +37,6 @@ function LoginForm() {
   });
 
   const redirectAfterAuth = async (role: string, userId: string) => {
-    if (nextPath && role === 'customer') {
-      router.push(nextPath);
-      router.refresh();
-      return;
-    }
-
     if (role === 'technician') {
       const { data: tp } = await supabase
         .from('technician_profiles')
@@ -58,13 +52,11 @@ function LoginForm() {
       router.push(
         !profileComplete
           ? '/auth/register-technician?complete=1'
-          : tp?.provider_role === 'contractor'
-            ? '/technician/quotes'
-            : '/technician/jobs',
+          : nextPath ?? (tp?.provider_role === 'contractor' ? '/technician/quotes' : '/technician/jobs'),
       );
     } else {
       const m: Record<string, string> = { customer: '/services', admin: '/admin' };
-      router.push(m[role] ?? '/services');
+      router.push(nextPath && role === 'customer' ? nextPath : m[role] ?? '/services');
     }
     router.refresh();
   };
