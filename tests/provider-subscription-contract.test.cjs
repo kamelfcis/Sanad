@@ -17,6 +17,7 @@ const registrationUi = read('src/components/auth/technician-registration-form.ts
 const subscriptionHook = read('src/hooks/use-provider-subscription.ts');
 const adminListUi = read('src/app/admin/provider-subscriptions/page.tsx');
 const publicTechnicianApi = read('src/app/api/technicians/[id]/route.ts');
+const adminTechnicianApi = read('src/app/api/admin/technicians/[id]/route.ts');
 
 test('subscription fee, renewal period, and one-pending-request rule are fixed in the database', () => {
   assert.match(migration, /amount NUMERIC\(10, 2\) NOT NULL DEFAULT 10\.00 CHECK \(amount = 10\.00\)/);
@@ -84,4 +85,12 @@ test('provider and admin screens show receipt review, approval, and visibility s
   assert.match(availabilityUi, /ظهور الملف الشخصي/);
   assert.match(adminListUi, /<img src=\{payment\.receiptUrl\}/);
   assert.match(adminListUi, /قبول وتفعيل الاشتراك/);
+});
+
+test('admin technician details return signed URLs for private identity documents', () => {
+  assert.match(adminTechnicianApi, /KYC_SIGNED_URL_TTL_SECONDS/);
+  assert.match(adminTechnicianApi, /createSignedUrl\\(path, KYC_SIGNED_URL_TTL_SECONDS\\)/);
+  assert.match(adminTechnicianApi, /id_card_photo_url: idCardPhotoUrl/);
+  assert.match(adminTechnicianApi, /id_card_back_photo_url: idCardBackPhotoUrl/);
+  assert.match(adminTechnicianApi, /verification_docs: verificationDocs/);
 });
