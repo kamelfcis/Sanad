@@ -58,6 +58,7 @@ export async function GET(
     )
     .eq('id', parsed.data)
     .eq('verification_status', 'verified')
+    .eq('is_available', true)
     .eq('is_demo', false)
     .maybeSingle();
 
@@ -66,6 +67,19 @@ export async function GET(
   }
 
   if (!data) {
+    return NextResponse.json({ error: 'Technician not found' }, { status: 404 });
+  }
+
+  const { data: activeSubscription, error: subscriptionError } = await supabase
+    .from('provider_subscriptions')
+    .select('provider_id')
+    .eq('provider_id', parsed.data)
+    .gt('active_until', new Date().toISOString())
+    .maybeSingle();
+  if (subscriptionError) {
+    return NextResponse.json({ error: 'Unable to verify provider subscription.' }, { status: 500 });
+  }
+  if (!activeSubscription) {
     return NextResponse.json({ error: 'Technician not found' }, { status: 404 });
   }
 
