@@ -101,6 +101,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { data: activeSubscription, error: subscriptionError } = await rpcClient
+      .from('provider_subscriptions')
+      .select('provider_id')
+      .eq('provider_id', technician_id)
+      .gt('active_until', new Date().toISOString())
+      .maybeSingle();
+    if (subscriptionError) {
+      return NextResponse.json({ error: 'Unable to verify provider subscription.' }, { status: 500 });
+    }
+    if (!activeSubscription) {
+      return NextResponse.json(
+        { code: 'PROVIDER_SUBSCRIPTION_REQUIRED', error: 'This provider is not currently bookable.' },
+        { status: 402 },
+      );
+    }
+
     const { data: skill } = await rpcClient
       .from('technician_skills')
       .select(
