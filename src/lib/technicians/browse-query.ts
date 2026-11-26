@@ -49,6 +49,7 @@ export async function listBrowseTechnicians(
     .from('technician_profiles')
     .select(BROWSE_SELECT)
     .eq('verification_status', 'verified')
+    .eq('is_available', true)
     .eq('is_demo', false);
 
   if (error) {
@@ -89,6 +90,16 @@ export async function listBrowseTechnicians(
   });
 
   const technicianIds = rows.map((row) => row.id);
+  if (technicianIds.length > 0) {
+    const { data: activeSubscriptions, error: subscriptionsError } = await supabase
+      .from('provider_subscriptions')
+      .select('provider_id')
+      .in('provider_id', technicianIds)
+      .gt('active_until', new Date().toISOString());
+    if (subscriptionsError) throw new Error(subscriptionsError.message);
+    const activeIds = new Set((activeSubscriptions ?? []).map((item) => item.provider_id));
+    rows = rows.filter((row) => activeIds.has(row.id));
+  }
   if (technicianIds.length > 0) {
     const { data: completedBookings, error: completedBookingsError } = await supabase
       .from('bookings')
