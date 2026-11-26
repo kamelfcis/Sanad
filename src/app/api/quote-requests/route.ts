@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
   const admin = createServiceRoleClient();
   const { data: contractor } = await admin
     .from('technician_profiles')
-    .select('id, provider_role, capacity_tier, verification_status')
+    .select('id, provider_role, capacity_tier, verification_status, is_available')
     .eq('id', body.data.contractor_id)
     .maybeSingle();
 
@@ -85,6 +85,21 @@ export async function POST(request: NextRequest) {
   }
   if (contractor.verification_status !== 'verified') {
     return NextResponse.json({ error: 'المقاول غير موثّق بعد' }, { status: 422 });
+  }
+  if (!contractor.is_available) {
+    return NextResponse.json({ error: 'المقاول لا يستقبل طلبات حالياً.' }, { status: 422 });
+  }
+  const { data: activeSubscription, error: subscriptionError } = await admin
+    .from('provider_subscriptions')
+    .select('provider_id')
+    .eq('provider_id', contractor.id)
+    .gt('active_until', new Date().toISOString())
+    .maybeSingle();
+  if (subscriptionError) {
+    return NextResponse.json({ error: 'تعذر التحقق من اشتراك المقاول.' }, { status: 500 });
+  }
+  if (!activeSubscription) {
+    return NextResponse.json({ code: 'PROVIDER_SUBSCRIPTION_REQUIRED', error: 'المقاول غير متاح للحجز حالياً.' }, { status: 402 });
   }
   if (contractor.capacity_tier === 'none') {
     return NextResponse.json({ error: 'المقاول غير متاح لشغل جديد' }, { status: 422 });
